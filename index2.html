@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
 <title>EAGLE Simulator Ultimate - Electronics + Arduino Lab</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
@@ -10,8 +10,8 @@
 <style>
 :root{--bg:#1e1e1e;--panel:#252526;--panel2:#2d2d2d;--border:#3e3e42;--text:#cccccc;--muted:#858585;--accent:#007acc;--accent2:#3794ff;--ok:#89d185;--danger:#f14c4c;--warn:#cca700;--purple:#c586c0}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;min-height:100%;overflow:auto;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;-webkit-overflow-scrolling:touch}html.ard-scroll,html.ard-scroll body{overflow:auto!important;height:auto!important;min-height:100%!important;max-height:none!important;-webkit-overflow-scrolling:touch!important}
-#app{display:flex;flex-direction:column;width:100%;height:100%;min-height:100%}html.ard-scroll #app{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
+#app{display:flex;flex-direction:column;width:100%;height:100%}
 #toolbar{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;flex:0 0 auto}
 .ttl{font-weight:700;font-size:13px;color:var(--accent2);margin-right:8px;white-space:nowrap}
 .btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;white-space:nowrap}
@@ -26,8 +26,8 @@ html,body{width:100%;height:100%;min-height:100%;overflow:auto;background:var(--
 select,input[type=text],input[type=number]{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px}
 input[type=color]{width:26px;height:20px;border:1px solid var(--border);border-radius:4px;padding:0;cursor:pointer}
 input[type=range]{accent-color:var(--accent)}
-#mainrow{display:flex;flex:1;min-height:0;overflow:visible}html.ard-scroll #mainrow{min-height:65vh!important;height:auto!important;overflow:visible!important}
-#palette{width:210px;min-width:150px;max-width:340px;background:var(--panel);overflow-y:scroll!important;overflow-x:hidden!important;flex:0 0 auto;padding:6px 8px;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior:contain;max-height:100%}
+#mainrow{display:flex;flex:1;min-height:0}
+#palette{width:210px;min-width:150px;max-width:340px;background:var(--panel);overflow-y:auto;flex:0 0 auto;padding:6px 8px}
 #paletteSearch{width:100%;margin-bottom:6px;padding:6px 8px}
 .cat{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:10px 2px 4px;font-weight:600}
 .pitem{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:6px;cursor:grab;border:1px solid transparent;user-select:none;font-size:12px}
@@ -37,7 +37,7 @@ input[type=range]{accent-color:var(--accent)}
 .splitter:hover,.splitter.dragging{background:var(--accent)}
 #center{flex:1;display:flex;flex-direction:column;min-width:100px}
 #modeBar{display:flex;gap:8px;align-items:center;padding:4px 10px;background:var(--panel2);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)}
-#viewport{flex:1;overflow:auto!important;background:#1e1e1e;position:relative;-webkit-overflow-scrolling:touch!important;touch-action:pan-x pan-y;overscroll-behavior:contain;min-height:0}
+#viewport{flex:1;overflow:auto;background:#1e1e1e;position:relative}
 #workarea{margin:24px;width:2200px;height:1400px;background:#1e1e1e;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.55);border-radius:8px;border:1px solid var(--border);transform-origin:0 0}
 #workarea.gridon{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:20px 20px}
 .comp{position:absolute;cursor:move;user-select:none;touch-action:none}
@@ -121,7 +121,7 @@ input[type=range]{accent-color:var(--accent)}
 .wire-path{fill:none;stroke-width:2.8;pointer-events:stroke;cursor:pointer}
 .wire-path:hover{stroke-width:4.2;filter:brightness(1.25)}
 .wire-path.sel{stroke-width:3.8;stroke-dasharray:7 4}
-#side{width:340px;min-width:240px;max-width:520px;background:var(--panel);overflow:hidden;flex:0 0 auto;display:flex;flex-direction:column;max-height:100%}
+#side{width:340px;min-width:240px;max-width:520px;background:var(--panel);overflow:hidden;flex:0 0 auto;display:flex;flex-direction:column}
 /* collapsed side panel: keep a slim handle so it can always be brought back.
    The class lands on #side itself, so these must out-specify the #side rule. */
 #side.sideCollapsed{width:0!important;min-width:0!important;max-width:0!important;flex:0 0 0!important;overflow:visible;position:relative;border-right:none}
@@ -138,11 +138,9 @@ input[type=range]{accent-color:var(--accent)}
 #side .tabs .tab.on{color:var(--accent2);border-bottom-color:var(--accent2)}
 #side .tabbody{
   flex:1; min-height:0;
-  overflow-y:scroll !important; overflow-x:hidden !important;
+  overflow-y:auto; overflow-x:hidden;
   display:flex; flex-direction:column;
-  -webkit-overflow-scrolling:touch !important;
-  touch-action:pan-y !important;
-  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
   scrollbar-gutter:stable;
 }
 #side .tabbody::-webkit-scrollbar{width:8px}
@@ -885,6 +883,193 @@ body.mode-sch .wire-svg,body.mode-pcb .wire-svg{opacity:.06}
 .dash-num{font-size:22px;font-weight:800;color:var(--accent2)}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0}
 .dash-cell{border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;background:var(--panel2)}
+
+/* ========== MOBILE LAYER A+B (UI + touch bridge only) ========== */
+html { -webkit-text-size-adjust: 100%; }
+html, body { overscroll-behavior: none; }
+
+#eg-mobi-bar {
+  display: none;
+  position: fixed;
+  z-index: 5000;
+  left: 0; right: 0; bottom: 0;
+  padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+  background: rgba(37,37,38,.96);
+  border-top: 1px solid var(--border, #3e3e42);
+  backdrop-filter: blur(10px);
+  gap: 6px;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -8px 28px rgba(0,0,0,.4);
+}
+#eg-mobi-bar button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted, #858585);
+  font: 600 10px/1.2 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#eg-mobi-bar button svg {
+  width: 22px; height: 22px;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+#eg-mobi-bar button.is-on {
+  color: var(--accent2, #3794ff);
+  background: rgba(0,122,204,.2);
+}
+#eg-mobi-bar button:active { transform: scale(.96); }
+
+#eg-mobi-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  background: rgba(0,0,0,.5);
+  touch-action: manipulation;
+}
+
+@media (max-width: 900px) {
+  #eg-mobi-bar { display: flex; }
+  #eg-mobi-scrim.is-on { display: block; }
+
+  #toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+  }
+  .btn {
+    padding: 8px 10px;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+  .sp { display: none; }
+  .ttl { font-size: 12px; }
+
+  #mainrow { position: relative; }
+
+  #palette {
+    position: fixed !important;
+    left: 0; top: 0; bottom: 64px;
+    width: min(88vw, 300px) !important;
+    max-width: 92vw !important;
+    z-index: 2000;
+    transform: translateX(-105%);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+    box-shadow: 10px 0 36px rgba(0,0,0,.55);
+    display: block !important;
+  }
+  body.eg-mobi-palette #palette { transform: translateX(0); }
+
+  #side {
+    position: fixed !important;
+    right: 0; top: 0; bottom: 64px;
+    width: min(92vw, 380px) !important;
+    max-width: 96vw !important;
+    z-index: 2000;
+    transform: translateX(105%);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+    box-shadow: -10px 0 36px rgba(0,0,0,.55);
+    min-width: 0 !important;
+  }
+  body.eg-mobi-side #side {
+    transform: translateX(0);
+    width: min(92vw, 380px) !important;
+  }
+  /* when collapsed class is present keep off-screen */
+  #side.sideCollapsed {
+    transform: translateX(105%) !important;
+    width: min(92vw, 380px) !important;
+    min-width: 0 !important;
+    max-width: 96vw !important;
+    flex: none !important;
+  }
+  body.eg-mobi-side #side.sideCollapsed {
+    transform: translateX(0) !important;
+  }
+
+  .splitter, #splitL, #splitR { display: none !important; }
+  .kd-pt { display: none !important; } /* FAB replaces edge tabs */
+
+  #center {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding-bottom: 64px;
+  }
+  #viewport {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+    overscroll-behavior: contain;
+  }
+  #workarea { margin: 12px; }
+
+  #bottomDock {
+    height: 120px;
+    max-height: 32vh;
+    margin-bottom: 64px;
+  }
+  #bottomDock.collapsed { height: 28px; min-height: 28px; margin-bottom: 64px; }
+
+  #status { display: none; }
+
+  .pitem { min-height: 48px; padding: 10px 8px; font-size: 13px; }
+  .pitem .ic { width: 32px; height: 32px; }
+  .frow { min-height: 40px; padding: 8px 10px; }
+  #side .tabs .tab { min-height: 40px; padding: 10px 6px; }
+
+  /* Larger touch targets for pins & resize handles */
+  .comp .pin, .pin {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .rh {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .rh.nw{top:-9px;left:-9px}
+  .rh.ne{top:-9px;right:-9px}
+  .rh.se{bottom:-9px;right:-9px}
+  .rh.sw{bottom:-9px;left:-9px}
+  .rh.n{top:-9px;margin-left:-10px}
+  .rh.s{bottom:-9px;margin-left:-10px}
+  .rh.e{right:-9px;margin-top:-10px}
+  .rh.w{left:-9px;margin-top:-10px}
+
+  .modal-box {
+    width: 96% !important;
+    max-width: 96vw !important;
+    max-height: 88vh !important;
+    border-radius: 14px;
+  }
+  .CodeMirror { font-size: 14px !important; }
+
+  body.eg-mobi-palette, body.eg-mobi-side { overflow: hidden; }
+}
+
+@media (max-width: 600px) {
+  .ttl { display: none; }
+  #toolbar .btn { font-size: 11px; padding: 8px 9px; }
+}
+@supports (padding: max(0px)) {
+  @media (max-width: 900px) {
+    #palette { padding-left: env(safe-area-inset-left); }
+    #side { padding-right: env(safe-area-inset-right); }
+  }
+}
+
 </style>
 <style id="hud-dedupe">
 #simHud,#e18Hud,#e33Sim{display:none!important}
@@ -1139,165 +1324,6 @@ select, input[type=text], input[type=number], input[type=range], textarea {
 .pin.high { background:#cca700 !important; border-color:#ffd866 !important; }
 .pin.vcc { border-color:#f14c4c !important; }
 .wire-path { /* stroke set inline */ }
-</style>
-
-
-<script>
-(function(){
-  function go(){
-    var ua=navigator.userAgent||'';
-    var touch=('ontouchstart'in window)||(navigator.maxTouchPoints>0);
-    if(/Android/i.test(ua)||touch||(window.innerWidth||0)<=1024){
-      document.documentElement.classList.add('ard-scroll');
-      if(document.body) document.body.classList.add('ard-scroll');
-      try{
-        document.documentElement.style.setProperty('overflow','auto','important');
-        document.documentElement.style.setProperty('height','auto','important');
-        if(document.body){
-          document.body.style.setProperty('overflow','auto','important');
-          document.body.style.setProperty('height','auto','important');
-        }
-        var p=document.getElementById('palette');
-        if(p){ p.style.setProperty('overflow-y','scroll','important'); p.style.webkitOverflowScrolling='touch'; }
-        var s=document.getElementById('side');
-        if(s){
-          var tb=s.querySelector('.tabbody');
-          if(tb){ tb.style.setProperty('overflow-y','scroll','important'); tb.style.webkitOverflowScrolling='touch'; }
-        }
-        var vp=document.getElementById('viewport');
-        if(vp){ vp.style.setProperty('overflow','auto','important'); vp.style.webkitOverflowScrolling='touch'; }
-      }catch(e){}
-    }
-  }
-  go();
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go);
-  else go();
-  setTimeout(go,500); setTimeout(go,2000);
-})();
-</script>
-<style id="ard-force-scroll">
-
-/* Panel height bounds so internal scroll works on Android WebView */
-html.ard-scroll #palette {
-  max-height: 40vh !important;
-  height: 40vh !important;
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-html.ard-scroll #side {
-  max-height: 45vh !important;
-  height: 45vh !important;
-  overflow: hidden !important;
-}
-html.ard-scroll #side .tabbody {
-  height: calc(45vh - 40px) !important;
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-}
-html.ard-scroll #viewport {
-  min-height: 45vh !important;
-  height: 50vh !important;
-  overflow: auto !important;
-}
-@media (max-width: 900px) {
-  #mainrow {
-    display: flex !important;
-    flex-direction: column !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow: visible !important;
-    flex-wrap: nowrap !important;
-  }
-  #palette {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 35vh !important;
-    max-height: 35vh !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-  }
-  #side {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 40vh !important;
-    max-height: 40vh !important;
-    overflow: hidden !important;
-  }
-  #side .tabbody {
-    height: calc(40vh - 40px) !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-  }
-  #center {
-    width: 100% !important;
-    min-height: 45vh !important;
-    height: auto !important;
-    flex: 1 1 auto !important;
-  }
-  #viewport {
-    min-height: 45vh !important;
-    height: 50vh !important;
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  #splitL, #splitR, .splitter { display: none !important; }
-}
-
-html.ard-scroll, html.ard-scroll body {
-  overflow: auto !important;
-  height: auto !important;
-  min-height: 100% !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-html.ard-scroll #app {
-  height: auto !important;
-  min-height: 100dvh !important;
-  overflow: visible !important;
-}
-html.ard-scroll #mainrow {
-  min-height: 65vh !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-html.ard-scroll #palette {
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  max-height: 100% !important;
-}
-html.ard-scroll #side {
-  max-height: 100% !important;
-  overflow: hidden !important;
-}
-html.ard-scroll #side .tabbody {
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  min-height: 120px !important;
-}
-html.ard-scroll #viewport {
-  overflow: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  min-height: 50vh !important;
-}
-/* Always force panel scroll */
-#palette {
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-}
-#side .tabbody {
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-}
-#viewport {
-  overflow: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
 </style>
 
 </head>
@@ -6269,15 +6295,7 @@ function wirePhase45(){
 /* ========== TEACHER / CLASSROOM PACK (English) ========== */
 /* ===== EDUCATION FEATURES REMOVED (E50) ===== */
 function downloadText(filename, text){
-  var isMobile=/Android/i.test(navigator.userAgent||'')||('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-  if(isMobile && typeof window.__ardSaveBlob==='function'){
-    window.__ardSaveBlob(new Blob([text||''],{type:'text/plain'}), filename);
-    return;
-  }
   if(typeof window.__bridgePush==='function'){window.__bridgePush('download',{filename:filename,content:'data:text/plain;base64,'+btoa(unescape(encodeURIComponent(text||'')))});return}
-  var blob=new Blob([text],{type:"text/plain"});
-  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();
-});return}
   var blob=new Blob([text],{type:"text/plain"});
   var a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -47047,483 +47065,211 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 </script>
 
 <script>
-/* ============================================================
-   Eagle Arduino Simulator — Mobile / Android WebView compatibility
-   - Downloads via share / tmpfiles.org (WebView-safe)
-   - Whole-UI scroll on small screens
-   - Improved touch drag / pan / pinch on workarea
-   ============================================================ */
+/* ===== EAGLE Simulator – Mobile layer (A: touch bridge, B: FAB UI) ===== */
 (function () {
   'use strict';
-  if (window.__ARD_MOBILE_PATCH__) return;
-  window.__ARD_MOBILE_PATCH__ = true;
-
-  var UPLOAD_API = 'https://tmpfiles.org/api/v1/upload';
-
-  function isAndroid() {
-    return /Android/i.test(navigator.userAgent || '');
-  }
-  function isTouch() {
-    return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  var MQ = '(max-width: 900px)';
+  function isMobile() {
+    try { return window.matchMedia && window.matchMedia(MQ).matches; } catch (e) { return false; }
   }
 
-  function directUrl(res) {
-    var d = (res && res.data) || {};
-    var u = d.url_download || d.url || '';
-    if (!u) return '';
-    try {
-      var p = new URL(u);
-      if (/(^|\.)tmpfiles\.org$/i.test(p.hostname) && !/\/dl\//i.test(p.pathname)) {
-        u = p.origin + '/dl' + p.pathname + p.search;
+  /* ---------- A) Touch → Mouse bridge ---------- */
+  (function installTouchBridge() {
+    var tracking = null;
+
+    function isEditable(el) {
+      if (!el || !el.tagName) return false;
+      var t = el.tagName.toLowerCase();
+      if (t === 'input' || t === 'textarea' || t === 'select') return true;
+      if (el.isContentEditable) return true;
+      return false;
+    }
+
+    function fire(type, touch, target, buttons) {
+      var ev;
+      try {
+        ev = new MouseEvent(type, {
+          bubbles: true, cancelable: true, view: window,
+          clientX: touch.clientX, clientY: touch.clientY,
+          screenX: touch.screenX, screenY: touch.screenY,
+          button: 0, buttons: buttons != null ? buttons : (type === 'mouseup' ? 0 : 1)
+        });
+      } catch (e) {
+        ev = document.createEvent('MouseEvents');
+        ev.initMouseEvent(type, true, true, window, 1,
+          touch.screenX, touch.screenY, touch.clientX, touch.clientY,
+          false, false, false, false, 0, null);
       }
-    } catch (e) {}
-    return u;
-  }
-
-  function openDownload(url) {
-    if (isAndroid() && /^https?:/i.test(url)) {
-      var intent = 'intent://' + url.replace(/^https?:\/\//, '') +
-        '#Intent;scheme=https;package=com.android.chrome;S.browserFallbackUri=' +
-        encodeURIComponent(url) + ';end';
-      var handed = false;
-      try { handed = !!window.open(intent, '_blank'); } catch (e) {}
-      setTimeout(function () {
-        if (!handed) {
-          try { window.location.href = url; } catch (e2) {}
-        }
-      }, 1200);
-      return;
+      try { ev._fromTouch = true; } catch (e2) {}
+      target.dispatchEvent(ev);
     }
-    var w = null;
-    try { w = window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) {}
-    if (!w) {
-      try { window.location.href = url; } catch (e3) {}
-      return;
-    }
-    setTimeout(function () { try { w.close(); } catch (e4) {} }, 2500);
-  }
 
-  async function saveBlobMobile(blob, filename) {
-    try {
-      var file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: filename });
-        return 'shared';
+    document.addEventListener('touchstart', function (e) {
+      if (!e.changedTouches || !e.changedTouches.length) return;
+      if (e.touches.length > 1) { tracking = null; return; }
+      var t = e.changedTouches[0];
+      var el = document.elementFromPoint(t.clientX, t.clientY) || e.target;
+      if (isEditable(el)) return;
+      if (el.closest && el.closest('#eg-mobi-bar, #eg-mobi-scrim, .modal-box, #helpModal, #examplesModal, input, textarea, select, a')) {
+        if (!el.closest('#viewport, #workarea, .comp, .pin, .rh, .wire-path')) return;
       }
-    } catch (e) {
-      if (e && e.name === 'AbortError') return 'cancel';
-    }
-    try {
-      if (typeof toast === 'function') toast('Uploading for download…', 'ok');
-      var fd = new FormData();
-      fd.append('file', blob, filename);
-      var res = await fetch(UPLOAD_API, { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      var out = await res.json();
-      var direct = directUrl(out);
-      if (!direct) throw new Error('no url');
-      if (typeof toast === 'function') toast('Opening download…', 'ok');
-      openDownload(direct);
-      return 'upload';
-    } catch (e) {
-      console.warn('[mobile download upload]', e);
-    }
-    try {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = filename; a.rel = 'noopener';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-      return 'download';
-    } catch (e2) {
-      return 'cancel';
-    }
-  }
+      tracking = { id: t.identifier, target: el };
+      fire('mousedown', t, el, 1);
+    }, { passive: true, capture: true });
 
-  window.__ardSaveBlob = saveBlobMobile;
+    document.addEventListener('touchmove', function (e) {
+      if (!tracking || !e.changedTouches) return;
+      if (e.touches && e.touches.length > 1) return;
+      var t = null;
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === tracking.id) { t = e.changedTouches[i]; break; }
+      }
+      if (!t) return;
+      fire('mousemove', t, tracking.target, 1);
+      if (tracking.target && tracking.target.closest &&
+          tracking.target.closest('#viewport, #workarea, .comp, .pin, .rh')) {
+        if (e.cancelable) e.preventDefault();
+      }
+    }, { passive: false, capture: true });
 
-  function mobileDownloadText(filename, text, mime) {
-    var blob = new Blob([text == null ? '' : text], { type: mime || 'text/plain' });
-    if (isAndroid() || isTouch()) {
-      saveBlobMobile(blob, filename);
-      return true;
+    function endTouch(e) {
+      if (!tracking || !e.changedTouches) return;
+      var t = null;
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === tracking.id) { t = e.changedTouches[i]; break; }
+      }
+      if (!t) return;
+      fire('mouseup', t, tracking.target, 0);
+      try {
+        fire('click', t, document.elementFromPoint(t.clientX, t.clientY) || tracking.target, 0);
+      } catch (err) {}
+      tracking = null;
     }
-    return false;
-  }
+    document.addEventListener('touchend', endTouch, { passive: true, capture: true });
+    document.addEventListener('touchcancel', endTouch, { passive: true, capture: true });
+  })();
 
-  function patchDownloads() {
-    // Override common helpers if present
-    var names = ['downloadText', 'saveProject', 'exportIno', 'exportCodeOnly', 'exportDiagram', 'exportCircuitImage'];
-    // downloadText
-    if (typeof window.downloadText === 'function' && !window.downloadText.__mobile) {
-      var odt = window.downloadText;
-      window.downloadText = function (filename, text) {
-        if (mobileDownloadText(filename, text, 'text/plain')) return;
-        return odt.apply(this, arguments);
-      };
-      window.downloadText.__mobile = true;
+  /* ---------- B) FAB bar + drawers ---------- */
+  function ensureUI() {
+    if (document.getElementById('eg-mobi-bar')) return;
+
+    var scrim = document.createElement('div');
+    scrim.id = 'eg-mobi-scrim';
+    document.body.appendChild(scrim);
+
+    var bar = document.createElement('div');
+    bar.id = 'eg-mobi-bar';
+    bar.innerHTML = [
+      '<button type="button" data-act="palette" aria-label="Components">',
+      '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      '<span>Parts</span></button>',
+      '<button type="button" data-act="side" aria-label="Properties">',
+      '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h14"/></svg>',
+      '<span>Props</span></button>',
+      '<button type="button" data-act="code" aria-label="Code">',
+      '<svg viewBox="0 0 24 24"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>',
+      '<span>Code</span></button>',
+      '<button type="button" data-act="run" aria-label="Run">',
+      '<svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg>',
+      '<span>Run</span></button>'
+    ].join('');
+    document.body.appendChild(bar);
+
+    function closeDrawers() {
+      document.body.classList.remove('eg-mobi-palette', 'eg-mobi-side');
+      scrim.classList.remove('is-on');
+      bar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-on'); });
+      var html = document.documentElement;
+      html.classList.add('kd-no-palette');
+      var side = document.getElementById('side');
+      if (side) side.classList.add('sideCollapsed');
     }
 
-    // Generic interceptor for <a download> clicks created on the fly is hard;
-    // instead re-wrap known export functions after app defines them.
-    function wrapBlobExport(fnName, build) {
-      if (typeof window[fnName] !== 'function' || window[fnName].__mobile) return;
-      var orig = window[fnName];
-      window[fnName] = function () {
-        if (!(isAndroid() || isTouch())) return orig.apply(this, arguments);
+    function openPalette() {
+      document.documentElement.classList.remove('kd-no-palette');
+      document.body.classList.add('eg-mobi-palette');
+      document.body.classList.remove('eg-mobi-side');
+      var side = document.getElementById('side');
+      if (side) side.classList.add('sideCollapsed');
+      scrim.classList.add('is-on');
+      bar.querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('is-on', b.getAttribute('data-act') === 'palette');
+      });
+    }
+
+    function openSide(preferCode) {
+      document.documentElement.classList.add('kd-no-palette');
+      var side = document.getElementById('side');
+      if (side) side.classList.remove('sideCollapsed');
+      document.body.classList.add('eg-mobi-side');
+      document.body.classList.remove('eg-mobi-palette');
+      scrim.classList.add('is-on');
+      bar.querySelectorAll('button').forEach(function (b) {
+        var a = b.getAttribute('data-act');
+        b.classList.toggle('is-on', a === 'side' || a === 'code');
+      });
+      if (preferCode) {
         try {
-          return build(orig, arguments);
-        } catch (e) {
-          return orig.apply(this, arguments);
-        }
-      };
-      window[fnName].__mobile = true;
-    }
-
-    // saveProject
-    if (typeof window.saveProject === 'function' && !window.saveProject.__mobile) {
-      var osp = window.saveProject;
-      window.saveProject = function () {
-        if (!(isAndroid() || isTouch())) return osp.apply(this, arguments);
-        try {
-          if (window.codeEditor) window.sketchCode = codeEditor.getValue();
-          if (typeof doAutosave === 'function') doAutosave();
-          var data = {
-            version: 3,
-            components: window.components,
-            wires: window.wires,
-            nextId: window.nextId,
-            nextWireId: window.nextWireId,
-            sketchCode: window.sketchCode
-          };
-          var json = JSON.stringify(data, null, 2);
-          saveBlobMobile(new Blob([json], { type: 'application/json' }), 'arduino-visual-lab.json');
-        } catch (e) {
-          return osp.apply(this, arguments);
-        }
-      };
-      window.saveProject.__mobile = true;
-    }
-
-    if (typeof window.exportIno === 'function' && !window.exportIno.__mobile) {
-      var oei = window.exportIno;
-      window.exportIno = function () {
-        if (!(isAndroid() || isTouch())) return oei.apply(this, arguments);
-        try {
-          var code = (window.sketchCode || (typeof defaultSketch === 'function' ? defaultSketch() : '') || '');
-          if (window.codeEditor) code = codeEditor.getValue() || code;
-          saveBlobMobile(new Blob([code], { type: 'text/plain' }), 'sketch.ino');
-          if (typeof toast === 'function') toast('Exported sketch.ino', 'ok');
-        } catch (e) {
-          return oei.apply(this, arguments);
-        }
-      };
-      window.exportIno.__mobile = true;
-    }
-
-    if (typeof window.exportCodeOnly === 'function' && !window.exportCodeOnly.__mobile) {
-      var oeco = window.exportCodeOnly;
-      window.exportCodeOnly = function () {
-        if (!(isAndroid() || isTouch())) return oeco.apply(this, arguments);
-        try {
-          var code = window.sketchCode || '';
-          if (window.codeEditor) code = codeEditor.getValue() || code;
-          saveBlobMobile(new Blob([code], { type: 'text/plain' }), 'sketch.ino');
-        } catch (e) {
-          return oeco.apply(this, arguments);
-        }
-      };
-      window.exportCodeOnly.__mobile = true;
-    }
-
-    if (typeof window.exportDiagram === 'function' && !window.exportDiagram.__mobile) {
-      var oed = window.exportDiagram;
-      window.exportDiagram = function () {
-        if (!(isAndroid() || isTouch())) return oed.apply(this, arguments);
-        try {
-          if (window.codeEditor) window.sketchCode = codeEditor.getValue();
-          var data = {
-            version: 2,
-            type: 'arduino-visual-lab',
-            components: window.components,
-            wires: window.wires,
-            code: window.sketchCode
-          };
-          saveBlobMobile(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), 'diagram.json');
-        } catch (e) {
-          return oed.apply(this, arguments);
-        }
-      };
-      window.exportDiagram.__mobile = true;
-    }
-
-    // Patch __bridgePush download path used by host apps
-    if (typeof window.__bridgePush === 'function' && !window.__bridgePush.__mobile) {
-      var obp = window.__bridgePush;
-      window.__bridgePush = function (type, payload) {
-        if (type === 'download' && payload && (isAndroid() || isTouch())) {
-          try {
-            var content = payload.content || '';
-            var filename = payload.filename || 'download.bin';
-            // data URL → blob
-            if (typeof content === 'string' && content.indexOf('data:') === 0) {
-              var parts = content.split(',');
-              var meta = parts[0] || '';
-              var data = parts.slice(1).join(',');
-              var bin;
-              if (/;base64/i.test(meta)) {
-                bin = atob(data);
-              } else {
-                bin = decodeURIComponent(data);
-              }
-              var arr = new Uint8Array(bin.length);
-              for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-              var mime = (meta.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
-              saveBlobMobile(new Blob([arr], { type: mime }), filename);
-              return;
-            }
-            saveBlobMobile(new Blob([content], { type: 'text/plain' }), filename);
-            return;
-          } catch (e) {}
-        }
-        return obp.apply(this, arguments);
-      };
-      window.__bridgePush.__mobile = true;
-    }
-  }
-
-  function injectCss() {
-    if (document.getElementById('ard-mobile-css')) return;
-    var css = document.createElement('style');
-    css.id = 'ard-mobile-css';
-    css.textContent = [
-      '/* FORCE full-page scroll for Android WebView + touch devices */',
-      'html.ard-scroll, html.ard-scroll body {',
-      '  overflow: auto !important;',
-      '  overflow-x: auto !important;',
-      '  overflow-y: auto !important;',
-      '  height: auto !important;',
-      '  min-height: 100% !important;',
-      '  max-height: none !important;',
-      '  position: relative !important;',
-      '  -webkit-overflow-scrolling: touch !important;',
-      '  overscroll-behavior: auto !important;',
-      '  touch-action: manipulation !important;',
-      '}',
-      'html.ard-scroll #app {',
-      '  height: auto !important;',
-      '  min-height: 100dvh !important;',
-      '  max-height: none !important;',
-      '  overflow: visible !important;',
-      '}',
-      'html.ard-scroll #mainrow {',
-      '  flex: 1 1 auto !important;',
-      '  min-height: 65vh !important;',
-      '  height: auto !important;',
-      '  max-height: none !important;',
-      '  overflow: visible !important;',
-      '  flex-wrap: wrap !important;',
-      '}',
-      'html.ard-scroll #center {',
-      '  min-height: 55vh !important;',
-      '  height: auto !important;',
-      '  overflow: visible !important;',
-      '  flex: 1 1 auto !important;',
-      '}',
-      'html.ard-scroll #viewport {',
-      '  overflow: auto !important;',
-      '  -webkit-overflow-scrolling: touch !important;',
-      '  min-height: 50vh !important;',
-      '  height: auto !important;',
-      '  max-height: none !important;',
-      '  touch-action: pan-x pan-y !important;',
-      '  flex: 1 1 auto !important;',
-      '}',
-      'html.ard-scroll #palette {',
-      '  max-height: 40vh !important;',
-      '  width: 100% !important;',
-      '  max-width: none !important;',
-      '  overflow-y: auto !important;',
-      '  -webkit-overflow-scrolling: touch !important;',
-      '}',
-      'html.ard-scroll #side {',
-      '  max-height: 45vh !important;',
-      '  width: 100% !important;',
-      '  max-width: none !important;',
-      '  overflow-y: auto !important;',
-      '  -webkit-overflow-scrolling: touch !important;',
-      '}',
-      'html.ard-scroll #toolbar { flex-wrap: wrap !important; }',
-      'html.ard-scroll #workarea { touch-action: none !important; }',
-      'html.ard-scroll .comp { touch-action: none !important; }',
-      'html.ard-scroll .pin { width: 16px !important; height: 16px !important; }',
-      'html.ard-scroll .rh { width: 14px !important; height: 14px !important; }',
-      '@media (max-width: 1024px), (pointer: coarse) {',
-      '  html, body { overflow: auto !important; height: auto !important; min-height: 100% !important; }',
-      '  #app { height: auto !important; min-height: 100dvh !important; overflow: visible !important; }',
-      '  #viewport { overflow: auto !important; -webkit-overflow-scrolling: touch !important; min-height: 50vh !important; }',
-      '}'
-    ].join('\\n');
-    document.head.appendChild(css);
-    function enable() {
-      var ua = navigator.userAgent || '';
-      var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-      var android = /Android/i.test(ua);
-      var small = (window.innerWidth || 9999) <= 1024;
-      if (android || touch || small) {
-        document.documentElement.classList.add('ard-scroll');
-        document.body && document.body.classList.add('ard-scroll');
-        try {
-          document.documentElement.style.overflow = 'auto';
-          document.documentElement.style.height = 'auto';
-          document.body.style.overflow = 'auto';
-          document.body.style.height = 'auto';
-          var app = document.getElementById('app');
-          if (app) { app.style.height = 'auto'; app.style.overflow = 'visible'; app.style.minHeight = '100dvh'; }
-          var vp = document.getElementById('viewport');
-          if (vp) { vp.style.overflow = 'auto'; vp.style.webkitOverflowScrolling = 'touch'; }
-          var main = document.getElementById('mainrow');
-          if (main) { main.style.overflow = 'visible'; main.style.height = 'auto'; }
+          var tabs = document.querySelectorAll('#side .tabs .tab');
+          for (var i = 0; i < tabs.length; i++) {
+            var tx = (tabs[i].textContent || '').toLowerCase();
+            if (tx.indexOf('code') >= 0 || tx.indexOf('sketch') >= 0) { tabs[i].click(); break; }
+          }
         } catch (e) {}
       }
     }
-    enable();
-    window.addEventListener('resize', enable);
-    setTimeout(enable, 300);
-    setTimeout(enable, 1200);
-  }
 
-  function enhanceTouch() {
-    var vp = document.getElementById('viewport');
-    var wa = document.getElementById('workarea');
-    if (!vp || vp.__ardTouch) return;
-    vp.__ardTouch = true;
+    scrim.addEventListener('click', closeDrawers);
 
-    var pts = {};
-    var pinch = null;
-    var pan = null;
-    var scale = 1;
-
-    function ids() { return Object.keys(pts); }
-    function dist() {
-      var k = ids();
-      if (k.length < 2) return 1;
-      var a = pts[k[0]], b = pts[k[1]];
-      return Math.hypot(a.x - b.x, a.y - b.y) || 1;
-    }
-
-    // Read current transform scale if any
-    function currentScale() {
-      if (!wa) return scale;
-      try {
-        var t = getComputedStyle(wa).transform;
-        if (t && t !== 'none') {
-          var m = t.match(/matrix\(([^)]+)\)/);
-          if (m) {
-            var parts = m[1].split(',').map(parseFloat);
-            return parts[0] || 1;
+    bar.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-act');
+      if (act === 'palette') {
+        if (document.body.classList.contains('eg-mobi-palette')) closeDrawers();
+        else openPalette();
+      } else if (act === 'side') {
+        if (document.body.classList.contains('eg-mobi-side')) closeDrawers();
+        else openSide(false);
+      } else if (act === 'code') {
+        openSide(true);
+      } else if (act === 'run') {
+        closeDrawers();
+        try {
+          var runBtn = document.querySelector('#btnRun, button[data-act="run"], .btn.primary, button.ok');
+          // Prefer explicit run controls
+          var candidates = document.querySelectorAll('#toolbar .btn, #toolbar button');
+          for (var i = 0; i < candidates.length; i++) {
+            var t = (candidates[i].textContent || '').toLowerCase();
+            var title = (candidates[i].title || '').toLowerCase();
+            if (/run|start|sim/i.test(t) || /run|start|sim/i.test(title)) {
+              candidates[i].click();
+              return;
+            }
           }
-        }
+          if (runBtn) runBtn.click();
+        } catch (err) {}
+      }
+    });
+
+    if (isMobile()) {
+      document.documentElement.classList.add('kd-no-palette');
+      var side = document.getElementById('side');
+      if (side) side.classList.add('sideCollapsed');
+      try {
+        localStorage.setItem('eagle_panel_visibility', JSON.stringify({ palette: false, toolbar: true, side: false }));
       } catch (e) {}
-      return scale;
     }
-
-    function applyScale(s, cx, cy) {
-      scale = Math.max(0.25, Math.min(3, s));
-      if (!wa) return;
-      // Prefer app zoom if available
-      if (typeof window.setWorkZoom === 'function') {
-        try { window.setWorkZoom(scale); return; } catch (e) {}
-      }
-      wa.style.transform = 'scale(' + scale + ')';
-      wa.style.transformOrigin = '0 0';
-    }
-
-    vp.addEventListener('touchstart', function (e) {
-      if (!e.touches) return;
-      for (var i = 0; i < e.touches.length; i++) {
-        var t = e.touches[i];
-        pts[t.identifier] = { x: t.clientX, y: t.clientY };
-      }
-      if (ids().length === 2) {
-        pinch = { d: dist(), s: currentScale() };
-        pan = null;
-        e.preventDefault();
-      } else if (ids().length === 1) {
-        var el = e.target;
-        var onComp = el && el.closest && el.closest('.comp, .pin, .rh, .wire-path');
-        if (!onComp) {
-          pan = {
-            x: e.touches[0].clientX,
-            y: e.touches[0].clientY,
-            sx: vp.scrollLeft,
-            sy: vp.scrollTop
-          };
-        }
-      }
-    }, { passive: false });
-
-    vp.addEventListener('touchmove', function (e) {
-      if (!e.touches) return;
-      for (var i = 0; i < e.touches.length; i++) {
-        var t = e.touches[i];
-        pts[t.identifier] = { x: t.clientX, y: t.clientY };
-      }
-      if (pinch && ids().length >= 2) {
-        e.preventDefault();
-        var ratio = dist() / (pinch.d || 1);
-        applyScale(pinch.s * ratio);
-        return;
-      }
-      if (pan && ids().length === 1) {
-        var t0 = e.touches[0];
-        vp.scrollLeft = pan.sx - (t0.clientX - pan.x);
-        vp.scrollTop = pan.sy - (t0.clientY - pan.y);
-      }
-    }, { passive: false });
-
-    function endT(e) {
-      if (e.changedTouches) {
-        for (var i = 0; i < e.changedTouches.length; i++) {
-          delete pts[e.changedTouches[i].identifier];
-        }
-      }
-      if (ids().length < 2) pinch = null;
-      if (ids().length === 0) pan = null;
-    }
-    vp.addEventListener('touchend', endT, { passive: true });
-    vp.addEventListener('touchcancel', endT, { passive: true });
-
-    // Double-tap reset zoom
-    var lastTap = 0;
-    vp.addEventListener('touchend', function (e) {
-      if (e.touches && e.touches.length) return;
-      var now = Date.now();
-      if (now - lastTap < 280) {
-        applyScale(1);
-        lastTap = 0;
-      } else {
-        lastTap = now;
-      }
-    }, { passive: true });
   }
 
-  function boot() {
-    injectCss();
-    patchDownloads();
-    setTimeout(patchDownloads, 600);
-    setTimeout(patchDownloads, 2000);
-    setTimeout(enhanceTouch, 500);
-    setTimeout(enhanceTouch, 1800);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
+  function boot() { ensureUI(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  setTimeout(boot, 500);
+  setTimeout(boot, 1200);
 })();
 </script>
+
 </body>
 </html>
 
