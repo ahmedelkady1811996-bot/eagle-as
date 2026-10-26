@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="110" viewBox="0 0 160 110">
+<rect x="4" y="6" width="152" height="88" rx="6" fill="#14532d" stroke="#052e16" stroke-width="2"/>
+<rect x="88" y="18" width="60" height="46" rx="3" fill="#0b0f19" stroke="#64748b"/>
+<rect x="96" y="26" width="44" height="30" fill="#334155"/>
+<g fill="#facc15"><rect x="99" y="30" width="8" height="22"/><rect x="110" y="30" width="8" height="22"/><rect x="121" y="30" width="8" height="22"/><rect x="132" y="30" width="8" height="22"/></g>
+<text x="118" y="74" text-anchor="middle" font-size="7" fill="#bbf7d0">RJ45 ETHERNET</text>
+<text x="46" y="46" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#dcfce7">W5500</text>
+<g fill="#d4af37"><rect x="16" y="94" width="9" height="10"/><rect x="36" y="94" width="9" height="10"/><rect x="56" y="94" width="9" height="10"/><rect x="76" y="94" width="9" height="10"/></g>
+</svg>

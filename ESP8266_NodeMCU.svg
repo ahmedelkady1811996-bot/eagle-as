@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="190" height="300" viewBox="0 0 190 300">
+<rect x="14" y="8" width="162" height="284" rx="8" fill="#166534" stroke="#14532d" stroke-width="3"/>
+<path d="M75 20 h40 v40 h-40 z M83 28 h24 v24 h-24 z" fill="none" stroke="#0b0f19" stroke-width="3"/>
+<rect x="55" y="76" width="80" height="58" fill="#0b0f19" stroke="#374151"/>
+<path d="M63 84 h64 M63 92 h64 M63 100 h64 M63 108 h64" stroke="#4b5563" stroke-width="2"/>
+<text x="95" y="126" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#e5e7eb">ESP-12E</text>
+<rect x="72" y="256" width="46" height="26" rx="3" fill="#9ca3af" stroke="#6b7280"/>
+<rect x="78" y="262" width="34" height="14" fill="#4b5563"/>
+<g fill="#111827"><rect x='20' y='150' width='12' height='7'/><rect x='158' y='150' width='12' height='7'/><rect x='20' y='163' width='12' height='7'/><rect x='158' y='163' width='12' height='7'/><rect x='20' y='176' width='12' height='7'/><rect x='158' y='176' width='12' height='7'/><rect x='20' y='189' width='12' height='7'/><rect x='158' y='189' width='12' height='7'/><rect x='20' y='202' width='12' height='7'/><rect x='158' y='202' width='12' height='7'/><rect x='20' y='215' width='12' height='7'/><rect x='158' y='215' width='12' height='7'/><rect x='20' y='228' width='12' height='7'/><rect x='158' y='228' width='12' height='7'/><rect x='20' y='241' width='12' height='7'/><rect x='158' y='241' width='12' height='7'/></g>
+<text x="95" y="296" text-anchor="middle" font-family="Arial" font-size="9" fill="#bbf7d0">NodeMCU 1.0</text>
+</svg>

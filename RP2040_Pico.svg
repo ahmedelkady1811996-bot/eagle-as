@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="260" viewBox="0 0 130 260">
+<rect x="8" y="8" width="114" height="244" rx="8" fill="#166534" stroke="#14532d" stroke-width="3"/>
+<rect x="40" y="14" width="50" height="26" rx="3" fill="#9ca3af" stroke="#6b7280"/>
+<rect x="46" y="20" width="38" height="14" fill="#4b5563"/>
+<rect x="41" y="106" width="48" height="48" fill="#0b0f19" stroke="#000"/>
+<g fill="#d4af37"><rect x="45" y="110" width="8" height="8"/><rect x="81" y="110" width="8" height="8"/><rect x="45" y="146" width="8" height="8"/><rect x="81" y="146" width="8" height="8"/></g>
+<text x="65" y="134" text-anchor="middle" font-family="Arial" font-size="8" fill="#9ca3af">RP2040</text>
+<g fill="#0f172a"><rect x='4' y='30' width='10' height='6'/><rect x='4' y='40' width='10' height='6'/><rect x='4' y='50' width='10' height='6'/><rect x='4' y='60' width='10' height='6'/><rect x='4' y='70' width='10' height='6'/><rect x='4' y='80' width='10' height='6'/><rect x='4' y='90' width='10' height='6'/><rect x='4' y='100' width='10' height='6'/><rect x='4' y='110' width='10' height='6'/><rect x='4' y='120' width='10' height='6'/> <rect x='116' y='30' width='10' height='6'/><rect x='116' y='40' width='10' height='6'/><rect x='116' y='50' width='10' height='6'/><rect x='116' y='60' width='10' height='6'/><rect x='116' y='70' width='10' height='6'/><rect x='116' y='80' width='10' height='6'/><rect x='116' y='90' width='10' height='6'/><rect x='116' y='100' width='10' height='6'/><rect x='116' y='110' width='10' height='6'/><rect x='116' y='120' width='10' height='6'/></g>
+<circle cx="65" cy="196" r="8" fill="#1f2937" stroke="#4b5563"/><text x="65" y="199" text-anchor="middle" font-size="6" fill="#9ca3af">BOOT</text>
+<text x="65" y="248" text-anchor="middle" font-family="Arial" font-size="9" fill="#bbf7d0">Raspberry Pi Pico</text>
+</svg>

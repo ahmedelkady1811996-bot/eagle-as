@@ -1,0 +1,17 @@
+{
+  "name": "eagle-arduino-simulator",
+  "productName": "Eagle Arduino Simulator",
+  "version": "1.0.0",
+  "description": "Arduino Visual Lab - circuit designer + live physics simulation (Eagle IDE)",
+  "main": "arduino-main.js",
+  "author": "EagleSoft",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --config .electron-builder.yml"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

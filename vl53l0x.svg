@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="92" viewBox="0 0 140 92">
+<rect x="4" y="6" width="1402" height="922" rx="6" fill="#0f3460" stroke="#0a2647" stroke-width="2"/>
+<rect x="4" y="6" width="1402" height="10" rx="5" fill="#16407a"/>
+<circle cx="52" cy="42" r="13" fill="#101820" stroke="#94a3b8" stroke-width="2"/><circle cx="52" cy="42" r="6" fill="#1e293b"/>
+<circle cx="88" cy="42" r="13" fill="#101820" stroke="#94a3b8" stroke-width="2"/><circle cx="88" cy="42" r="6" fill="#1e293b"/>
+<text x="70" y="80" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#cfe8ff">VL53L0X ToF</text>
+<g fill="#d4af37">
+<rect x="14" y="84" width="8" height="6"/><rect x="34" y="84" width="8" height="6"/><rect x="54" y="84" width="8" height="6"/><rect x="74" y="84" width="8" height="6"/>
+<rect x="94" y="84" width="8" height="6"/><rect x="114" y="84" width="8" height="6"/>
+</g>
+<circle cx="12" cy="12" r="2" fill="#e2e8f0"/><circle cx="70R" cy="78" r="2" fill="#e2e8f0"/>
+</svg>

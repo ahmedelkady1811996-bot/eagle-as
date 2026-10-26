@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="112" viewBox="0 0 120 112">
+<rect x="10" y="60" width="100" height="38" rx="4" fill="#7f1d1d" stroke="#450a0a" stroke-width="2"/>
+<circle cx="60" cy="46" r="34" fill="#9ca3af" stroke="#475569" stroke-width="3"/>
+<circle cx="60" cy="46" r="26" fill="#64748b"/>
+<g stroke="#334155" stroke-width="2">
+<line x1="60" y1="22" x2="60" y2="70"/>
+<line x1="60" y1="22" x2="60" y2="70" transform="rotate(30 60 46)"/>
+<line x1="60" y1="22" x2="60" y2="70" transform="rotate(60 60 46)"/>
+<line x1="60" y1="22" x2="60" y2="70" transform="rotate(90 60 46)"/>
+<line x1="60" y1="22" x2="60" y2="70" transform="rotate(120 60 46)"/>
+<line x1="60" y1="22" x2="60" y2="70" transform="rotate(150 60 46)"/>
+</g>
+<circle cx="60" cy="46" r="10" fill="#e2e8f0" stroke="#94a3b8"/>
+<text x="60" y="86" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#fecaca">MQ-135</text>
+<text x="60" y="97" text-anchor="middle" font-family="Arial" font-size="7" fill="#fca5a5">air quality target</text>
+<g fill="#d4af37"><rect x="24" y="99" width="9" height="9"/><rect x="55" y="99" width="9" height="9"/><rect x="86" y="99" width="9" height="9"/></g>
+</svg>

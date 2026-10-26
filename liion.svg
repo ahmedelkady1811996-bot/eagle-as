@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70" height="170" viewBox="0 0 70 170">
+<rect x="16" y="14" width="38" height="142" rx="17" fill="#1d4ed8" stroke="#172554" stroke-width="2"/>
+<rect x="20" y="18" width="12" height="134" rx="6" fill="#3b82f6" opacity=".55"/>
+<rect x="16" y="60" width="38" height="34" fill="#f8fafc" opacity=".9"/>
+<text x="35" y="76" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#1e3a8a">18650</text>
+<text x="35" y="86" text-anchor="middle" font-family="Arial" font-size="7" fill="#1e3a8a">3.7V</text>
+<rect x="27" y="4" width="16" height="10" fill="#9ca3af"/><rect x="31" y="0" width="8" height="6" fill="#d4af37"/>
+</svg>

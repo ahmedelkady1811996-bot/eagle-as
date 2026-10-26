@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="94" viewBox="0 0 90 94">
+<rect x="25" y="16" width="40" height="30" rx="3" fill="#1f2937" stroke="#4b5563" stroke-width="2"/>
+<text x="45" y="35" text-anchor="middle" font-family="Arial" font-size="9" fill="#e5e7eb">A3144</text>
+<g stroke="#cbd5e1" stroke-width="3"><line x1="35" y1="46" x2="35" y2="80"/><line x1="45" y1="46" x2="45" y2="80"/><line x1="55" y1="46" x2="55" y2="80"/></g>
+<text x="45" y="92" text-anchor="middle" font-family="Arial" font-size="8" fill="#94a3b8">HALL</text>
+</svg>
