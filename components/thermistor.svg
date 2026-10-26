@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 44" width="56" height="44">
+  <rect x="2" y="16" width="10" height="12" fill="#b8b8b8" stroke="#666"/>
+  <rect x="44" y="16" width="10" height="12" fill="#b8b8b8" stroke="#666"/>
+  <path d="M22 22 q6 -10 12 0" stroke="#111" stroke-width="2" fill="none"/>
+  <circle cx="28" cy="20" r="11" fill="#1f6fb2" stroke="#0d3a63"/>
+  <path d="M18 20 h20" stroke="#0d3a63" stroke-width="1.4"/>
+  <path d="M21 14 l14 12 M35 14 l-14 12" stroke="#7fc4f0" stroke-width="1" opacity="0.8"/>
+  <text x="28" y="38" font-size="6.5" fill="#9fd8b0" text-anchor="middle" font-family="Arial">NTC</text>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 50" width="72" height="50">
+  <defs><linearGradient id="ir" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4f55"/><stop offset="1" stop-color="#1b1f23"/></linearGradient></defs>
+  <rect x="8" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="10" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="12" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="14" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="16" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/>
+  <rect x="44" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="46" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="48" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="50" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/><rect x="52" y="8" width="2" height="34" fill="#b5651d" stroke="#7a4413"/>
+  <rect x="17" y="10" width="28" height="6" rx="2" fill="url(#ir)" stroke="#0d0f11"/><rect x="17" y="19" width="28" height="6" rx="2" fill="url(#ir)" stroke="#0d0f11"/><rect x="17" y="28" width="28" height="6" rx="2" fill="url(#ir)" stroke="#0d0f11"/><rect x="17" y="37" width="28" height="6" rx="2" fill="url(#ir)" stroke="#0d0f11"/>
+  <rect x="2" y="6" width="6" height="38" fill="#8d8d8d" stroke="#5a5a5a"/>
+  <rect x="64" y="6" width="6" height="38" fill="#8d8d8d" stroke="#5a5a5a"/>
+  <text x="36" y="48" font-size="6" fill="#cfe8d8" text-anchor="middle" font-family="Arial">STEP-UP</text>
+</svg>

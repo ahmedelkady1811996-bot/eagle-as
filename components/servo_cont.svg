@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 58" width="64" height="58">
+  <defs><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#12161b"/></linearGradient>
+  <linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d8dde2"/><stop offset="0.5" stop-color="#9aa3ac"/><stop offset="1" stop-color="#6d757d"/></linearGradient></defs>
+  <rect x="10" y="16" width="38" height="34" rx="3" fill="url(#b)" stroke="#000"/>
+  <rect x="14" y="20" width="30" height="4" fill="#1b1f25"/><rect x="14" y="28" width="30" height="4" fill="#1b1f25"/><rect x="14" y="36" width="30" height="4" fill="#1b1f25"/><rect x="14" y="44" width="30" height="4" fill="#1b1f25"/>
+  <rect x="20" y="48" width="6" height="8" fill="#3a424a"/><rect x="32" y="48" width="6" height="8" fill="#3a424a"/>
+  <circle cx="53" cy="33" r="9" fill="url(#s)" stroke="#4a5158"/>
+  <rect x="50" y="20" width="6" height="14" rx="2" fill="#c8ccd2" stroke="#6a7078" class="rotor"/>
+  <g fill="#c8a24a"><rect x="14" y="22" width="3" height="7"/><rect x="20" y="22" width="3" height="7"/><rect x="26" y="22" width="3" height="7"/></g>
+  <text x="29" y="12" font-size="7" fill="#cfe8d8" text-anchor="middle" font-family="Arial">360&#176; SERVO</text>
+</svg>
