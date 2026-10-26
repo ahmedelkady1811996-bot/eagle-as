@@ -46767,6 +46767,115 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 
+<script>
+/* Panel show / hide buttons: Components (left), Properties (right), Menu bar (top).
+   They are edge tabs that stay glued to the panel edge and use the app theme colours. */
+(function () {
+  var KEY = 'eagle_panel_visibility';
+  var $ = function (id) { return document.getElementById(id); };
+  var css = document.createElement('style');
+  css.id = 'kdPanelToggleCss';
+  css.textContent = [
+    'html.kd-no-palette #palette, html.kd-no-palette #splitL{display:none!important}',
+    'html.kd-no-toolbar #toolbar, html.kd-no-toolbar #e59shelf{display:none!important}',
+    '#sideHandle{display:none!important}',
+    '.kd-pt{position:fixed;z-index:8000;display:flex;align-items:center;justify-content:center;gap:6px;',
+    '  cursor:pointer;user-select:none;font:600 11px "Segoe UI",system-ui,sans-serif;letter-spacing:.3px;',
+    '  background:var(--panel2,#2d2d2d);color:var(--text,#ccc);border:1px solid var(--border,#3e3e42);',
+    '  box-shadow:0 2px 10px rgba(0,0,0,.35);transition:background .15s,color .15s,border-color .15s,box-shadow .15s;padding:0}',
+    '.kd-pt svg{width:12px;height:12px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}',
+    '.kd-pt:hover{border-color:var(--accent,#007acc);color:#fff;background:var(--accent,#007acc)}',
+    '.kd-pt:focus-visible{outline:2px solid var(--accent2,#3794ff);outline-offset:2px}',
+    /* shown panel: calm, accent-coloured label; hidden panel: filled accent so it is obvious how to bring it back */
+    '.kd-pt.on{color:var(--accent2,#3794ff)}',
+    '.kd-pt.off{background:var(--accent,#007acc);color:#fff;border-color:var(--accent,#007acc);box-shadow:0 2px 14px rgba(0,122,204,.55)}',
+    '.kd-pt.off:hover{filter:brightness(1.15)}',
+    '.kd-pt.side{top:50%;transform:translateY(-50%);width:24px;height:104px;flex-direction:column;padding:6px 0}',
+    '.kd-pt.side span{writing-mode:vertical-rl;white-space:nowrap}',
+    '.kd-pt.left{left:0;border-left:none;border-radius:0 10px 10px 0}',
+    '.kd-pt.right{right:0;border-right:none;border-radius:10px 0 0 10px}',
+    '.kd-pt.top{height:20px;padding:0 12px;border-top:none;border-radius:0 0 10px 10px;transform:translateX(-50%)}',
+    '@media print{.kd-pt{display:none!important}}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  var CH = {
+    l: '<svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19"/></svg>',
+    r: '<svg viewBox="0 0 24 24"><polyline points="9 5 16 12 9 19"/></svg>',
+    u: '<svg viewBox="0 0 24 24"><polyline points="5 15 12 8 19 15"/></svg>',
+    d: '<svg viewBox="0 0 24 24"><polyline points="5 9 12 16 19 9"/></svg>'
+  };
+  function mk(cls, label) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'kd-pt ' + cls;
+    b.innerHTML = '<i></i><span>' + label + '</span>';
+    document.body.appendChild(b);
+    return b;
+  }
+  var bP = mk('side left on', 'Components');
+  var bS = mk('side right on', 'Properties');
+  var bT = mk('top on', 'Menu bar');
+
+  var html = document.documentElement;
+  var st = { palette: true, toolbar: true };
+  try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { st.palette = o.palette !== false; st.toolbar = o.toolbar !== false; st.side = o.side; } } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ palette: st.palette, toolbar: st.toolbar, side: sideShown() })); } catch (e) {} }
+
+  function sideShown() { var s = $('side'); return !(s && s.classList.contains('sideCollapsed')); }
+  function toggleSide() {
+    /* reuse the app's own collapse logic (also bound to F9) so nothing gets out of sync */
+    var b = $('btnCollapseSide'); if (b) b.click();
+  }
+  function fire() { setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 30); }
+
+  function paint() {
+    html.classList.toggle('kd-no-palette', !st.palette);
+    html.classList.toggle('kd-no-toolbar', !st.toolbar);
+    var sh = sideShown();
+    function set(b, shown, arrowShown, arrowHidden, nameShow, nameHide) {
+      b.classList.toggle('on', shown); b.classList.toggle('off', !shown);
+      b.firstChild.outerHTML = '<i>' + (shown ? arrowShown : arrowHidden) + '</i>';
+      b.title = shown ? nameHide : nameShow;
+      b.setAttribute('aria-label', b.title);
+    }
+    set(bP, st.palette, CH.l, CH.r, 'Show components panel', 'Hide components panel');
+    set(bS, sh, CH.r, CH.l, 'Show properties panel (F9)', 'Hide properties panel (F9)');
+    set(bT, st.toolbar, CH.u, CH.d, 'Show menu bar', 'Hide menu bar');
+  }
+
+  function place() {
+    var p = $('palette'), s = $('side'), t = $('toolbar');
+    var pr = (st.palette && p) ? p.getBoundingClientRect() : null;
+    bP.style.left = (pr && pr.width > 0 ? Math.round(pr.right) : 0) + 'px';
+    var sr = (s && sideShown()) ? s.getBoundingClientRect() : null;
+    bS.style.right = (sr && sr.width > 0 ? Math.round(window.innerWidth - sr.left) : 0) + 'px';
+    var sh2 = $('e59shelf'), tr = (st.toolbar && t) ? t.getBoundingClientRect() : null;
+    var shr = (st.toolbar && sh2) ? sh2.getBoundingClientRect() : null;
+    bT.style.top = Math.round(Math.max(tr ? tr.bottom : 0, shr ? shr.bottom : 0)) + 'px';
+    var c = $('center'), cr = c ? c.getBoundingClientRect() : null;
+    bT.style.left = (cr ? Math.round(cr.left + cr.width / 2) : Math.round(window.innerWidth / 2)) + 'px';
+  }
+
+  bP.onclick = function () { st.palette = !st.palette; paint(); place(); save(); fire(); };
+  bT.onclick = function () { st.toolbar = !st.toolbar; paint(); place(); save(); fire(); };
+  bS.onclick = function () { toggleSide(); setTimeout(function () { paint(); place(); save(); fire(); }, 20); };
+
+  var lastSide = null;
+  setInterval(function () {            /* follows drag-resizing and F9 */
+    var sh = sideShown();
+    if (sh !== lastSide) { lastSide = sh; paint(); save(); }
+    place();
+  }, 120);
+  window.addEventListener('resize', place);
+
+  paint(); place();
+  /* restore the saved state of the properties panel once the app has finished booting */
+  setTimeout(function () {
+    if (st.side === false && sideShown()) toggleSide();
+    paint(); place();
+  }, 900);
+})();
+</script>
 </body>
 </html>
 
