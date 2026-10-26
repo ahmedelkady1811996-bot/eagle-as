@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 54" width="54" height="54">
+  <rect x="6" y="6" width="42" height="42" rx="4" fill="#1b1f23" stroke="#000"/>
+  <rect x="14" y="14" width="26" height="26" rx="2" fill="#2a3037" stroke="#111"/>
+  <circle cx="27" cy="27" r="8" fill="none" stroke="#4b5563" stroke-width="1"/>
+  <circle cx="27" cy="27" r="2.5" fill="#4b5563"/>
+  <text x="27" y="18" font-size="5" fill="#9ca3af" text-anchor="middle" font-family="Arial">MPU</text>
+  <g fill="#c79a1e"><rect x="10" y="10" width="5" height="5" rx="1"/><rect x="40" y="10" width="5" height="5" rx="1"/><rect x="10" y="40" width="5" height="5" rx="1"/><rect x="40" y="40" width="5" height="5" rx="1"/></g>
+</svg>

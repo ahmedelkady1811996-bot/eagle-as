@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" width="64" height="80">
+  <defs>
+    <radialGradient id="glass" cx="42%" cy="34%" r="68%">
+      <stop offset="0%" stop-color="#fffdf7"/>
+      <stop offset="42%" stop-color="#f2efe6"/>
+      <stop offset="78%" stop-color="#d8d3c6"/>
+      <stop offset="100%" stop-color="#b9b3a4"/>
+    </radialGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9aa1ab"/>
+      <stop offset="45%" stop-color="#6e757f"/>
+      <stop offset="100%" stop-color="#464c55"/>
+    </linearGradient>
+    <linearGradient id="fil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff2c4"/>
+      <stop offset="55%" stop-color="#ffcf6b"/>
+      <stop offset="100%" stop-color="#e08a2e"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8f959e"/>
+      <stop offset="35%" stop-color="#e8ebef"/>
+      <stop offset="70%" stop-color="#b9bec6"/>
+      <stop offset="100%" stop-color="#767c85"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Edison screw base -->
+  <rect x="21" y="56" width="22" height="20" rx="2" fill="url(#metal)"/>
+  <g stroke="#6b7178" stroke-width="1.6" opacity=".85">
+    <path d="M21 59.5h22M21 64h22M21 68.5h22M21 73h22"/>
+  </g>
+  <rect x="21" y="74" width="22" height="4" fill="#5b6169"/>
+
+  <!-- glass envelope -->
+  <path d="M22 58C22 40 12 32 12 22A20 20 0 0 1 52 22c0 10-10 18-10 36z" fill="url(#glass)"/>
+  <path d="M22 58C22 40 12 32 12 22A20 20 0 0 1 52 22c0 10-10 18-10 36z" fill="none" stroke="#8d8879" stroke-width="1.1" opacity=".65"/>
+
+  <!-- highlight -->
+  <path d="M20 44c-3-6-5-11-5-16a15 15 0 0 1 9-13" fill="none" stroke="#ffffff" stroke-width="3.2" opacity=".75" stroke-linecap="round"/>
+
+  <!-- filament (E38 heats this - class lamp-on brightens it) -->
+  <g class="filament">
+    <path d="M28 34c0 6-4 6-4 10s4 4 4 9 4 4 4 0 4-5 4-9-4-4-4-10" fill="none" stroke="url(#fil)" stroke-width="1.7" stroke-linecap="round"/>
+  </g>
+
+  <!-- support wires -->
+  <path d="M28 22v12M36 22v12" stroke="#8a8578" stroke-width="1" opacity=".8"/>
+  <circle cx="32" cy="22" r="2.4" fill="#9a9486"/>
+</svg>

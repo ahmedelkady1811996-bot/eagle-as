@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 46" width="84" height="46">
+  <defs><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f7a3d"/><stop offset="1" stop-color="#0f4f2a"/></linearGradient></defs>
+  <rect x="2" y="2" width="80" height="42" rx="4" fill="url(#p)" stroke="#0a3a20"/>
+  <rect x="10" y="12" width="8" height="22" fill="#c79a1e" stroke="#8a6d1e"/>
+  <rect x="66" y="12" width="8" height="22" fill="#c79a1e" stroke="#8a6d1e"/>
+  <rect x="28" y="14" width="28" height="18" rx="2" fill="#2b2b2b" stroke="#000"/>
+  <circle cx="34" cy="23" r="3" fill="#444"/><circle cx="42" cy="23" r="2.4" fill="#444"/><circle cx="50" cy="23" r="2.4" fill="#444"/>
+  <text x="42" y="9" font-size="7" fill="#cfe8d8" text-anchor="middle" font-family="Arial">BOOST 5V&#8594;12V</text>
+</svg>

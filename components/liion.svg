@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 42" width="74" height="42">
+  <defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ec36b"/><stop offset="1" stop-color="#17794a"/></linearGradient></defs>
+  <rect x="2" y="5" width="56" height="32" rx="3" fill="url(#c)" stroke="#0c4a2c"/>
+  <rect x="58" y="13" width="6" height="16" rx="2" fill="#c79a1e" stroke="#8a6d1e"/>
+  <rect x="8" y="10" width="44" height="22" rx="2" fill="#0f2a1c" opacity="0.35"/>
+  <text x="30" y="25" font-size="8" fill="#eafff1" text-anchor="middle" font-family="Arial" font-weight="bold">Li-ion</text>
+  <text x="30" y="34" font-size="6" fill="#cfe8d8" text-anchor="middle" font-family="Arial">3.7 V 2000 mAh</text>
+</svg>

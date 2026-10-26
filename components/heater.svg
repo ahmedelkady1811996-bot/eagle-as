@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 52" width="72" height="52">
+  <defs>
+    <linearGradient id="coilMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9ced6"/>
+      <stop offset="40%" stop-color="#8f959e"/>
+      <stop offset="100%" stop-color="#5d636c"/>
+    </linearGradient>
+    <linearGradient id="sheath" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7d3f36"/>
+      <stop offset="45%" stop-color="#b4553f"/>
+      <stop offset="100%" stop-color="#6d2f27"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ceramic base plate -->
+  <rect x="6" y="38" width="60" height="10" rx="2" fill="#cfcabb"/>
+  <rect x="6" y="38" width="60" height="3" fill="#e6e2d6"/>
+
+  <!-- heating element (the visible coil) -->
+  <g class="coil-glow">
+    <path d="M10 36h52" stroke="url(#sheath)" stroke-width="6" stroke-linecap="round"/>
+    <g stroke="#e8a06a" stroke-width="2.2" stroke-linecap="round" opacity=".95">
+      <path d="M12 33.5c2-4 4 4 6 0s4 4 6 0 4 4 6 0 4 4 6 0 4 4 6 0 4 4 6 0 4 4 6 0"/>
+    </g>
+  </g>
+
+  <!-- terminal pins -->
+  <rect x="14" y="46" width="3" height="6" fill="#9aa1ab"/>
+  <rect x="55" y="46" width="3" height="6" fill="#9aa1ab"/>
+  <circle cx="15.5" cy="44" r="2.6" fill="#7b828c"/>
+  <circle cx="56.5" cy="44" r="2.6" fill="#7b828c"/>
+
+  <!-- heat waves -->
+  <g class="heat-waves" stroke="#e5734a" stroke-width="1.8" stroke-linecap="round" opacity=".45" fill="none">
+    <path d="M22 22c4-4 4-8 0-12"/>
+    <path d="M32 20c5-5 5-10 0-15"/>
+    <path d="M42 22c4-4 4-8 0-12"/>
+  </g>
+</svg>
