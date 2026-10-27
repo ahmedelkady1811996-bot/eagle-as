@@ -950,45 +950,39 @@ html, body { overscroll-behavior: none; }
   #eg-mobi-bar { display: flex; }
   #eg-mobi-scrim.is-on { display: block; }
 
-  /* Toolbar: wrap + scroll so every control is reachable */
+  /* Toolbar compact; shelf for menus stays visible */
   #toolbar {
     display: flex !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     gap: 4px !important;
-    padding: 6px 8px !important;
-    max-height: 96px !important;
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain !important;
+    padding: 4px 6px !important;
+    height: 36px !important;
+    max-height: 40px !important;
+    overflow: visible !important;
   }
-  #toolbar .btn,
-  #toolbar button,
-  #toolbar select,
-  #toolbar input {
+  #toolbar .sp, #toolbar .ttl, #toolbar .grow, #toolbar #autosaveInd { display: none !important; }
+  #toolbar .btn, #toolbar button, #toolbar select, #toolbar input {
     flex: 0 0 auto !important;
-    padding: 6px 8px !important;
-    min-height: 32px !important;
-    border-radius: 8px !important;
+    min-height: 28px !important;
     font-size: 11px !important;
   }
-  #toolbar .sp { display: none !important; }
-  #toolbar .ttl {
-    font-size: 11px !important;
-    max-width: 72px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-  /* secondary shelf under toolbar if present */
   #e59shelf {
     display: flex !important;
-    flex-wrap: wrap !important;
-    overflow-x: auto !important;
-    max-height: 52px !important;
-    gap: 4px !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    max-height: none !important;
+    gap: 2px !important;
+    position: relative !important;
+    z-index: 8000 !important;
+  }
+  #e59shelf .e59menu-pop, .e59menu-pop {
+    z-index: 9000 !important;
+  }
+  #viewport {
+    overflow: auto !important;
     -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x pan-y !important;
   }
 
   #mainrow { position: relative; min-height: 0; }
@@ -1065,26 +1059,26 @@ html, body { overscroll-behavior: none; }
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 56px !important; /* flush on top of FAB */
+    bottom: 56px !important;
     margin: 0 !important;
     z-index: 4990 !important;
-    height: 28px !important;
-    min-height: 28px !important;
-    max-height: 28px !important;
     border-bottom: none !important;
     box-shadow: none !important;
+    transition: height .2s ease, max-height .2s ease !important;
   }
   #bottomDock.collapsed {
     height: 28px !important;
     min-height: 28px !important;
     max-height: 28px !important;
-    bottom: 56px !important;
   }
   #bottomDock:not(.collapsed) {
-    height: min(28vh, 140px) !important;
-    min-height: 90px !important;
-    max-height: 36vh !important;
-    bottom: 56px !important;
+    height: min(32vh, 180px) !important;
+    min-height: 100px !important;
+    max-height: 40vh !important;
+  }
+  #btnDockToggle {
+    pointer-events: auto !important;
+    z-index: 4995 !important;
   }
 
   #status { display: none !important; }
@@ -47185,11 +47179,19 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       var t = e.changedTouches[0];
       var el = document.elementFromPoint(t.clientX, t.clientY) || e.target;
       if (isEditable(el)) return;
-      if (el.closest && el.closest('#eg-mobi-bar, #eg-mobi-scrim, .modal-box, input, textarea, select, a')) {
-        if (!el.closest('#viewport, #workarea, .comp, .pin, .rh, .wire-path')) return;
+      // Never steal touches from our chrome
+      if (el.closest && el.closest('#eg-mobi-bar, #eg-mobi-scrim, #e59shelf, #toolbar, #bottomDock, .modal-box, input, textarea, select, a, button')) {
+        tracking = null;
+        return;
       }
-      tracking = { id: t.identifier, target: el };
-      fire('mousedown', t, el, 1);
+      // Only bridge to mouse when interacting with circuit parts — empty canvas must scroll/pan natively
+      var interactive = el.closest && el.closest('.comp, .pin, .rh, .wire-path, .wire, [data-pin], .handle');
+      if (!interactive) {
+        tracking = null;
+        return;
+      }
+      tracking = { id: t.identifier, target: interactive };
+      fire('mousedown', t, interactive, 1);
     }, { passive: true, capture: true });
     document.addEventListener('touchmove', function (e) {
       if (!tracking || !e.changedTouches) return;
@@ -47330,14 +47332,21 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         clickId('btnStop') || clickId('btnReset') || clickToolbarByText(/stop|reset|halt/i);
       } else if (act === 'serial') {
         closeDrawers();
-        setDock(true);
         try {
-          var t = document.querySelector('#bottomTabs button[data-btab="serial"]');
-          if (t) t.click();
+          var dock = document.getElementById('bottomDock');
           var openBtn = document.getElementById('btnDockToggle');
-          if (openBtn && document.getElementById('bottomDock') &&
-              document.getElementById('bottomDock').classList.contains('collapsed')) {
+          var isCollapsed = dock && dock.classList.contains('collapsed');
+          if (typeof setDockCollapsed === 'function') {
+            setDockCollapsed(!isCollapsed);
+          } else if (typeof setDock === 'function') {
+            setDock(!!isCollapsed); // setDock(true)=open in our helper
+          } else if (openBtn) {
             openBtn.click();
+          }
+          // when opening, focus serial tab
+          if (isCollapsed) {
+            var t = document.querySelector('#bottomTabs button[data-btab="serial"]');
+            if (t) t.click();
           }
         } catch (err) {}
       } else if (act === 'delete') {
@@ -47376,48 +47385,106 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   function forceToolbarMobile() {
     if (!isMobile()) return;
     var id = 'eg-mobi-toolbar-css';
-    if (!document.getElementById(id)) {
-      var s = document.createElement('style');
-      s.id = id;
-      s.textContent = [
-        '@media (max-width: 900px) {',
-        '  #toolbar {',
-        '    display: flex !important;',
-        '    flex-wrap: wrap !important;',
-        '    align-items: center !important;',
-        '    height: auto !important;',
-        '    min-height: 32px !important;',
-        '    max-height: 110px !important;',
-        '    overflow-x: auto !important;',
-        '    overflow-y: auto !important;',
-        '    gap: 4px !important;',
-        '    padding: 6px 8px !important;',
-        '    -webkit-overflow-scrolling: touch !important;',
-        '  }',
-        '  #toolbar .btn, #toolbar button, #toolbar .e58b, #toolbar select {',
-        '    flex: 0 0 auto !important;',
-        '    height: 30px !important;',
-        '    min-height: 30px !important;',
-        '  }',
-        '  #e59shelf {',
-        '    display: flex !important;',
-        '    flex-wrap: wrap !important;',
-        '    height: auto !important;',
-        '    max-height: 56px !important;',
-        '    overflow-x: auto !important;',
-        '    overflow-y: auto !important;',
-        '  }',
-        '}'
-      ].join('\n');
-      document.head.appendChild(s);
+    var css = [
+      '@media (max-width: 900px) {',
+      '  /* Row 1: menu shelf — no wrap, visible overflow so popups show */',
+      '  #e59shelf {',
+      '    display: flex !important;',
+      '    flex-wrap: nowrap !important;',
+      '    height: 28px !important;',
+      '    min-height: 28px !important;',
+      '    max-height: none !important;',
+      '    overflow: visible !important;',
+      '    gap: 2px !important;',
+      '    position: relative !important;',
+      '    z-index: 8000 !important;',
+      '  }',
+      '  #e59shelf .e59menu { position: relative !important; z-index: 8001 !important; }',
+      '  #e59shelf .e59menu-pop, #e59shelf .e59pop, .e59menu-pop {',
+      '    z-index: 9000 !important;',
+      '    position: absolute !important;',
+      '    max-height: min(60vh, 420px) !important;',
+      '    overflow: auto !important;',
+      '  }',
+      '  /* Row 2: compact toolbar — theme + transport + more only */',
+      '  #toolbar {',
+      '    display: flex !important;',
+      '    flex-wrap: nowrap !important;',
+      '    align-items: center !important;',
+      '    height: 36px !important;',
+      '    min-height: 36px !important;',
+      '    max-height: 40px !important;',
+      '    overflow: visible !important;',
+      '    gap: 4px !important;',
+      '    padding: 4px 6px !important;',
+      '  }',
+      '  #toolbar .ttl, #toolbar .sp, #toolbar .grow, #toolbar #autosaveInd, #toolbar #zoomLabel {',
+      '    display: none !important;',
+      '  }',
+      '  #toolbar .btn, #toolbar button, #toolbar .e58b, #toolbar select {',
+      '    flex: 0 0 auto !important;',
+      '    height: 28px !important;',
+      '    min-height: 28px !important;',
+      '  }',
+      '  /* Keep essential controls visible */',
+      '  #toolbar #selTheme, #toolbar #btnTheme, #toolbar #btnRun, #toolbar #btnStop,',
+      '  #toolbar #e4pause, #toolbar #btnReset, #toolbar #btnStep, #toolbar #simSpeed,',
+      '  #toolbar #e90spdl, #toolbar .e58more, #toolbar #e58More {',
+      '    display: inline-flex !important; visibility: visible !important;',
+      '  }',
+      '  #toolbar #selTheme { max-width: 120px !important; font-size: 11px !important; }',
+      '  /* Canvas pan: allow scrolling the viewport with touch */',
+      '  #viewport {',
+      '    overflow: auto !important;',
+      '    -webkit-overflow-scrolling: touch !important;',
+      '    touch-action: pan-x pan-y !important;',
+      '  }',
+      '  #workarea { touch-action: none !important; }',
+      '  .comp, .pin, .rh { touch-action: none !important; }',
+      '}'
+    ].join('\n');
+    var el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
     }
+    el.textContent = css;
+
     var tb = document.getElementById('toolbar');
     if (tb) {
-      tb.style.setProperty('flex-wrap', 'wrap', 'important');
-      tb.style.setProperty('height', 'auto', 'important');
-      tb.style.setProperty('max-height', '110px', 'important');
-      tb.style.setProperty('overflow-x', 'auto', 'important');
-      tb.style.setProperty('overflow-y', 'auto', 'important');
+      tb.style.setProperty('flex-wrap', 'nowrap', 'important');
+      tb.style.setProperty('height', '36px', 'important');
+      tb.style.setProperty('max-height', '40px', 'important');
+      tb.style.setProperty('overflow', 'visible', 'important');
+      var keepId = {
+        selTheme:1, btnTheme:1, btnRun:1, btnStop:1, e4pause:1, btnReset:1, btnStep:1,
+        simSpeed:1, e90spdl:1, e58More:1
+      };
+      // Hide individual buttons not in keep list; keep e58 transport groups + more
+      tb.querySelectorAll('button, .btn, select, label, input').forEach(function (ch) {
+        if (ch.closest && ch.closest('.e58more')) return;
+        if (ch.id && keepId[ch.id]) {
+          ch.style.removeProperty('display');
+          return;
+        }
+        // keep buttons that live inside the primary transport e58g next to run
+        var parentG = ch.closest && ch.closest('.e58g');
+        if (parentG) {
+          var hasTransport = parentG.querySelector('#btnRun, #btnStop, #e4pause, #btnReset, #btnStep');
+          if (hasTransport) return;
+        }
+        ch.style.setProperty('display', 'none', 'important');
+      });
+      // Ensure more menu is visible
+      var more = tb.querySelector('.e58more, #e58More');
+      if (more) more.style.setProperty('display', 'inline-flex', 'important');
+    }
+    var shelf = document.getElementById('e59shelf');
+    if (shelf) {
+      shelf.style.setProperty('overflow', 'visible', 'important');
+      shelf.style.setProperty('max-height', 'none', 'important');
+      shelf.style.setProperty('z-index', '8000', 'important');
     }
   }
 
