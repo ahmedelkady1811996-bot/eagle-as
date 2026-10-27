@@ -47509,6 +47509,35 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '}'
     ].join('\n');
 
+    /* Always-on more-pop theme (even outside @media / after move to body) */
+    (function () {
+      var id = 'eg-e58pop-always';
+      if (document.getElementById(id)) return;
+      var s = document.createElement('style');
+      s.id = id;
+      s.textContent = [
+        'body > .e58pop {',
+        '  position: fixed !important; z-index: 5000 !important;',
+        '  display: none; flex-direction: column !important; gap: 6px !important;',
+        '  max-height: min(62vh, 420px) !important; overflow-x: hidden !important; overflow-y: auto !important;',
+        '  min-width: min(280px, 92vw) !important; width: min(300px, 92vw) !important;',
+        '  padding: 10px !important; box-sizing: border-box !important;',
+        '  background: #1b1f29 !important; border: 1px solid #2f3542 !important;',
+        '  border-radius: 12px !important; box-shadow: 0 18px 48px rgba(0,0,0,.65) !important;',
+        '  -webkit-overflow-scrolling: touch !important;',
+        '}',
+        'body > .e58pop.open { display: flex !important; }',
+        'body > .e58pop .e58grp { display: flex !important; flex-wrap: wrap !important; gap: 4px !important; width: 100% !important; }',
+        'body > .e58pop .e58cap { font-size: 10px !important; letter-spacing: 1px !important; color: #7c8699 !important; font-weight: 700 !important; text-transform: uppercase !important; width: 100% !important; padding: 8px 4px 4px !important; }',
+        'body > .e58pop .e58b { --ic: #cbd5e1; display: inline-flex !important; align-items: center !important; justify-content: flex-start !important; gap: 10px !important; width: 100% !important; min-width: 0 !important; height: 36px !important; padding: 0 10px !important; font-size: 12px !important; border-radius: 8px !important; background: transparent !important; border: 1px solid transparent !important; color: var(--ic) !important; cursor: pointer !important; box-sizing: border-box !important; }',
+        'body > .e58pop .e58b .e90i { width: 18px !important; height: 18px !important; flex: 0 0 auto !important; pointer-events: none !important; }',
+        'body > .e58pop .e58b:hover, body > .e58pop .e58b:active { background: color-mix(in srgb, var(--ic) 16%, transparent) !important; border-color: color-mix(in srgb, var(--ic) 38%, transparent) !important; }',
+        'body > .e58pop .e58b::after { content: attr(data-e58lbl) !important; font-size: 12px !important; color: #d4d8e0 !important; font-weight: 500 !important; }',
+        'body > .e58pop .e58lbl { font-size: 12px !important; margin-left: 6px !important; color: #d4d8e0 !important; }'
+      ].join(String.fromCharCode(10));
+      document.head.appendChild(s);
+    })();
+
     /* Independent horizontal scroll on menu shelf + toolbar */
     var shelf = document.getElementById('e59shelf');
     if (shelf) {
@@ -47539,13 +47568,12 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       });
     }
 
-    /* BULLETPROOF more-menu close — no isMobile gate, works on touch + click */
+    /* More menu open/close — keep host toggle working */
     window.__egCloseMore = function () {
       try {
         document.querySelectorAll('.e58pop').forEach(function (p) {
           p.classList.remove('open');
-          p.classList.remove('on');
-          p.style.setProperty('display', 'none', 'important');
+          p.style.removeProperty('display');
           p.style.removeProperty('top');
           p.style.removeProperty('left');
           p.style.removeProperty('right');
@@ -47555,35 +47583,34 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
             try { p._egHome.appendChild(p); } catch (e) {}
           }
         });
-        document.querySelectorAll('#e58More, #egMoreBtn').forEach(function (m) {
-          m.classList.remove('on');
-          m.classList.remove('open');
-        });
+        var m = document.getElementById('e58More') || document.getElementById('egMoreBtn');
+        if (m) { m.classList.remove('on'); m.classList.remove('open'); }
       } catch (e) {}
     };
+
     window.__egPlaceMore = function () {
       try {
         var btn = document.getElementById('e58More') || document.getElementById('egMoreBtn');
-        var pop = document.querySelector('body > .e58pop, #toolbar .e58pop, .e58pop');
-        if (!btn || !pop) return;
-        if (!pop.classList.contains('open')) return;
-        pop.style.removeProperty('display');
+        var pop = document.querySelector('.e58pop');
+        if (!btn || !pop || !pop.classList.contains('open')) return;
         if (pop.parentElement !== document.body) {
           pop._egHome = pop.parentElement;
           document.body.appendChild(pop);
         }
         var r = btn.getBoundingClientRect();
-        var left = Math.round(Math.min(Math.max(8, r.left), window.innerWidth - 300));
+        var popW = Math.min(300, window.innerWidth - 16);
+        var left = Math.round(r.left);
+        if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
         if (left < 8) left = 8;
         var top = Math.round(r.bottom + 6);
         if (top + 160 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
-        pop.style.setProperty('position', 'fixed', 'important');
-        pop.style.setProperty('z-index', '5000', 'important');
-        pop.style.setProperty('display', 'flex', 'important');
-        pop.style.setProperty('flex-direction', 'column', 'important');
-        pop.style.setProperty('top', top + 'px', 'important');
-        pop.style.setProperty('left', left + 'px', 'important');
-        pop.style.setProperty('right', 'auto', 'important');
+        pop.style.position = 'fixed';
+        pop.style.zIndex = '5000';
+        pop.style.display = 'flex';
+        pop.style.flexDirection = 'column';
+        pop.style.top = top + 'px';
+        pop.style.left = left + 'px';
+        pop.style.right = 'auto';
       } catch (e) {}
     };
 
@@ -47591,91 +47618,83 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       window._egMoreWired = true;
       window._egMoreIgnoreUntil = 0;
 
-      function onMorePointer(ev) {
+      /* Patch host: when pop is on body, outside-check must use pop itself not popWrap */
+      try {
+        var popEl = document.querySelector('.e58pop');
+        if (popEl && !popEl._egHostPatched) {
+          popEl._egHostPatched = true;
+          document.addEventListener('click', function (ev) {
+            if (!popEl.classList.contains('open')) return;
+            var t = ev.target;
+            if (!t) return;
+            if (t.closest && (t.closest('#e58More, #egMoreBtn, .e58pop'))) return;
+            /* let our closer handle it */
+          }, true);
+        }
+      } catch (e) {}
+
+      document.addEventListener('click', function (ev) {
         var t = ev.target;
         if (!t || !t.closest) return;
-        var moreBtn = t.closest('#e58More, #egMoreBtn');
-        if (moreBtn) {
-          window._egMoreIgnoreUntil = Date.now() + 400;
+
+        /* MORE BUTTON → let host toggle, then place */
+        if (t.closest('#e58More, #egMoreBtn')) {
+          window._egMoreIgnoreUntil = Date.now() + 500;
           setTimeout(function () {
             var p = document.querySelector('.e58pop');
             if (p && p.classList.contains('open')) {
-              p.style.removeProperty('display');
               window.__egPlaceMore();
-            } else if (p && !p.classList.contains('open')) {
-              window.__egCloseMore();
             }
-          }, 20);
+          }, 0);
+          setTimeout(function () {
+            var p = document.querySelector('.e58pop');
+            if (p && p.classList.contains('open')) {
+              window.__egPlaceMore();
+            }
+          }, 50);
           return;
         }
+
         if (Date.now() < window._egMoreIgnoreUntil) return;
 
         var open = document.querySelector('.e58pop.open');
-        if (!open) {
-          /* also catch stuck menus without .open but display flex on body */
-          var stuck = document.querySelector('body > .e58pop');
-          if (stuck) {
-            var d = window.getComputedStyle(stuck).display;
-            if (d === 'none') return;
-            open = stuck;
-          } else {
-            return;
-          }
-        }
+        if (!open) return;
 
-        var item = t.closest('.e58pop .e58b, .e58pop button, .e58pop a, .e58pop [data-e58lbl], .e58pop .e58lbl');
-        if (item) {
-          /* close immediately after microtask so host action still runs */
-          setTimeout(function () { window.__egCloseMore(); }, 0);
-          setTimeout(function () { window.__egCloseMore(); }, 100);
-          setTimeout(function () { window.__egCloseMore(); }, 300);
+        if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
+          setTimeout(window.__egCloseMore, 60);
+          setTimeout(window.__egCloseMore, 250);
           return;
         }
-        if (open.contains && open.contains(t)) return;
+        if (open.contains(t)) return;
         window.__egCloseMore();
-      }
+      }, true);
 
-      document.addEventListener('click', onMorePointer, true);
-      document.addEventListener('touchend', onMorePointer, true);
-      document.addEventListener('pointerup', onMorePointer, true);
+      document.addEventListener('touchend', function (ev) {
+        var t = ev.target;
+        if (!t || !t.closest) return;
+        if (t.closest('#e58More, #egMoreBtn')) {
+          window._egMoreIgnoreUntil = Date.now() + 500;
+          setTimeout(function () {
+            var p = document.querySelector('.e58pop');
+            if (p && p.classList.contains('open')) window.__egPlaceMore();
+          }, 50);
+          return;
+        }
+        if (Date.now() < window._egMoreIgnoreUntil) return;
+        var open = document.querySelector('.e58pop.open');
+        if (!open) return;
+        if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
+          setTimeout(window.__egCloseMore, 60);
+          setTimeout(window.__egCloseMore, 250);
+          return;
+        }
+        if (open.contains(t)) return;
+        window.__egCloseMore();
+      }, true);
 
       document.addEventListener('keydown', function (ev) {
         if (ev.key === 'Escape') window.__egCloseMore();
       }, true);
-
-      /* Always close when any dialog/modal/overlay shows */
-      try {
-        var mo = new MutationObserver(function () {
-          var open = document.querySelector('.e58pop.open, body > .e58pop');
-          if (!open) return;
-          if (window.getComputedStyle(open).display === 'none') return;
-          var nodes = document.querySelectorAll('.modal, .modal-box, .overlay, #modal, [role="dialog"], .dlg, .dialog');
-          for (var i = 0; i < nodes.length; i++) {
-            var n = nodes[i];
-            if (n === open || (open.contains && open.contains(n))) continue;
-            if (n.classList && n.classList.contains('e58pop')) continue;
-            var st = window.getComputedStyle(n);
-            if (st.display === 'none' || st.visibility === 'hidden') continue;
-            window.__egCloseMore();
-            return;
-          }
-        });
-        mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-      } catch (e) {}
-
-      /* Safety: if a pop stays open without .open class but visible, allow outside tap to kill it */
-      setInterval(function () {
-        try {
-          var pops = document.querySelectorAll('body > .e58pop, .e58pop');
-          pops.forEach(function (p) {
-            if (p.classList.contains('open')) return;
-            if (p.style.display === 'flex' || p.style.getPropertyValue('display') === 'flex') {
-              /* orphaned visible pop without open — hide it */
-              p.style.setProperty('display', 'none', 'important');
-            }
-          });
-        } catch (e) {}
-      }, 800);
     }
   }
 
