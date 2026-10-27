@@ -6390,6 +6390,8 @@ function wirePhase45(){
 /* ===== EDUCATION FEATURES REMOVED (E50) ===== */
 function downloadText(filename, text){
   if(typeof window.__bridgePush==='function'){window.__bridgePush('download',{filename:filename,content:'data:text/plain;base64,'+btoa(unescape(encodeURIComponent(text||'')))});return}
+  if(typeof window.__appSaveText==='function'){window.__appSaveText(filename, text, 'text/plain;charset=utf-8');return}
+  if(typeof window.__appSaveBlob==='function'){window.__appSaveBlob(new Blob([text],{type:'text/plain;charset=utf-8'}), filename);return}
   var blob=new Blob([text],{type:"text/plain"});
   var a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -47568,7 +47570,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       });
     }
 
-    /* More menu open/close — keep host toggle working */
+    /* More menu open/close — scroll-safe, host-compatible */
     window.__egCloseMore = function () {
       try {
         document.querySelectorAll('.e58pop').forEach(function (p) {
@@ -47617,40 +47619,65 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     if (!window._egMoreWired) {
       window._egMoreWired = true;
       window._egMoreIgnoreUntil = 0;
+      window._egMoreTouch = null;
 
-      /* Patch host: when pop is on body, outside-check must use pop itself not popWrap */
-      try {
-        var popEl = document.querySelector('.e58pop');
-        if (popEl && !popEl._egHostPatched) {
-          popEl._egHostPatched = true;
-          document.addEventListener('click', function (ev) {
-            if (!popEl.classList.contains('open')) return;
-            var t = ev.target;
-            if (!t) return;
-            if (t.closest && (t.closest('#e58More, #egMoreBtn, .e58pop'))) return;
-            /* let our closer handle it */
-          }, true);
+      /* Make host popWrap.contains() true for moved pop — stops host from closing on scroll/tap inside */
+      (function patchPopWrap() {
+        function apply() {
+          var wrap = document.querySelector('#toolbar .e58more, .e58more');
+          if (!wrap || wrap._egContainsPatched) return;
+          wrap._egContainsPatched = true;
+          var orig = wrap.contains.bind(wrap);
+          wrap.contains = function (node) {
+            if (orig(node)) return true;
+            try {
+              var pop = document.querySelector('.e58pop');
+              if (pop && node && (node === pop || (pop.contains && pop.contains(node)))) return true;
+            } catch (e) {}
+            return false;
+          };
         }
-      } catch (e) {}
+        apply();
+        setTimeout(apply, 500);
+        setTimeout(apply, 1500);
+      })();
+
+      /* Track touch movement inside menu = scroll, not outside-tap */
+      document.addEventListener('touchstart', function (ev) {
+        var t = ev.target;
+        var open = document.querySelector('.e58pop.open');
+        if (!open || !t) return;
+        if (open.contains(t)) {
+          var touch = ev.touches && ev.touches[0];
+          window._egMoreTouch = touch ? { x: touch.clientX, y: touch.clientY, scrolled: false } : null;
+        } else {
+          window._egMoreTouch = null;
+        }
+      }, true);
+
+      document.addEventListener('touchmove', function (ev) {
+        if (!window._egMoreTouch) return;
+        var touch = ev.touches && ev.touches[0];
+        if (!touch) return;
+        if (Math.abs(touch.clientX - window._egMoreTouch.x) > 8 ||
+            Math.abs(touch.clientY - window._egMoreTouch.y) > 8) {
+          window._egMoreTouch.scrolled = true;
+        }
+      }, true);
 
       document.addEventListener('click', function (ev) {
         var t = ev.target;
         if (!t || !t.closest) return;
 
-        /* MORE BUTTON → let host toggle, then place */
         if (t.closest('#e58More, #egMoreBtn')) {
           window._egMoreIgnoreUntil = Date.now() + 500;
           setTimeout(function () {
             var p = document.querySelector('.e58pop');
-            if (p && p.classList.contains('open')) {
-              window.__egPlaceMore();
-            }
+            if (p && p.classList.contains('open')) window.__egPlaceMore();
           }, 0);
           setTimeout(function () {
             var p = document.querySelector('.e58pop');
-            if (p && p.classList.contains('open')) {
-              window.__egPlaceMore();
-            }
+            if (p && p.classList.contains('open')) window.__egPlaceMore();
           }, 50);
           return;
         }
@@ -47660,12 +47687,18 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         var open = document.querySelector('.e58pop.open');
         if (!open) return;
 
-        if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
-          setTimeout(window.__egCloseMore, 60);
-          setTimeout(window.__egCloseMore, 250);
+        /* scroll inside menu → never close */
+        if (window._egMoreTouch && window._egMoreTouch.scrolled && open.contains(t)) {
+          window._egMoreTouch = null;
           return;
         }
-        if (open.contains(t)) return;
+
+        if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
+          setTimeout(window.__egCloseMore, 80);
+          setTimeout(window.__egCloseMore, 280);
+          return;
+        }
+        if (open.contains(t)) return; /* padding / labels / scroll area */
         window.__egCloseMore();
       }, true);
 
@@ -47683,12 +47716,19 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         if (Date.now() < window._egMoreIgnoreUntil) return;
         var open = document.querySelector('.e58pop.open');
         if (!open) return;
-        if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
-          setTimeout(window.__egCloseMore, 60);
-          setTimeout(window.__egCloseMore, 250);
+
+        /* if user scrolled inside menu, do not close */
+        if (window._egMoreTouch && window._egMoreTouch.scrolled) {
+          window._egMoreTouch = null;
           return;
         }
-        if (open.contains(t)) return;
+        if (open.contains(t)) {
+          if (t.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]')) {
+            setTimeout(window.__egCloseMore, 80);
+            setTimeout(window.__egCloseMore, 280);
+          }
+          return;
+        }
         window.__egCloseMore();
       }, true);
 
@@ -47923,12 +47963,66 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       fetch(href).then(function (r) { return r.blob(); }).then(function (b) {
         return saveBlob(b, name);
       }).catch(function () {
-        // last resort: navigate
         try { openDownload(href); } catch (err) {}
       });
     } catch (err) {}
   }, true);
+
+  /* Patch HTMLAnchorElement.click for detached <a download="..."> used by export fns */
+  try {
+    var _aClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      try {
+        var href = this.href || '';
+        var name = this.getAttribute('download');
+        if (name && (href.indexOf('blob:') === 0 || href.indexOf('data:') === 0)) {
+          if (this.getAttribute('data-app-native-dl') === '1') {
+            return _aClick.apply(this, arguments);
+          }
+          var self = this;
+          fetch(href).then(function (r) { return r.blob(); }).then(function (b) {
+            return saveBlob(b, name);
+          }).catch(function () {
+            try {
+              self.setAttribute('data-app-native-dl', '1');
+              _aClick.apply(self, arguments);
+            } catch (err) {}
+          });
+          return;
+        }
+      } catch (err) {}
+      return _aClick.apply(this, arguments);
+    };
+  } catch (e) {}
+
+  /* Route classic downloadText helpers through tmpfiles flow */
+  function patchDownloadText() {
+    if (typeof window.downloadText === 'function' && !window.downloadText._egPatched) {
+      var prev = window.downloadText;
+      window.downloadText = function (filename, text) {
+        try {
+          if (typeof window.__bridgePush === 'function') {
+            return prev.apply(this, arguments);
+          }
+        } catch (e) {}
+        return saveText(filename, text, 'text/plain;charset=utf-8');
+      };
+      window.downloadText._egPatched = true;
+    }
+  }
+  patchDownloadText();
+  setTimeout(patchDownloadText, 500);
+  setTimeout(patchDownloadText, 2000);
+
+  /* Generic helper used by various export* functions */
+  window.__egDownloadBlob = function (blob, filename) {
+    return saveBlob(blob, filename || 'download.bin');
+  };
+  window.__egDownloadText = function (filename, text, mime) {
+    return saveText(filename, text, mime);
+  };
 })();
+
 </script>
 
 </body>
