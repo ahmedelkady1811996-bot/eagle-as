@@ -971,34 +971,41 @@ html, body { overscroll-behavior: none; }
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    overflow-y: visible !important;
+    overflow-y: hidden !important;
     max-height: none !important;
     gap: 2px !important;
     position: relative !important;
     z-index: 8000 !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x !important;
-    scrollbar-width: none;
+    scrollbar-width: thin;
   }
-  #e59shelf::-webkit-scrollbar { display: none; }
-  #e59shelf .e59menu { flex: 0 0 auto !important; }
-  /* Pops escape the scrolling shelf */
+  #e59shelf .e59menu { flex: 0 0 auto !important; white-space: nowrap !important; }
   #e59shelf .e59menu-pop, .e59menu-pop {
     z-index: 9000 !important;
     position: fixed !important;
   }
   #toolbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    overflow-y: visible !important;
+    overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x !important;
-    scrollbar-width: none;
+    scrollbar-width: thin;
   }
-  #toolbar::-webkit-scrollbar { display: none; }
+  #toolbar > * { flex: 0 0 auto !important; }
   #viewport {
-    overflow: auto !important;
+    overflow: scroll !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x pan-y !important;
+    overscroll-behavior: contain !important;
+  }
+  #workarea {
+    touch-action: pan-x pan-y !important;
+  }
+  #viewport .comp, #viewport .pin, #viewport .rh {
+    touch-action: none !important;
   }
 
   #mainrow { position: relative; min-height: 0; }
@@ -1057,12 +1064,12 @@ html, body { overscroll-behavior: none; }
 
   #viewport {
     flex: 1;
-    overflow: auto !important;
+    overflow: scroll !important;
     -webkit-overflow-scrolling: touch;
-    touch-action: manipulation;
+    touch-action: pan-x pan-y !important;
     overscroll-behavior: contain;
   }
-  #workarea { margin: 12px; }
+  #workarea { margin: 12px; touch-action: pan-x pan-y !important; }
 
   /* Bottom dock fixed just above FAB — zero gap */
   #eg-mobi-bar {
@@ -47425,8 +47432,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '    max-height: min(60vh, 420px) !important;',
       '    overflow: auto !important;',
       '  }',
-      '  #toolbar { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; }',
-      '  /* Row 2: compact toolbar — theme + transport + more only */',
+      '  /* Row 2: compact toolbar — theme + transport + more; horizontal scroll */',
       '  #toolbar {',
       '    display: flex !important;',
       '    flex-wrap: nowrap !important;',
@@ -47434,9 +47440,13 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '    height: 36px !important;',
       '    min-height: 36px !important;',
       '    max-height: 40px !important;',
-      '    overflow: visible !important;',
+      '    overflow-x: auto !important;',
+      '    overflow-y: hidden !important;',
       '    gap: 4px !important;',
       '    padding: 4px 6px !important;',
+      '    -webkit-overflow-scrolling: touch !important;',
+      '    touch-action: pan-x !important;',
+      '    scrollbar-width: thin;',
       '  }',
       '  #toolbar .ttl, #toolbar .sp, #toolbar .grow, #toolbar #autosaveInd, #toolbar #zoomLabel {',
       '    display: none !important;',
@@ -47453,14 +47463,15 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '    display: inline-flex !important; visibility: visible !important;',
       '  }',
       '  #toolbar #selTheme { max-width: 120px !important; font-size: 11px !important; }',
-      '  /* Canvas pan: allow scrolling the viewport with touch */',
+      '  /* Canvas pan: scroll the viewport; empty board pans, comps still drag */',
       '  #viewport {',
-      '    overflow: auto !important;',
+      '    overflow: scroll !important;',
       '    -webkit-overflow-scrolling: touch !important;',
       '    touch-action: pan-x pan-y !important;',
+      '    overscroll-behavior: contain !important;',
       '  }',
-      '  #workarea { touch-action: none !important; }',
-      '  .comp, .pin, .rh { touch-action: none !important; }',
+      '  #workarea { touch-action: pan-x pan-y !important; }',
+      '  .comp, .pin, .rh, .wire, .handle { touch-action: none !important; }',
       '}'
     ].join('\n');
     var el = document.getElementById(id);
@@ -47476,7 +47487,9 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       tb.style.setProperty('flex-wrap', 'nowrap', 'important');
       tb.style.setProperty('height', '36px', 'important');
       tb.style.setProperty('max-height', '40px', 'important');
-      tb.style.setProperty('overflow', 'visible', 'important');
+      tb.style.setProperty('overflow-x', 'auto', 'important');
+      tb.style.setProperty('overflow-y', 'hidden', 'important');
+      tb.style.setProperty('touch-action', 'pan-x', 'important');
       var keepId = {
         selTheme:1, btnTheme:1, btnRun:1, btnStop:1, e4pause:1, btnReset:1, btnStep:1,
         simSpeed:1, e90spdl:1, e58More:1
@@ -47508,6 +47521,44 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     }
   }
 
+
+
+  /* Canvas pan: drag empty board → scroll #viewport (fallback if native pan fails) */
+  (function () {
+    var pan = null;
+    function onStart(e) {
+      if (!isMobile()) return;
+      if (e.touches && e.touches.length !== 1) return;
+      var t = e.touches[0];
+      var el = document.elementFromPoint(t.clientX, t.clientY) || e.target;
+      if (!el) return;
+      if (el.closest && el.closest('.comp, .pin, .rh, .wire, .handle, #eg-mobi-bar, #toolbar, #e59shelf, #bottomDock, button, a, input, select, textarea')) return;
+      var vp = document.getElementById('viewport');
+      if (!vp) return;
+      // only if touch is inside viewport
+      if (!vp.contains(el) && el !== vp) return;
+      pan = {
+        x: t.clientX, y: t.clientY,
+        sl: vp.scrollLeft, st: vp.scrollTop,
+        vp: vp
+      };
+    }
+    function onMove(e) {
+      if (!pan || !e.touches || !e.touches.length) return;
+      var t = e.touches[0];
+      var dx = t.clientX - pan.x;
+      var dy = t.clientY - pan.y;
+      if (Math.abs(dx) + Math.abs(dy) < 2) return;
+      pan.vp.scrollLeft = pan.sl - dx;
+      pan.vp.scrollTop = pan.st - dy;
+      e.preventDefault();
+    }
+    function onEnd() { pan = null; }
+    document.addEventListener('touchstart', onStart, { passive: true, capture: false });
+    document.addEventListener('touchmove', onMove, { passive: false, capture: false });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    document.addEventListener('touchcancel', onEnd, { passive: true });
+  })();
 
   /* Exclusive e59 menus + close on item pick + fixed position */
   function closeAllE59(exceptPop) {
@@ -47557,7 +47608,81 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     closeAllE59(null);
   }, true);
 
-  function boot() { ensureUI(); forceToolbarMobile(); }
+  function boot() {
+    ensureUI();
+    forceToolbarMobile();
+    // Make bars actually scrollable by ensuring content wider than viewport when needed
+    try {
+      var shelf = document.getElementById('e59shelf');
+      if (shelf) {
+        shelf.style.setProperty('overflow-x', 'auto', 'important');
+        shelf.style.setProperty('overflow-y', 'hidden', 'important');
+        shelf.style.setProperty('touch-action', 'pan-x', 'important');
+        shelf.style.setProperty('max-width', '100vw', 'important');
+        Array.prototype.forEach.call(shelf.children, function (c) {
+          c.style.setProperty('flex-shrink', '0', 'important');
+          c.style.setProperty('flex', '0 0 auto', 'important');
+        });
+        // parent must not clip horizontal scroll
+        var p = shelf.parentElement;
+        var depth = 0;
+        while (p && depth < 4) {
+          p.style.setProperty('overflow-x', 'auto', 'important');
+          p.style.setProperty('max-width', '100vw', 'important');
+          p = p.parentElement;
+          depth++;
+        }
+      }
+      var tb = document.getElementById('toolbar');
+      if (tb) {
+        tb.style.setProperty('overflow-x', 'auto', 'important');
+        tb.style.setProperty('overflow-y', 'hidden', 'important');
+        tb.style.setProperty('touch-action', 'pan-x', 'important');
+        Array.prototype.forEach.call(tb.children, function (c) {
+          c.style.setProperty('flex-shrink', '0', 'important');
+          c.style.setProperty('flex', '0 0 auto', 'important');
+        });
+      }
+      var vp = document.getElementById('viewport');
+      if (vp) {
+        vp.style.setProperty('overflow', 'scroll', 'important');
+        vp.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+        vp.style.setProperty('touch-action', 'pan-x pan-y', 'important');
+      }
+      var wa = document.getElementById('workarea');
+      if (wa) {
+        wa.style.setProperty('touch-action', 'pan-x pan-y', 'important');
+      }
+      // Late CSS wins over other injected styles
+      var st = document.getElementById('eg-mobi-scroll-fix');
+      if (!st) {
+        st = document.createElement('style');
+        st.id = 'eg-mobi-scroll-fix';
+        document.head.appendChild(st);
+      }
+      st.textContent = [
+        '@media (max-width: 900px) {',
+        '  #e59shelf, #e59shelf.e59shelf {',
+        '    overflow-x: auto !important; overflow-y: hidden !important;',
+        '    touch-action: pan-x !important; flex-wrap: nowrap !important;',
+        '    max-width: 100vw !important;',
+        '  }',
+        '  #e59shelf > * { flex: 0 0 auto !important; flex-shrink: 0 !important; }',
+        '  #toolbar {',
+        '    overflow-x: auto !important; overflow-y: hidden !important;',
+        '    touch-action: pan-x !important; flex-wrap: nowrap !important;',
+        '  }',
+        '  #toolbar > * { flex: 0 0 auto !important; flex-shrink: 0 !important; }',
+        '  #viewport {',
+        '    overflow: scroll !important; touch-action: pan-x pan-y !important;',
+        '    -webkit-overflow-scrolling: touch !important;',
+        '  }',
+        '  #workarea { touch-action: pan-x pan-y !important; }',
+        '  #viewport .comp, #viewport .pin, #viewport .rh { touch-action: none !important; }',
+        '}'
+      ].join('\n');
+    } catch (e) {}
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
   setTimeout(boot, 400);
