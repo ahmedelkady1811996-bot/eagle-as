@@ -47442,46 +47442,61 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '  }',
       '  #toolbar > * { flex: 0 0 auto !important; }',
       '  #toolbar .e58more { position: relative !important; display: inline-flex !important; }',
-      '  /* Themed more-pop even when moved to body (loses #toolbar ancestor) */',
-      '  #toolbar .e58pop, body > .e58pop, .e58pop.open {',
-      '    position: fixed !important; z-index: 20000 !important;',
+      '  #toolbar .e58more { position: relative !important; display: inline-flex !important; }',
+      '  /* More menu — desktop theme on mobile (works on body too) */',
+      '  #toolbar .e58pop, body > .e58pop {',
+      '    position: fixed !important;',
+      '    z-index: 8500 !important;',
       '    display: none;',
-      '    flex-direction: column !important; gap: 8px !important;',
-      '    max-height: min(65vh, 440px) !important; overflow-y: auto !important; overflow-x: hidden !important;',
-      '    min-width: min(280px, 92vw) !important; width: min(300px, 92vw) !important;',
+      '    flex-direction: column !important;',
+      '    gap: 6px !important;',
+      '    max-height: min(62vh, 420px) !important;',
+      '    overflow-x: hidden !important;',
+      '    overflow-y: auto !important;',
+      '    min-width: min(280px, 92vw) !important;',
+      '    width: min(300px, 92vw) !important;',
       '    padding: 10px !important;',
       '    background: #1b1f29 !important;',
       '    border: 1px solid #2f3542 !important;',
       '    border-radius: 12px !important;',
       '    box-shadow: 0 18px 48px rgba(0,0,0,.65) !important;',
       '    -webkit-overflow-scrolling: touch !important;',
+      '    box-sizing: border-box !important;',
       '  }',
-      '  #toolbar .e58pop.open, body > .e58pop.open, .e58pop.open { display: flex !important; }',
-      '  #toolbar .e58pop .e58grp, body > .e58pop .e58grp, .e58pop .e58grp {',
-      '    display: flex !important; flex-wrap: wrap !important; gap: 4px !important;',
+      '  #toolbar .e58pop.open, body > .e58pop.open { display: flex !important; }',
+      '  #toolbar .e58pop .e58grp, body > .e58pop .e58grp {',
+      '    display: flex !important; flex-wrap: wrap !important; gap: 4px !important; width: 100% !important;',
       '  }',
-      '  #toolbar .e58pop .e58cap, body > .e58pop .e58cap, .e58pop .e58cap {',
+      '  #toolbar .e58pop .e58cap, body > .e58pop .e58cap {',
       '    font-size: 10px !important; letter-spacing: 1px !important;',
       '    color: #7c8699 !important; font-weight: 700 !important;',
       '    text-transform: uppercase !important; width: 100% !important;',
-      '    padding: 6px 4px 4px !important;',
+      '    padding: 8px 4px 4px !important;',
       '  }',
-      '  #toolbar .e58pop .e58b, body > .e58pop .e58b, .e58pop .e58b {',
+      '  #toolbar .e58pop .e58b, body > .e58pop .e58b {',
+      '    --ic: #cbd5e1;',
       '    display: inline-flex !important; align-items: center !important;',
       '    justify-content: flex-start !important; gap: 10px !important;',
       '    width: 100% !important; min-width: 0 !important;',
       '    height: 36px !important; padding: 0 10px !important;',
       '    font-size: 12px !important; border-radius: 8px !important;',
-      '    background: transparent !important; border: 1px solid transparent !important;',
-      '    color: #d4d8e0 !important; cursor: pointer !important;',
+      '    background: transparent !important;',
+      '    border: 1px solid transparent !important;',
+      '    color: var(--ic) !important; cursor: pointer !important;',
+      '    box-sizing: border-box !important;',
       '  }',
-      '  #toolbar .e58pop .e58b:hover, body > .e58pop .e58b:hover, .e58pop .e58b:hover,',
+      '  #toolbar .e58pop .e58b .e90i, body > .e58pop .e58b .e90i {',
+      '    width: 18px !important; height: 18px !important; flex: 0 0 auto !important;',
+      '    pointer-events: none !important;',
+      '  }',
+      '  #toolbar .e58pop .e58b:hover, body > .e58pop .e58b:hover,',
       '  #toolbar .e58pop .e58b:active, body > .e58pop .e58b:active {',
-      '    background: rgba(255,255,255,.06) !important; border-color: #343b4b !important;',
+      '    background: color-mix(in srgb, var(--ic) 16%, transparent) !important;',
+      '    border-color: color-mix(in srgb, var(--ic) 38%, transparent) !important;',
       '  }',
-      '  #toolbar .e58pop .e58b::after, body > .e58pop .e58b::after, .e58pop .e58b::after {',
-      '    content: attr(data-e58lbl) !important; font-size: 12px !important;',
-      '    color: #d4d8e0 !important; font-weight: 500 !important;',
+      '  #toolbar .e58pop .e58b::after, body > .e58pop .e58b::after {',
+      '    content: attr(data-e58lbl) !important;',
+      '    font-size: 12px !important; color: #d4d8e0 !important; font-weight: 500 !important;',
       '  }',
       '  #toolbar .e58pop .e58lbl, body > .e58pop .e58lbl {',
       '    font-size: 12px !important; margin-left: 6px !important; color: #d4d8e0 !important;',
@@ -47524,52 +47539,91 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       });
     }
 
-    /* Ensure More opens the original e58 pop with fixed coords */
-    if (!tb) return;
-    var moreBtn = tb.querySelector('#e58More') || tb.querySelector('#egMoreBtn');
-    var pop = tb.querySelector('.e58pop');
-    if (!moreBtn || !pop) return;
-    if (!moreBtn._egSafeMore) {
-      moreBtn._egSafeMore = true;
-      moreBtn.addEventListener('click', function (ev) {
-        setTimeout(function () {
-          if (!pop.classList.contains('open')) return;
-          var r = moreBtn.getBoundingClientRect();
-          if (pop.parentElement !== document.body) {
-            pop._egHome = pop.parentElement;
-            document.body.appendChild(pop);
-          }
-          pop.style.setProperty('position', 'fixed', 'important');
-          pop.style.setProperty('z-index', '20000', 'important');
-          pop.style.setProperty('display', 'flex', 'important');
-          pop.style.setProperty('flex-direction', 'column', 'important');
-          var left = Math.round(Math.min(r.left, window.innerWidth - 300));
-          if (left < 8) left = 8;
-          var top = Math.round(r.bottom + 6);
-          if (top + 120 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
-          pop.style.setProperty('top', top + 'px', 'important');
-          pop.style.setProperty('left', left + 'px', 'important');
-          pop.style.setProperty('right', 'auto', 'important');
-        }, 0);
-      }, false);
-    }
-    /* Close themed more-menu after picking an item (mobile) */
-    if (!window._egMoreItemClose) {
-      window._egMoreItemClose = true;
+    /* Robust more-menu: place + theme + always close */
+    window.__egCloseMore = function () {
+      document.querySelectorAll('.e58pop.open').forEach(function (p) {
+        p.classList.remove('open');
+        p.style.removeProperty('display');
+        p.style.removeProperty('top');
+        p.style.removeProperty('left');
+        p.style.removeProperty('position');
+        p.style.removeProperty('z-index');
+        if (p._egHome && p.parentElement === document.body) {
+          try { p._egHome.appendChild(p); } catch (e) {}
+        }
+      });
+      var m = document.getElementById('e58More') || document.getElementById('egMoreBtn');
+      if (m) m.classList.remove('on');
+    };
+    window.__egPlaceMore = function () {
+      var btn = document.getElementById('e58More') || document.getElementById('egMoreBtn');
+      var pop = document.querySelector('#toolbar .e58pop, body > .e58pop, .e58pop');
+      if (!btn || !pop || !pop.classList.contains('open')) return;
+      if (pop.parentElement !== document.body) {
+        pop._egHome = pop.parentElement;
+        document.body.appendChild(pop);
+      }
+      var r = btn.getBoundingClientRect();
+      var left = Math.round(Math.min(r.left, window.innerWidth - 300));
+      if (left < 8) left = 8;
+      var top = Math.round(r.bottom + 6);
+      if (top + 160 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
+      pop.style.setProperty('position', 'fixed', 'important');
+      pop.style.setProperty('z-index', '8500', 'important');
+      pop.style.setProperty('display', 'flex', 'important');
+      pop.style.setProperty('flex-direction', 'column', 'important');
+      pop.style.setProperty('top', top + 'px', 'important');
+      pop.style.setProperty('left', left + 'px', 'important');
+      pop.style.setProperty('right', 'auto', 'important');
+    };
+
+    if (!window._egMoreWired) {
+      window._egMoreWired = true;
+      window._egMoreIgnoreUntil = 0;
       document.addEventListener('click', function (ev) {
         if (!isMobile()) return;
+        var moreBtn = ev.target.closest && ev.target.closest('#e58More, #egMoreBtn');
+        if (moreBtn) {
+          window._egMoreIgnoreUntil = Date.now() + 350;
+          setTimeout(function () { window.__egPlaceMore(); }, 10);
+          return;
+        }
+        if (Date.now() < window._egMoreIgnoreUntil) return;
         var open = document.querySelector('.e58pop.open');
         if (!open) return;
         var item = ev.target.closest && ev.target.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]');
-        if (!item) return;
-        /* allow the action to run, then close */
-        setTimeout(function () {
-          open.classList.remove('open');
-          var m = document.getElementById('e58More') || document.getElementById('egMoreBtn');
-          if (m) m.classList.remove('on');
-          open.style.removeProperty('display');
-        }, 0);
-      }, false);
+        if (item) {
+          setTimeout(function () { window.__egCloseMore(); }, 40);
+          return;
+        }
+        if (open.contains(ev.target)) return;
+        window.__egCloseMore();
+      }, true);
+
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') window.__egCloseMore();
+      }, true);
+
+      /* Close menu when a real overlay/modal becomes visible (not the menu itself) */
+      try {
+        var mo = new MutationObserver(function () {
+          if (!document.querySelector('.e58pop.open')) return;
+          var nodes = document.querySelectorAll('.modal, .modal-box, .overlay, #modal, [role="dialog"]');
+          for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (n.classList.contains('e58pop')) continue;
+            var st = window.getComputedStyle(n);
+            if (st.display !== 'none' && st.visibility !== 'hidden' && st.opacity !== '0') {
+              var zi = parseInt(st.zIndex, 10) || 0;
+              if (zi >= 9000 || n.classList.contains('modal') || n.getAttribute('role') === 'dialog') {
+                window.__egCloseMore();
+                return;
+              }
+            }
+          }
+        });
+        mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+      } catch (e) {}
     }
   }
 
