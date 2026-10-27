@@ -47430,7 +47430,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '  #e59shelf > * { flex: 0 0 auto !important; flex-shrink: 0 !important; }',
       '  #e59shelf .e59menu, #e59shelf .e59mbtn { flex: 0 0 auto !important; white-space: nowrap !important; }',
       '  #e59shelf .e59menu-pop, .e59menu-pop {',
-      '    position: fixed !important; z-index: 20000 !important;',
+      '    position: fixed !important; z-index: 9000 !important;',
       '    max-height: min(60vh, 420px) !important; overflow: auto !important;',
       '  }',
       '  #toolbar {',
@@ -47446,7 +47446,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '  /* More menu — desktop theme on mobile (works on body too) */',
       '  #toolbar .e58pop, body > .e58pop {',
       '    position: fixed !important;',
-      '    z-index: 8500 !important;',
+      '    z-index: 5000 !important;',
       '    display: none;',
       '    flex-direction: column !important;',
       '    gap: 6px !important;',
@@ -47539,91 +47539,143 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       });
     }
 
-    /* Robust more-menu: place + theme + always close */
+    /* BULLETPROOF more-menu close — no isMobile gate, works on touch + click */
     window.__egCloseMore = function () {
-      document.querySelectorAll('.e58pop.open').forEach(function (p) {
-        p.classList.remove('open');
-        p.style.removeProperty('display');
-        p.style.removeProperty('top');
-        p.style.removeProperty('left');
-        p.style.removeProperty('position');
-        p.style.removeProperty('z-index');
-        if (p._egHome && p.parentElement === document.body) {
-          try { p._egHome.appendChild(p); } catch (e) {}
-        }
-      });
-      var m = document.getElementById('e58More') || document.getElementById('egMoreBtn');
-      if (m) m.classList.remove('on');
+      try {
+        document.querySelectorAll('.e58pop').forEach(function (p) {
+          p.classList.remove('open');
+          p.classList.remove('on');
+          p.style.setProperty('display', 'none', 'important');
+          p.style.removeProperty('top');
+          p.style.removeProperty('left');
+          p.style.removeProperty('right');
+          p.style.removeProperty('position');
+          p.style.removeProperty('z-index');
+          if (p._egHome && p.parentElement === document.body) {
+            try { p._egHome.appendChild(p); } catch (e) {}
+          }
+        });
+        document.querySelectorAll('#e58More, #egMoreBtn').forEach(function (m) {
+          m.classList.remove('on');
+          m.classList.remove('open');
+        });
+      } catch (e) {}
     };
     window.__egPlaceMore = function () {
-      var btn = document.getElementById('e58More') || document.getElementById('egMoreBtn');
-      var pop = document.querySelector('#toolbar .e58pop, body > .e58pop, .e58pop');
-      if (!btn || !pop || !pop.classList.contains('open')) return;
-      if (pop.parentElement !== document.body) {
-        pop._egHome = pop.parentElement;
-        document.body.appendChild(pop);
-      }
-      var r = btn.getBoundingClientRect();
-      var left = Math.round(Math.min(r.left, window.innerWidth - 300));
-      if (left < 8) left = 8;
-      var top = Math.round(r.bottom + 6);
-      if (top + 160 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
-      pop.style.setProperty('position', 'fixed', 'important');
-      pop.style.setProperty('z-index', '8500', 'important');
-      pop.style.setProperty('display', 'flex', 'important');
-      pop.style.setProperty('flex-direction', 'column', 'important');
-      pop.style.setProperty('top', top + 'px', 'important');
-      pop.style.setProperty('left', left + 'px', 'important');
-      pop.style.setProperty('right', 'auto', 'important');
+      try {
+        var btn = document.getElementById('e58More') || document.getElementById('egMoreBtn');
+        var pop = document.querySelector('body > .e58pop, #toolbar .e58pop, .e58pop');
+        if (!btn || !pop) return;
+        if (!pop.classList.contains('open')) return;
+        pop.style.removeProperty('display');
+        if (pop.parentElement !== document.body) {
+          pop._egHome = pop.parentElement;
+          document.body.appendChild(pop);
+        }
+        var r = btn.getBoundingClientRect();
+        var left = Math.round(Math.min(Math.max(8, r.left), window.innerWidth - 300));
+        if (left < 8) left = 8;
+        var top = Math.round(r.bottom + 6);
+        if (top + 160 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
+        pop.style.setProperty('position', 'fixed', 'important');
+        pop.style.setProperty('z-index', '5000', 'important');
+        pop.style.setProperty('display', 'flex', 'important');
+        pop.style.setProperty('flex-direction', 'column', 'important');
+        pop.style.setProperty('top', top + 'px', 'important');
+        pop.style.setProperty('left', left + 'px', 'important');
+        pop.style.setProperty('right', 'auto', 'important');
+      } catch (e) {}
     };
 
     if (!window._egMoreWired) {
       window._egMoreWired = true;
       window._egMoreIgnoreUntil = 0;
-      document.addEventListener('click', function (ev) {
-        if (!isMobile()) return;
-        var moreBtn = ev.target.closest && ev.target.closest('#e58More, #egMoreBtn');
+
+      function onMorePointer(ev) {
+        var t = ev.target;
+        if (!t || !t.closest) return;
+        var moreBtn = t.closest('#e58More, #egMoreBtn');
         if (moreBtn) {
-          window._egMoreIgnoreUntil = Date.now() + 350;
-          setTimeout(function () { window.__egPlaceMore(); }, 10);
+          window._egMoreIgnoreUntil = Date.now() + 400;
+          setTimeout(function () {
+            var p = document.querySelector('.e58pop');
+            if (p && p.classList.contains('open')) {
+              p.style.removeProperty('display');
+              window.__egPlaceMore();
+            } else if (p && !p.classList.contains('open')) {
+              window.__egCloseMore();
+            }
+          }, 20);
           return;
         }
         if (Date.now() < window._egMoreIgnoreUntil) return;
+
         var open = document.querySelector('.e58pop.open');
-        if (!open) return;
-        var item = ev.target.closest && ev.target.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]');
+        if (!open) {
+          /* also catch stuck menus without .open but display flex on body */
+          var stuck = document.querySelector('body > .e58pop');
+          if (stuck) {
+            var d = window.getComputedStyle(stuck).display;
+            if (d === 'none') return;
+            open = stuck;
+          } else {
+            return;
+          }
+        }
+
+        var item = t.closest('.e58pop .e58b, .e58pop button, .e58pop a, .e58pop [data-e58lbl], .e58pop .e58lbl');
         if (item) {
-          setTimeout(function () { window.__egCloseMore(); }, 40);
+          /* close immediately after microtask so host action still runs */
+          setTimeout(function () { window.__egCloseMore(); }, 0);
+          setTimeout(function () { window.__egCloseMore(); }, 100);
+          setTimeout(function () { window.__egCloseMore(); }, 300);
           return;
         }
-        if (open.contains(ev.target)) return;
+        if (open.contains && open.contains(t)) return;
         window.__egCloseMore();
-      }, true);
+      }
+
+      document.addEventListener('click', onMorePointer, true);
+      document.addEventListener('touchend', onMorePointer, true);
+      document.addEventListener('pointerup', onMorePointer, true);
 
       document.addEventListener('keydown', function (ev) {
         if (ev.key === 'Escape') window.__egCloseMore();
       }, true);
 
-      /* Close menu when a real overlay/modal becomes visible (not the menu itself) */
+      /* Always close when any dialog/modal/overlay shows */
       try {
         var mo = new MutationObserver(function () {
-          if (!document.querySelector('.e58pop.open')) return;
-          var nodes = document.querySelectorAll('.modal, .modal-box, .overlay, #modal, [role="dialog"]');
+          var open = document.querySelector('.e58pop.open, body > .e58pop');
+          if (!open) return;
+          if (window.getComputedStyle(open).display === 'none') return;
+          var nodes = document.querySelectorAll('.modal, .modal-box, .overlay, #modal, [role="dialog"], .dlg, .dialog');
           for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
-            if (n.classList.contains('e58pop')) continue;
+            if (n === open || (open.contains && open.contains(n))) continue;
+            if (n.classList && n.classList.contains('e58pop')) continue;
             var st = window.getComputedStyle(n);
-            if (st.display !== 'none' && st.visibility !== 'hidden' && st.opacity !== '0') {
-              var zi = parseInt(st.zIndex, 10) || 0;
-              if (zi >= 9000 || n.classList.contains('modal') || n.getAttribute('role') === 'dialog') {
-                window.__egCloseMore();
-                return;
-              }
-            }
+            if (st.display === 'none' || st.visibility === 'hidden') continue;
+            window.__egCloseMore();
+            return;
           }
         });
         mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
       } catch (e) {}
+
+      /* Safety: if a pop stays open without .open class but visible, allow outside tap to kill it */
+      setInterval(function () {
+        try {
+          var pops = document.querySelectorAll('body > .e58pop, .e58pop');
+          pops.forEach(function (p) {
+            if (p.classList.contains('open')) return;
+            if (p.style.display === 'flex' || p.style.getPropertyValue('display') === 'flex') {
+              /* orphaned visible pop without open — hide it */
+              p.style.setProperty('display', 'none', 'important');
+            }
+          });
+        } catch (e) {}
+      }, 800);
     }
   }
 
@@ -47684,7 +47736,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       if (!pop.classList.contains('open')) return;
       var r = btn.getBoundingClientRect();
       pop.style.setProperty('position', 'fixed', 'important');
-      pop.style.setProperty('z-index', '9500', 'important');
+      pop.style.setProperty('z-index', '9000', 'important');
       pop.style.setProperty('top', Math.round(r.bottom + 4) + 'px', 'important');
       var left = Math.round(r.left);
       var w = pop.offsetWidth || 260;
