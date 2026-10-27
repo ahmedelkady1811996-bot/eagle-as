@@ -884,7 +884,8 @@ body.mode-sch .wire-svg,body.mode-pcb .wire-svg{opacity:.06}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0}
 .dash-cell{border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;background:var(--panel2)}
 
-/* ========== MOBILE LAYER A+B (UI + touch bridge only) ========== */
+
+/* ========== MOBILE LAYER A+B v2 ========== */
 html { -webkit-text-size-adjust: 100%; }
 html, body { overscroll-behavior: none; }
 
@@ -893,40 +894,46 @@ html, body { overscroll-behavior: none; }
   position: fixed;
   z-index: 5000;
   left: 0; right: 0; bottom: 0;
-  padding: 8px 10px max(8px, env(safe-area-inset-bottom));
-  background: rgba(37,37,38,.96);
+  padding: 4px 4px max(4px, env(safe-area-inset-bottom));
+  background: rgba(37,37,38,.98);
   border-top: 1px solid var(--border, #3e3e42);
-  backdrop-filter: blur(10px);
-  gap: 6px;
-  align-items: center;
-  justify-content: space-around;
-  box-shadow: 0 -8px 28px rgba(0,0,0,.4);
+  backdrop-filter: blur(12px);
+  gap: 2px;
+  align-items: stretch;
+  justify-content: space-between;
+  box-shadow: none;
 }
 #eg-mobi-bar button {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 48px;
+  min-height: 52px;
+  min-width: 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--muted, #858585);
-  font: 600 10px/1.2 "Segoe UI", system-ui, sans-serif;
+  font: 600 9px/1.15 "Segoe UI", system-ui, sans-serif;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  padding: 4px 1px;
 }
 #eg-mobi-bar button svg {
-  width: 22px; height: 22px;
+  width: 20px; height: 20px;
   stroke: currentColor; fill: none;
   stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
 }
 #eg-mobi-bar button.is-on {
   color: var(--accent2, #3794ff);
-  background: rgba(0,122,204,.2);
+  background: rgba(0,122,204,.22);
+}
+#eg-mobi-bar button.is-run {
+  color: var(--ok, #89d185);
 }
 #eg-mobi-bar button:active { transform: scale(.96); }
 
@@ -943,24 +950,52 @@ html, body { overscroll-behavior: none; }
   #eg-mobi-bar { display: flex; }
   #eg-mobi-scrim.is-on { display: block; }
 
+  /* Toolbar: wrap + scroll so every control is reachable */
   #toolbar {
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 6px 8px;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+    max-height: 96px !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
   }
-  .btn {
-    padding: 8px 10px;
-    min-height: 36px;
-    border-radius: 8px;
+  #toolbar .btn,
+  #toolbar button,
+  #toolbar select,
+  #toolbar input {
+    flex: 0 0 auto !important;
+    padding: 6px 8px !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+    font-size: 11px !important;
   }
-  .sp { display: none; }
-  .ttl { font-size: 12px; }
+  #toolbar .sp { display: none !important; }
+  #toolbar .ttl {
+    font-size: 11px !important;
+    max-width: 72px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  /* secondary shelf under toolbar if present */
+  #e59shelf {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    overflow-x: auto !important;
+    max-height: 52px !important;
+    gap: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
 
-  #mainrow { position: relative; }
+  #mainrow { position: relative; min-height: 0; }
 
   #palette {
     position: fixed !important;
-    left: 0; top: 0; bottom: 64px;
+    left: 0; top: 0; bottom: 60px;
     width: min(88vw, 300px) !important;
     max-width: 92vw !important;
     z-index: 2000;
@@ -973,7 +1008,7 @@ html, body { overscroll-behavior: none; }
 
   #side {
     position: fixed !important;
-    right: 0; top: 0; bottom: 64px;
+    right: 0; top: 0; bottom: 60px;
     width: min(92vw, 380px) !important;
     max-width: 96vw !important;
     z-index: 2000;
@@ -983,10 +1018,9 @@ html, body { overscroll-behavior: none; }
     min-width: 0 !important;
   }
   body.eg-mobi-side #side {
-    transform: translateX(0);
+    transform: translateX(0) !important;
     width: min(92vw, 380px) !important;
   }
-  /* when collapsed class is present keep off-screen */
   #side.sideCollapsed {
     transform: translateX(105%) !important;
     width: min(92vw, 380px) !important;
@@ -999,16 +1033,20 @@ html, body { overscroll-behavior: none; }
   }
 
   .splitter, #splitL, #splitR { display: none !important; }
-  .kd-pt { display: none !important; } /* FAB replaces edge tabs */
+  .kd-pt { display: none !important; }
 
   #center {
     flex: 1;
     width: 100%;
     min-width: 0;
     min-height: 0;
-    padding-bottom: 64px;
+    padding-bottom: 88px; /* fixed dock(28)+fab(56) */
+    display: flex;
+    flex-direction: column;
   }
+
   #viewport {
+    flex: 1;
     overflow: auto !important;
     -webkit-overflow-scrolling: touch;
     touch-action: manipulation;
@@ -1016,37 +1054,81 @@ html, body { overscroll-behavior: none; }
   }
   #workarea { margin: 12px; }
 
-  #bottomDock {
-    height: 120px;
-    max-height: 32vh;
-    margin-bottom: 64px;
+  /* Bottom dock fixed just above FAB — zero gap */
+  #eg-mobi-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    height: 56px;
+    box-sizing: border-box;
   }
-  #bottomDock.collapsed { height: 28px; min-height: 28px; margin-bottom: 64px; }
+  #bottomDock {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 56px !important; /* flush on top of FAB */
+    margin: 0 !important;
+    z-index: 4990 !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+  #bottomDock.collapsed {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    bottom: 56px !important;
+  }
+  #bottomDock:not(.collapsed) {
+    height: min(28vh, 140px) !important;
+    min-height: 90px !important;
+    max-height: 36vh !important;
+    bottom: 56px !important;
+  }
 
-  #status { display: none; }
+  #status { display: none !important; }
+
+  /* Shrink floating data HUDs around canvas */
+  #e5PowerBar, #e22ElecHud, #e23PwmHud, #e24S3Hud, #e25I2CHud,
+  [id$="Hud"], [id*="Hud"], [id*="PowerBar"] {
+    transform: scale(0.72) !important;
+    transform-origin: top left !important;
+    font-size: 10px !important;
+    opacity: 0.92 !important;
+    max-width: 150px !important;
+  }
+  #e5PowerBar {
+    transform-origin: top left !important;
+  }
+  #e22ElecHud, #e25I2CHud, #e24S3Hud {
+    transform-origin: top right !important;
+  }
+
+  /* Slightly smaller boards on mobile (comp already self-scales inner) */
+  .comp[data-type="uno"],
+  .comp[data-type="arduino_uno"],
+  .comp[data-type="nano"],
+  .comp[data-type="mega"] {
+    zoom: 0.88;
+  }
+  /* Extra shrink on HUDs */
+  #e5PowerBar, #e22ElecHud, #e23PwmHud, #e24S3Hud, #e25I2CHud,
+  [id$="Hud"], [id*="PowerBar"] {
+    transform: scale(0.62) !important;
+    max-width: 130px !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
+    padding: 4px 6px !important;
+  }
 
   .pitem { min-height: 48px; padding: 10px 8px; font-size: 13px; }
   .pitem .ic { width: 32px; height: 32px; }
   .frow { min-height: 40px; padding: 8px 10px; }
   #side .tabs .tab { min-height: 40px; padding: 10px 6px; }
 
-  /* Larger touch targets for pins & resize handles */
-  .comp .pin, .pin {
-    width: 18px !important;
-    height: 18px !important;
-  }
-  .rh {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  .rh.nw{top:-9px;left:-9px}
-  .rh.ne{top:-9px;right:-9px}
-  .rh.se{bottom:-9px;right:-9px}
-  .rh.sw{bottom:-9px;left:-9px}
-  .rh.n{top:-9px;margin-left:-10px}
-  .rh.s{bottom:-9px;margin-left:-10px}
-  .rh.e{right:-9px;margin-top:-10px}
-  .rh.w{left:-9px;margin-top:-10px}
+  .comp .pin, .pin { width: 18px !important; height: 18px !important; }
+  .rh { width: 20px !important; height: 20px !important; }
 
   .modal-box {
     width: 96% !important;
@@ -1061,13 +1143,8 @@ html, body { overscroll-behavior: none; }
 
 @media (max-width: 600px) {
   .ttl { display: none; }
-  #toolbar .btn { font-size: 11px; padding: 8px 9px; }
-}
-@supports (padding: max(0px)) {
-  @media (max-width: 900px) {
-    #palette { padding-left: env(safe-area-inset-left); }
-    #side { padding-right: env(safe-area-inset-right); }
-  }
+  #eg-mobi-bar button { font-size: 8px; min-height: 50px; }
+  #eg-mobi-bar button svg { width: 18px; height: 18px; }
 }
 
 </style>
@@ -47064,8 +47141,11 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 })();
 </script>
 
+
+
+
 <script>
-/* ===== EAGLE Simulator – Mobile layer (A: touch bridge, B: FAB UI) ===== */
+/* ===== EAGLE Simulator – Mobile layer A+B v2 ===== */
 (function () {
   'use strict';
   var MQ = '(max-width: 900px)';
@@ -47073,18 +47153,14 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     try { return window.matchMedia && window.matchMedia(MQ).matches; } catch (e) { return false; }
   }
 
-  /* ---------- A) Touch → Mouse bridge ---------- */
-  (function installTouchBridge() {
+  /* A) Touch → Mouse bridge */
+  (function () {
     var tracking = null;
-
     function isEditable(el) {
       if (!el || !el.tagName) return false;
       var t = el.tagName.toLowerCase();
-      if (t === 'input' || t === 'textarea' || t === 'select') return true;
-      if (el.isContentEditable) return true;
-      return false;
+      return t === 'input' || t === 'textarea' || t === 'select' || !!el.isContentEditable;
     }
-
     function fire(type, touch, target, buttons) {
       var ev;
       try {
@@ -47103,20 +47179,18 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       try { ev._fromTouch = true; } catch (e2) {}
       target.dispatchEvent(ev);
     }
-
     document.addEventListener('touchstart', function (e) {
       if (!e.changedTouches || !e.changedTouches.length) return;
       if (e.touches.length > 1) { tracking = null; return; }
       var t = e.changedTouches[0];
       var el = document.elementFromPoint(t.clientX, t.clientY) || e.target;
       if (isEditable(el)) return;
-      if (el.closest && el.closest('#eg-mobi-bar, #eg-mobi-scrim, .modal-box, #helpModal, #examplesModal, input, textarea, select, a')) {
+      if (el.closest && el.closest('#eg-mobi-bar, #eg-mobi-scrim, .modal-box, input, textarea, select, a')) {
         if (!el.closest('#viewport, #workarea, .comp, .pin, .rh, .wire-path')) return;
       }
       tracking = { id: t.identifier, target: el };
       fire('mousedown', t, el, 1);
     }, { passive: true, capture: true });
-
     document.addEventListener('touchmove', function (e) {
       if (!tracking || !e.changedTouches) return;
       if (e.touches && e.touches.length > 1) return;
@@ -47131,7 +47205,6 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         if (e.cancelable) e.preventDefault();
       }
     }, { passive: false, capture: true });
-
     function endTouch(e) {
       if (!tracking || !e.changedTouches) return;
       var t = null;
@@ -47140,19 +47213,24 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       }
       if (!t) return;
       fire('mouseup', t, tracking.target, 0);
-      try {
-        fire('click', t, document.elementFromPoint(t.clientX, t.clientY) || tracking.target, 0);
-      } catch (err) {}
+      try { fire('click', t, document.elementFromPoint(t.clientX, t.clientY) || tracking.target, 0); } catch (err) {}
       tracking = null;
     }
     document.addEventListener('touchend', endTouch, { passive: true, capture: true });
     document.addEventListener('touchcancel', endTouch, { passive: true, capture: true });
   })();
 
-  /* ---------- B) FAB bar + drawers ---------- */
+  function clickToolbarByText(re) {
+    var candidates = document.querySelectorAll('#toolbar .btn, #toolbar button, #modeBar button');
+    for (var i = 0; i < candidates.length; i++) {
+      var t = (candidates[i].textContent || '') + ' ' + (candidates[i].title || '');
+      if (re.test(t)) { candidates[i].click(); return true; }
+    }
+    return false;
+  }
+
   function ensureUI() {
     if (document.getElementById('eg-mobi-bar')) return;
-
     var scrim = document.createElement('div');
     scrim.id = 'eg-mobi-scrim';
     document.body.appendChild(scrim);
@@ -47160,18 +47238,14 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     var bar = document.createElement('div');
     bar.id = 'eg-mobi-bar';
     bar.innerHTML = [
-      '<button type="button" data-act="palette" aria-label="Components">',
-      '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
-      '<span>Parts</span></button>',
-      '<button type="button" data-act="side" aria-label="Properties">',
-      '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h14"/></svg>',
-      '<span>Props</span></button>',
-      '<button type="button" data-act="code" aria-label="Code">',
-      '<svg viewBox="0 0 24 24"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>',
-      '<span>Code</span></button>',
-      '<button type="button" data-act="run" aria-label="Run">',
-      '<svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg>',
-      '<span>Run</span></button>'
+      '<button type="button" data-act="palette"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Parts</span></button>',
+      '<button type="button" data-act="side"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h14"/></svg><span>Props</span></button>',
+      '<button type="button" data-act="code"><svg viewBox="0 0 24 24"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg><span>Code</span></button>',
+      '<button type="button" data-act="run" class="is-run"><svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg><span>Run</span></button>',
+      '<button type="button" data-act="stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/></svg><span>Stop</span></button>',
+      '<button type="button" data-act="serial"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Serial</span></button>',
+      '<button type="button" data-act="delete"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg><span>Del</span></button>',
+      '<button type="button" data-act="fit"><svg viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></svg><span>View</span></button>'
     ].join('');
     document.body.appendChild(bar);
 
@@ -47179,12 +47253,10 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       document.body.classList.remove('eg-mobi-palette', 'eg-mobi-side');
       scrim.classList.remove('is-on');
       bar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-on'); });
-      var html = document.documentElement;
-      html.classList.add('kd-no-palette');
+      document.documentElement.classList.add('kd-no-palette');
       var side = document.getElementById('side');
       if (side) side.classList.add('sideCollapsed');
     }
-
     function openPalette() {
       document.documentElement.classList.remove('kd-no-palette');
       document.body.classList.add('eg-mobi-palette');
@@ -47196,7 +47268,6 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         b.classList.toggle('is-on', b.getAttribute('data-act') === 'palette');
       });
     }
-
     function openSide(preferCode) {
       document.documentElement.classList.add('kd-no-palette');
       var side = document.getElementById('side');
@@ -47206,7 +47277,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       scrim.classList.add('is-on');
       bar.querySelectorAll('button').forEach(function (b) {
         var a = b.getAttribute('data-act');
-        b.classList.toggle('is-on', a === 'side' || a === 'code');
+        b.classList.toggle('is-on', a === 'side' || (preferCode && a === 'code'));
       });
       if (preferCode) {
         try {
@@ -47219,11 +47290,29 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       }
     }
 
+    function setDock(open) {
+      var d = document.getElementById('bottomDock');
+      if (!d) return;
+      if (open) d.classList.remove('collapsed');
+      else d.classList.add('collapsed');
+      try {
+        if (typeof window.setDockCollapsed === 'function') window.setDockCollapsed(!open);
+      } catch (e) {}
+      try { localStorage.setItem('e15_dock_collapsed', open ? '0' : '1'); } catch (e2) {}
+    }
+
     scrim.addEventListener('click', closeDrawers);
 
+    function clickId(id) {
+      var el = document.getElementById(id);
+      if (el) { el.click(); return true; }
+      return false;
+    }
     bar.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-act]');
       if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
       var act = btn.getAttribute('data-act');
       if (act === 'palette') {
         if (document.body.classList.contains('eg-mobi-palette')) closeDrawers();
@@ -47235,38 +47324,243 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         openSide(true);
       } else if (act === 'run') {
         closeDrawers();
+        clickId('btnRun') || clickToolbarByText(/run|start|simulat/i);
+      } else if (act === 'stop') {
+        closeDrawers();
+        clickId('btnStop') || clickId('btnReset') || clickToolbarByText(/stop|reset|halt/i);
+      } else if (act === 'serial') {
+        closeDrawers();
+        setDock(true);
         try {
-          var runBtn = document.querySelector('#btnRun, button[data-act="run"], .btn.primary, button.ok');
-          // Prefer explicit run controls
-          var candidates = document.querySelectorAll('#toolbar .btn, #toolbar button');
-          for (var i = 0; i < candidates.length; i++) {
-            var t = (candidates[i].textContent || '').toLowerCase();
-            var title = (candidates[i].title || '').toLowerCase();
-            if (/run|start|sim/i.test(t) || /run|start|sim/i.test(title)) {
-              candidates[i].click();
-              return;
-            }
+          var t = document.querySelector('#bottomTabs button[data-btab="serial"]');
+          if (t) t.click();
+          var openBtn = document.getElementById('btnDockToggle');
+          if (openBtn && document.getElementById('bottomDock') &&
+              document.getElementById('bottomDock').classList.contains('collapsed')) {
+            openBtn.click();
           }
-          if (runBtn) runBtn.click();
         } catch (err) {}
+      } else if (act === 'delete') {
+        closeDrawers();
+        clickId('btnDel') || clickToolbarByText(/delete|remove|del/i);
+      } else if (act === 'fit') {
+        closeDrawers();
+        setDock(false);
+        clickId('btnZoomAll') || clickId('btnZoomFit') || clickId('btnCompact');
+        try { window.dispatchEvent(new Event('resize')); } catch (err) {}
       }
     });
 
     if (isMobile()) {
-      document.documentElement.classList.add('kd-no-palette');
-      var side = document.getElementById('side');
-      if (side) side.classList.add('sideCollapsed');
+      function lockMobileChrome() {
+        document.documentElement.classList.add('kd-no-palette');
+        var side = document.getElementById('side');
+        if (side) side.classList.add('sideCollapsed');
+        setDock(false);
+        var pal = document.getElementById('palette');
+        if (pal && !document.body.classList.contains('eg-mobi-palette')) {
+          /* keep fixed drawer closed via transform class only */
+        }
+      }
+      lockMobileChrome();
       try {
         localStorage.setItem('eagle_panel_visibility', JSON.stringify({ palette: false, toolbar: true, side: false }));
+        localStorage.setItem('e15_dock_collapsed', '1');
       } catch (e) {}
+      setTimeout(lockMobileChrome, 300);
+      setTimeout(lockMobileChrome, 1000);
+      setTimeout(lockMobileChrome, 2000);
     }
   }
 
-  function boot() { ensureUI(); }
+  function forceToolbarMobile() {
+    if (!isMobile()) return;
+    var id = 'eg-mobi-toolbar-css';
+    if (!document.getElementById(id)) {
+      var s = document.createElement('style');
+      s.id = id;
+      s.textContent = [
+        '@media (max-width: 900px) {',
+        '  #toolbar {',
+        '    display: flex !important;',
+        '    flex-wrap: wrap !important;',
+        '    align-items: center !important;',
+        '    height: auto !important;',
+        '    min-height: 32px !important;',
+        '    max-height: 110px !important;',
+        '    overflow-x: auto !important;',
+        '    overflow-y: auto !important;',
+        '    gap: 4px !important;',
+        '    padding: 6px 8px !important;',
+        '    -webkit-overflow-scrolling: touch !important;',
+        '  }',
+        '  #toolbar .btn, #toolbar button, #toolbar .e58b, #toolbar select {',
+        '    flex: 0 0 auto !important;',
+        '    height: 30px !important;',
+        '    min-height: 30px !important;',
+        '  }',
+        '  #e59shelf {',
+        '    display: flex !important;',
+        '    flex-wrap: wrap !important;',
+        '    height: auto !important;',
+        '    max-height: 56px !important;',
+        '    overflow-x: auto !important;',
+        '    overflow-y: auto !important;',
+        '  }',
+        '}'
+      ].join('\n');
+      document.head.appendChild(s);
+    }
+    var tb = document.getElementById('toolbar');
+    if (tb) {
+      tb.style.setProperty('flex-wrap', 'wrap', 'important');
+      tb.style.setProperty('height', 'auto', 'important');
+      tb.style.setProperty('max-height', '110px', 'important');
+      tb.style.setProperty('overflow-x', 'auto', 'important');
+      tb.style.setProperty('overflow-y', 'auto', 'important');
+    }
+  }
+
+  function boot() { ensureUI(); forceToolbarMobile(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  setTimeout(boot, 500);
+  setTimeout(boot, 400);
   setTimeout(boot, 1200);
+  setTimeout(forceToolbarMobile, 1800);
+  setTimeout(forceToolbarMobile, 3000);
+})();
+</script>
+
+
+<script>
+/* ===== Android-safe save/download (same logic as RECETA uifile) =====
+   Direct <a download> often fails inside Android WebView. Flow:
+   1) Web Share API with File (if available)
+   2) Upload blob to tmpfiles.org → open direct /dl/ URL (Chrome intent on Android)
+   3) Fallback classic <a download>
+*/
+(function () {
+  if (window.__appSaveBlob) return;
+  var UPLOAD_API = 'https://tmpfiles.org/api/v1/upload';
+
+  function directUrl(res) {
+    var d = (res && res.data) || {};
+    var u = d.url_download || d.url || '';
+    if (!u) return '';
+    try {
+      var p = new URL(u);
+      if (/(^|\.)tmpfiles\.org$/i.test(p.hostname) && !/\/dl\//i.test(p.pathname)) {
+        u = p.origin + '/dl' + p.pathname + p.search;
+      }
+    } catch (e) {}
+    return u;
+  }
+
+  function openDownload(url) {
+    if (/Android/i.test(navigator.userAgent) && /^https?:/i.test(url)) {
+      var intent = 'intent://' + url.replace(/^https?:\/\//, '') +
+        '#Intent;scheme=https;package=com.android.chrome;S.browserFallbackUri=' +
+        encodeURIComponent(url) + ';end';
+      var handed = false;
+      try { handed = !!window.open(intent, '_blank'); } catch (e) {}
+      setTimeout(function () {
+        if (!handed) { try { window.location.href = url; } catch (e2) {} }
+      }, 1200);
+      return;
+    }
+    var w = null;
+    try { w = window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) {}
+    if (!w) {
+      try { window.location.href = url; } catch (e2) {}
+      return;
+    }
+    setTimeout(function () { try { w.close(); } catch (e3) {} }, 2500);
+  }
+
+  function toastMsg(msg) {
+    try {
+      if (typeof toast === 'function') { toast(msg); return; }
+      if (window.widgets && typeof window.widgets.toast === 'function') { window.widgets.toast(msg); return; }
+    } catch (e) {}
+    try { console.log('[save]', msg); } catch (e2) {}
+  }
+
+  async function saveBlob(blob, filename) {
+    filename = filename || 'download.bin';
+    try {
+      var file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: filename });
+        return 'shared';
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return 'cancel';
+    }
+
+    try {
+      toastMsg('Uploading for download…');
+      var fd = new FormData();
+      fd.append('file', blob, filename);
+      var res = await fetch(UPLOAD_API, { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var out = await res.json();
+      var direct = directUrl(out);
+      if (!direct) throw new Error('no url');
+      toastMsg('Ready — opening download…');
+      openDownload(direct);
+      return 'upload';
+    } catch (e) {
+      toastMsg('Upload failed — trying direct download');
+    }
+
+    try {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.rel = 'noopener';
+      a.setAttribute('data-app-native-dl', '1');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
+      return 'download';
+    } catch (e2) {
+      return 'cancel';
+    }
+  }
+
+  function saveText(filename, text, mime) {
+    var blob = new Blob([text == null ? '' : text], { type: mime || 'text/plain;charset=utf-8' });
+    return saveBlob(blob, filename);
+  }
+
+  window.__appSaveBlob = saveBlob;
+  window.__appSaveText = saveText;
+  window.__appOpenDownload = openDownload;
+  window.saveBlob = saveBlob; // alias used by some apps
+
+  /* Intercept programmatic & user clicks on <a download href="blob:..."> */
+  document.addEventListener('click', function (e) {
+    try {
+      var a = e.target && e.target.closest ? e.target.closest('a[download]') : null;
+      if (!a) return;
+      if (a.getAttribute('data-app-native-dl') === '1') return; // fallback path
+      var href = a.href || '';
+      var name = a.getAttribute('download') || 'download';
+      if (!href) return;
+      if (href.indexOf('blob:') !== 0 && href.indexOf('data:') !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      fetch(href).then(function (r) { return r.blob(); }).then(function (b) {
+        return saveBlob(b, name);
+      }).catch(function () {
+        // last resort: navigate
+        try { openDownload(href); } catch (err) {}
+      });
+    } catch (err) {}
+  }, true);
 })();
 </script>
 
