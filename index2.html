@@ -47442,12 +47442,50 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '  }',
       '  #toolbar > * { flex: 0 0 auto !important; }',
       '  #toolbar .e58more { position: relative !important; display: inline-flex !important; }',
-      '  #toolbar .e58pop, .e58pop {',
+      '  /* Themed more-pop even when moved to body (loses #toolbar ancestor) */',
+      '  #toolbar .e58pop, body > .e58pop, .e58pop.open {',
       '    position: fixed !important; z-index: 20000 !important;',
-      '    max-height: min(65vh, 440px) !important; overflow: auto !important;',
-      '    min-width: min(260px, 92vw) !important;',
+      '    display: none;',
+      '    flex-direction: column !important; gap: 8px !important;',
+      '    max-height: min(65vh, 440px) !important; overflow-y: auto !important; overflow-x: hidden !important;',
+      '    min-width: min(280px, 92vw) !important; width: min(300px, 92vw) !important;',
+      '    padding: 10px !important;',
+      '    background: #1b1f29 !important;',
+      '    border: 1px solid #2f3542 !important;',
+      '    border-radius: 12px !important;',
+      '    box-shadow: 0 18px 48px rgba(0,0,0,.65) !important;',
+      '    -webkit-overflow-scrolling: touch !important;',
       '  }',
-      '  #toolbar .e58pop.open, .e58pop.open { display: flex !important; }',
+      '  #toolbar .e58pop.open, body > .e58pop.open, .e58pop.open { display: flex !important; }',
+      '  #toolbar .e58pop .e58grp, body > .e58pop .e58grp, .e58pop .e58grp {',
+      '    display: flex !important; flex-wrap: wrap !important; gap: 4px !important;',
+      '  }',
+      '  #toolbar .e58pop .e58cap, body > .e58pop .e58cap, .e58pop .e58cap {',
+      '    font-size: 10px !important; letter-spacing: 1px !important;',
+      '    color: #7c8699 !important; font-weight: 700 !important;',
+      '    text-transform: uppercase !important; width: 100% !important;',
+      '    padding: 6px 4px 4px !important;',
+      '  }',
+      '  #toolbar .e58pop .e58b, body > .e58pop .e58b, .e58pop .e58b {',
+      '    display: inline-flex !important; align-items: center !important;',
+      '    justify-content: flex-start !important; gap: 10px !important;',
+      '    width: 100% !important; min-width: 0 !important;',
+      '    height: 36px !important; padding: 0 10px !important;',
+      '    font-size: 12px !important; border-radius: 8px !important;',
+      '    background: transparent !important; border: 1px solid transparent !important;',
+      '    color: #d4d8e0 !important; cursor: pointer !important;',
+      '  }',
+      '  #toolbar .e58pop .e58b:hover, body > .e58pop .e58b:hover, .e58pop .e58b:hover,',
+      '  #toolbar .e58pop .e58b:active, body > .e58pop .e58b:active {',
+      '    background: rgba(255,255,255,.06) !important; border-color: #343b4b !important;',
+      '  }',
+      '  #toolbar .e58pop .e58b::after, body > .e58pop .e58b::after, .e58pop .e58b::after {',
+      '    content: attr(data-e58lbl) !important; font-size: 12px !important;',
+      '    color: #d4d8e0 !important; font-weight: 500 !important;',
+      '  }',
+      '  #toolbar .e58pop .e58lbl, body > .e58pop .e58lbl {',
+      '    font-size: 12px !important; margin-left: 6px !important; color: #d4d8e0 !important;',
+      '  }',
       '  #toolbar #e58More, #toolbar #egMoreBtn { display: inline-flex !important; }',
       '  #toolbar #selTheme, #toolbar #btnTheme { display: inline-flex !important; visibility: visible !important; }',
       '  #viewport { overflow: scroll !important; touch-action: pan-x pan-y !important; -webkit-overflow-scrolling: touch !important; }',
@@ -47491,26 +47529,48 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     var moreBtn = tb.querySelector('#e58More') || tb.querySelector('#egMoreBtn');
     var pop = tb.querySelector('.e58pop');
     if (!moreBtn || !pop) return;
-    if (moreBtn._egSafeMore) return;
-    moreBtn._egSafeMore = true;
-    moreBtn.addEventListener('click', function (ev) {
-      setTimeout(function () {
-        if (!pop.classList.contains('open')) return;
-        var r = moreBtn.getBoundingClientRect();
-        if (pop.parentElement !== document.body) {
-          pop._egHome = pop.parentElement;
-          document.body.appendChild(pop);
-        }
-        pop.style.setProperty('position', 'fixed', 'important');
-        pop.style.setProperty('z-index', '20000', 'important');
-        pop.style.setProperty('display', 'flex', 'important');
-        var left = Math.round(Math.min(r.left, window.innerWidth - 280));
-        if (left < 8) left = 8;
-        pop.style.setProperty('top', Math.round(r.bottom + 6) + 'px', 'important');
-        pop.style.setProperty('left', left + 'px', 'important');
-        pop.style.setProperty('right', 'auto', 'important');
-      }, 0);
-    }, false);
+    if (!moreBtn._egSafeMore) {
+      moreBtn._egSafeMore = true;
+      moreBtn.addEventListener('click', function (ev) {
+        setTimeout(function () {
+          if (!pop.classList.contains('open')) return;
+          var r = moreBtn.getBoundingClientRect();
+          if (pop.parentElement !== document.body) {
+            pop._egHome = pop.parentElement;
+            document.body.appendChild(pop);
+          }
+          pop.style.setProperty('position', 'fixed', 'important');
+          pop.style.setProperty('z-index', '20000', 'important');
+          pop.style.setProperty('display', 'flex', 'important');
+          pop.style.setProperty('flex-direction', 'column', 'important');
+          var left = Math.round(Math.min(r.left, window.innerWidth - 300));
+          if (left < 8) left = 8;
+          var top = Math.round(r.bottom + 6);
+          if (top + 120 > window.innerHeight) top = Math.max(8, window.innerHeight - 360);
+          pop.style.setProperty('top', top + 'px', 'important');
+          pop.style.setProperty('left', left + 'px', 'important');
+          pop.style.setProperty('right', 'auto', 'important');
+        }, 0);
+      }, false);
+    }
+    /* Close themed more-menu after picking an item (mobile) */
+    if (!window._egMoreItemClose) {
+      window._egMoreItemClose = true;
+      document.addEventListener('click', function (ev) {
+        if (!isMobile()) return;
+        var open = document.querySelector('.e58pop.open');
+        if (!open) return;
+        var item = ev.target.closest && ev.target.closest('.e58pop .e58b, .e58pop button, .e58pop [data-e58lbl]');
+        if (!item) return;
+        /* allow the action to run, then close */
+        setTimeout(function () {
+          open.classList.remove('open');
+          var m = document.getElementById('e58More') || document.getElementById('egMoreBtn');
+          if (m) m.classList.remove('on');
+          open.style.removeProperty('display');
+        }, 0);
+      }, false);
+    }
   }
 
   /* Canvas pan: drag empty board → scroll #viewport (fallback if native pan fails) */
