@@ -970,15 +970,31 @@ html, body { overscroll-behavior: none; }
   #e59shelf {
     display: flex !important;
     flex-wrap: nowrap !important;
-    overflow: visible !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
     max-height: none !important;
     gap: 2px !important;
     position: relative !important;
     z-index: 8000 !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x !important;
+    scrollbar-width: none;
   }
+  #e59shelf::-webkit-scrollbar { display: none; }
+  #e59shelf .e59menu { flex: 0 0 auto !important; }
+  /* Pops escape the scrolling shelf */
   #e59shelf .e59menu-pop, .e59menu-pop {
     z-index: 9000 !important;
+    position: fixed !important;
   }
+  #toolbar {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x !important;
+    scrollbar-width: none;
+  }
+  #toolbar::-webkit-scrollbar { display: none; }
   #viewport {
     overflow: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -47394,18 +47410,22 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '    height: 28px !important;',
       '    min-height: 28px !important;',
       '    max-height: none !important;',
-      '    overflow: visible !important;',
+      '    overflow-x: auto !important;',
+      '    overflow-y: visible !important;',
       '    gap: 2px !important;',
       '    position: relative !important;',
       '    z-index: 8000 !important;',
+      '    -webkit-overflow-scrolling: touch !important;',
+      '    touch-action: pan-x !important;',
       '  }',
-      '  #e59shelf .e59menu { position: relative !important; z-index: 8001 !important; }',
+      '  #e59shelf .e59menu { position: relative !important; z-index: 8001 !important; flex: 0 0 auto !important; }',
       '  #e59shelf .e59menu-pop, #e59shelf .e59pop, .e59menu-pop {',
       '    z-index: 9000 !important;',
-      '    position: absolute !important;',
+      '    position: fixed !important;',
       '    max-height: min(60vh, 420px) !important;',
       '    overflow: auto !important;',
       '  }',
+      '  #toolbar { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; }',
       '  /* Row 2: compact toolbar — theme + transport + more only */',
       '  #toolbar {',
       '    display: flex !important;',
@@ -47487,6 +47507,55 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       shelf.style.setProperty('z-index', '8000', 'important');
     }
   }
+
+
+  /* Exclusive e59 menus + close on item pick + fixed position */
+  function closeAllE59(exceptPop) {
+    document.querySelectorAll('.e59menu-pop.open, .e59pop.open').forEach(function (p) {
+      if (exceptPop && p === exceptPop) return;
+      p.classList.remove('open');
+      p.style.removeProperty('top');
+      p.style.removeProperty('left');
+      p.style.removeProperty('position');
+      p.style.removeProperty('z-index');
+    });
+  }
+  function placeE59Pop(btn) {
+    var menu = btn.closest('.e59menu') || btn.parentElement;
+    var pop = menu && (menu.querySelector('.e59menu-pop') || menu.querySelector('.e59pop'));
+    if (!pop) return;
+    closeAllE59(pop);
+    setTimeout(function () {
+      if (!pop.classList.contains('open')) return;
+      var r = btn.getBoundingClientRect();
+      pop.style.setProperty('position', 'fixed', 'important');
+      pop.style.setProperty('z-index', '9500', 'important');
+      pop.style.setProperty('top', Math.round(r.bottom + 4) + 'px', 'important');
+      var left = Math.round(r.left);
+      var w = pop.offsetWidth || 260;
+      if (left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
+      pop.style.setProperty('left', left + 'px', 'important');
+      pop.style.setProperty('right', 'auto', 'important');
+    }, 0);
+  }
+  document.addEventListener('click', function (e) {
+    if (!isMobile()) return;
+    var btn = e.target.closest && e.target.closest('#e59shelf .e59mbtn, #e59shelf .e59menu > button, #e59shelf .e59menu');
+    // Prefer actual trigger button
+    var trigger = e.target.closest && e.target.closest('#e59shelf .e59mbtn');
+    if (trigger) {
+      placeE59Pop(trigger);
+      return;
+    }
+    // Item inside open pop → close after action
+    var item = e.target.closest && e.target.closest('.e59menu-pop button, .e59menu-pop [role="menuitem"], .e59menu-pop .e59b, .e59menu-pop a, .e59pop button');
+    if (item) {
+      setTimeout(function () { closeAllE59(null); }, 0);
+      return;
+    }
+    if (e.target.closest && e.target.closest('.e59menu-pop, .e59pop')) return;
+    closeAllE59(null);
+  }, true);
 
   function boot() { ensureUI(); forceToolbarMobile(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
