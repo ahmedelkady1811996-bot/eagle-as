@@ -1632,6 +1632,8 @@ select, input[type=text], input[type=number], input[type=range], textarea {
 <p>Partial libs: <b>Servo</b> (attach/write), <b>LiquidCrystal</b> (print/setCursor/clear), <b>Wire</b> (I2C stub). PWM dims LEDs & speeds motors. Serial monitor is bidirectional.</p>
 <button class="btn primary" style="margin-top:12px" onclick="$('libModal').classList.remove('on')">Close</button>
 </div></div>
+<script src="pin-overrides.js"></script>
+<script src="wokwi-elements.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
@@ -48044,10 +48046,12 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 #cx110 .cxsub{display:none;position:absolute;left:100%;top:-5px;min-width:190px;max-height:60vh;overflow:auto;background:#252526;border:1px solid #3e3e42;border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);color:#ccc}
 #cx110 .cxsub.left{left:auto;right:100%}
 #cx110 .cxi:hover>.cxsub,#cx110 .cxi.open>.cxsub{display:block}
-#pe110{position:fixed;top:80px;right:16px;width:290px;z-index:99990;background:#252526;border:1px solid #3e3e42;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.6);color:#ccc;font-size:12px;display:none}
-#pe110 .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #3e3e42;cursor:move;font-weight:600;color:#3794ff}
+#pe110{position:static;width:auto;background:#1e1e1e;border:1px solid #3794ff;border-radius:8px;color:#ccc;font-size:12px;display:none;margin:4px 0 8px}
+#pe110.float{position:fixed;top:80px;right:16px;width:290px;z-index:99990;background:#252526;border:1px solid #3e3e42;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.6)}
+.pe-row.on{background:#2a2d2e;border-radius:4px}
+#pe110 .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #3e3e42;cursor:default;font-weight:600;color:#3794ff}
 #pe110 .ph span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#pe110 .pb{padding:10px;display:flex;flex-direction:column;gap:7px;max-height:70vh;overflow:auto}
+#pe110 .pb{padding:10px;display:flex;flex-direction:column;gap:7px}#pe110.float .pb{max-height:70vh;overflow:auto}#pe110.float .ph{cursor:move}
 #pe110 .r{display:flex;align-items:center;gap:6px}#pe110 .r>label{width:70px;color:#858585;flex:0 0 auto}
 #pe110 input[type=text],#pe110 input[type=number],#pe110 select,#pe110 textarea{flex:1;min-width:0;background:#2d2d2d;color:#ccc;border:1px solid #3e3e42;border-radius:5px;padding:4px 6px;font-size:12px;font-family:inherit}
 #pe110 textarea{resize:vertical;min-height:46px}
@@ -48146,6 +48150,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
 
   /* ================= 3) PIN EDITOR ================= */
+  var PANEL = null; /* the editor lives inside the inspector's "Pins" list (floats only as a fallback) */
   var ED = null; /* {cid, pin, orig, d} */
   var KINDS = ["io", "vcc", "gnd", "analog", "pwm", "digital", "input", "output", "signal"];
   function setOpt(p, k, v) { if (v === "" || v == null || v === false) delete p[k]; else p[k] = v; }
@@ -48157,8 +48162,8 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     return { x: +p.localX || 0, y: +p.localY || 0, kind: p.kind || "io", label: p.label || "", note: p.note || "", color: p.color || "#3794ff", useColor: !!p.color, showLabel: !!p.showLabel };
   }
   function ensurePanel() {
-    var b = $("pe110"); if (b) return b;
-    b = D.createElement("div"); b.id = "pe110";
+    if (PANEL) return PANEL;
+    var b = D.createElement("div"); b.id = "pe110"; PANEL = b;
     b.innerHTML = '<div class="ph" id="pe_h"><span id="pe_t">Pin editor</span><button class="btn" id="pe_x">✕</button></div>' +
       '<div class="pb">' +
       '<div class="r"><label>Pin</label><button class="btn" id="pe_prev">◀</button><select id="pe_sel"></select><button class="btn" id="pe_next">▶</button></div>' +
@@ -48169,13 +48174,15 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       '<div class="r"><label>Nudge</label><span class="nb"><span></span><button class="btn" data-n="0,-1">↑</button><span></span><button class="btn" data-n="-1,0">←</button><button class="btn" data-n="0,1">↓</button><button class="btn" data-n="1,0">→</button></span></div>' +
       '<div class="r"><label>Color</label><input type="checkbox" id="pe_uc"/><input type="color" id="pe_color"/></div>' +
       '<div class="r"><label>Label</label><input type="checkbox" id="pe_sl"/><span>Show name on canvas</span></div>' +
-      '<div class="hint">Tip: drag the pin itself on the canvas to move it (Shift = free, otherwise snaps to 0.5px). Save keeps changes with the project (undo supported).</div></div>' +
+      '<div class="r"><span id="pe_sync"></span><button class="btn" id="pe_data">Pin data…</button></div>' +
+      '<div class="hint">Tip: drag the pin itself on the canvas to move it (Shift = free, otherwise snaps to 0.5px). Save stores this pin for every part of this type (pin-overrides.js); other types keep the code defaults.</div></div>' +
       '<div class="pf"><button class="btn" id="pe_reset">Reset pin</button><button class="btn" id="pe_cancel">Cancel</button><button class="btn primary" id="pe_save">Save</button></div>';
     D.body.appendChild(b);
     $("pe_kind").innerHTML = KINDS.map(function (k) { return '<option value="' + k + '">' + k + "</option>"; }).join("");
     $("pe_x").onclick = $("pe_cancel").onclick = function () { cancelEd(); };
     $("pe_save").onclick = function () { commitEd(); closeEd(); T("Pin saved"); };
     $("pe_reset").onclick = resetEd;
+    $("pe_data").onclick = function () { try { root.E111.openDialog(); } catch (e) {} };
     $("pe_prev").onclick = function () { step(-1); }; $("pe_next").onclick = function () { step(1); };
     $("pe_sel").onchange = function () { commitEd(true); openPinEditor(ED.cid, this.value); };
     var ids = { pe_label: "label", pe_note: "note", pe_kind: "kind", pe_x2: "x", pe_y2: "y", pe_color: "color", pe_uc: "useColor", pe_sl: "showLabel" };
@@ -48207,14 +48214,26 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     var c = FC(cid); if (!c || !c.pins || !c.pins[pn]) return;
     var panel = ensurePanel();
     if (ED && (ED.cid !== cid)) cancelEd();
+    if (typeof selectedId === "undefined" || selectedId !== cid) { try { select(cid); } catch (e) {} }
+    try { if (typeof activeTab !== "undefined" && activeTab !== "props") switchTab("props"); } catch (e) {}
+    try { renderInspector(); } catch (e) {}
     var p = c.pins[pn];
     if (!p._o) p._o = { localX: p.localX, localY: p.localY, kind: p.kind || "io" };
     ED = { cid: cid, pin: pn, orig: JSON.parse(JSON.stringify(p)), d: toDraft(p) };
+    place(cid, pn);
     var keys = Object.keys(c.pins);
     $("pe_sel").innerHTML = keys.map(function (k) { return '<option value="' + esc(k) + '">' + esc(pinName(c, k) === k ? k : pinName(c, k) + " (" + k + ")") + "</option>"; }).join("");
     $("pe_sel").value = pn; $("pe_t").textContent = "Pin editor — " + cLabel(c);
     if (KINDS.indexOf(ED.d.kind) < 0) $("pe_kind").insertAdjacentHTML("beforeend", '<option value="' + esc(ED.d.kind) + '">' + esc(ED.d.kind) + "</option>");
-    fill(); panel.style.display = "block";
+    fill(); panel.style.display = "block"; try { root.E111.refreshBadge(); } catch (e) {}
+  }
+  function place(cid, pn) {
+    if (!PANEL) return;
+    var box = $("e110pins"), row = null;
+    if (box) Array.prototype.forEach.call(box.querySelectorAll(".pe-row"), function (r) { var on = r.getAttribute("data-row") === pn; r.classList.toggle("on", on); if (on) row = r; });
+    if (row && typeof selectedId !== "undefined" && selectedId === cid) { PANEL.classList.remove("float"); row.parentNode.insertBefore(PANEL, row.nextSibling); }
+    else { PANEL.classList.add("float"); D.body.appendChild(PANEL); }
+    PANEL.style.display = "block";
   }
   function step(dir) {
     var c = FC(ED.cid); if (!c) return; var k = Object.keys(c.pins), i = k.indexOf(ED.pin);
@@ -48226,6 +48245,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     Object.keys(p).forEach(function (k) { delete p[k]; });
     Object.keys(ED.orig).forEach(function (k) { p[k] = ED.orig[k]; });
     snap(); applyDraft(p, d); if (!p._o && ED.orig._o) p._o = ED.orig._o; full(); save();
+    try { root.E111 && root.E111.capture(c, ED.pin); } catch (e) { console.warn("E111", e); }
     ED.orig = JSON.parse(JSON.stringify(p));
   }
   function cancelEd() {
@@ -48234,7 +48254,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     if (c && c.pins[ED.pin]) { var p = c.pins[ED.pin]; Object.keys(p).forEach(function (k) { delete p[k]; }); Object.keys(ED.orig).forEach(function (k) { p[k] = ED.orig[k]; }); full(); }
     closeEd();
   }
-  function closeEd() { var b = $("pe110"); if (b) b.style.display = "none"; ED = null; try { renderInspector(); } catch (e) {} }
+  function closeEd() { var b = PANEL; if (b) { b.style.display = "none"; b.classList.remove("float"); D.body.appendChild(b); } ED = null; try { renderInspector(); } catch (e) {} }
   function resetEd() {
     if (!ED) return; var c = FC(ED.cid), p = c.pins[ED.pin], o = p._o || {};
     ED.d = { x: o.localX != null ? o.localX : ED.d.x, y: o.localY != null ? o.localY : ED.d.y, kind: o.kind || "io", label: "", note: "", color: "#3794ff", useColor: false, showLabel: false };
@@ -48268,16 +48288,20 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   /* inspector: pin list under component properties */
   function inspectorPins() {
     try {
-      var tb = $("tabbody"); if (!tb || typeof activeTab === "undefined" || activeTab !== "props") return;
-      var old = $("e110pins"); if (old) old.remove();
+      var tb = $("tabbody"); if (PANEL && !D.body.contains(PANEL)) D.body.appendChild(PANEL);
+      if (!tb || typeof activeTab === "undefined" || activeTab !== "props") { if (ED) place(ED.cid, ED.pin); return; }
+      var old = $("e110pins");
+      if (old && ED && PANEL && old.contains(PANEL) && selectedId === ED.cid) return; /* keep typing focus while editing */
+      if (old) { if (PANEL && old.contains(PANEL)) D.body.appendChild(PANEL); old.remove(); }
       if (typeof selectedWireId !== "undefined" && selectedWireId && !selectedId) return;
       var c = selectedId && FC(selectedId); if (!c || !c.pins) return;
       var keys = Object.keys(c.pins); if (!keys.length) return;
       var box = D.createElement("div"); box.id = "e110pins";
       box.innerHTML = '<div class="gh" style="margin-top:10px">Pins (' + keys.length + ")</div>" + keys.map(function (k) {
-        var p = c.pins[k]; return '<div class="pe-row"><span class="dot" style="' + (p.color ? "background:" + esc(p.color) : "") + '"></span><span class="nm" title="' + esc(p.note || "") + '">' + esc(pinName(c, k)) + (p.label ? ' <span class="kd">' + esc(k) + "</span>" : "") + '</span><span class="kd">' + esc(p.kind || "io") + '</span><button class="btn" data-k="' + esc(k) + '">Edit</button></div>';
+        var p = c.pins[k]; return '<div class="pe-row" data-row="' + esc(k) + '"><span class="dot" style="' + (p.color ? "background:" + esc(p.color) : "") + '"></span><span class="nm" title="' + esc(p.note || "") + '">' + esc(pinName(c, k)) + (p.label ? ' <span class="kd">' + esc(k) + "</span>" : "") + '</span><span class="kd">' + esc(p.kind || "io") + '</span><button class="btn" data-k="' + esc(k) + '">Edit</button></div>';
       }).join("");
       tb.appendChild(box);
+      if (ED && ED.cid === c.id) place(ED.cid, ED.pin);
       box.querySelectorAll("button[data-k]").forEach(function (b) { b.onclick = function () { openPinEditor(c.id, b.dataset.k); }; });
     } catch (e) {}
   }
@@ -48460,6 +48484,333 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
   if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
   setTimeout(boot, 600); setTimeout(boot, 2500);
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<script id="e111-pin-store">
+/* E111 - Per-TYPE pin store.
+ * Pin edits made in the Pin editor are saved per component TYPE (not per instance) in
+ * pin-overrides.js (next to this page). Layers, highest priority first:
+ *   1) unsynced local draft (localStorage, only while the file could not be written)
+ *   2) pin-overrides.js  (window.EAGLE_PIN_OVERRIDES, loaded by <script src>)
+ *   3) the defaults hard-coded in makeComponent()  -> used when a type has no entry
+ * Writing back: linked local file (File System Access API) > download > GitHub commit. */
+(function (root) {
+  "use strict";
+  if (root.E111) return;
+  var D = document, LS_DRAFT = "eagle.pinOverrides.draft.v1", LS_GH = "eagle.pinOverrides.gh.v1", FILE = "pin-overrides.js";
+  var FIELDS = ["localX", "localY", "kind", "label", "note", "color", "showLabel"];
+  var BASE = ["localX", "localY", "kind"];
+  function T(m, k) { try { root.toast(m, k || "ok"); } catch (e) {} }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function emptyObj(o) { return !o || !Object.keys(o).length; }
+  function same(a, b) { return JSON.stringify(a || null) === JSON.stringify(b || null); }
+
+  /* ---------- layers ---------- */
+  var file = clone((root.EAGLE_PIN_OVERRIDES && root.EAGLE_PIN_OVERRIDES.types) ? root.EAGLE_PIN_OVERRIDES : { version: 1, types: {} });
+  var draft = {}; /* {type:{pin: entry|null}}  null = "reset to code default" */
+  try { var rd = localStorage.getItem(LS_DRAFT); if (rd) draft = JSON.parse(rd) || {}; } catch (e) { draft = {}; }
+  var REV = 1, seen = (typeof WeakMap !== "undefined") ? new WeakMap() : null;
+
+  function saveDraft() { try { if (emptyObj(draft)) localStorage.removeItem(LS_DRAFT); else localStorage.setItem(LS_DRAFT, JSON.stringify(draft)); } catch (e) {} }
+  function eff(type, pn) {
+    var d = draft[type];
+    if (d && Object.prototype.hasOwnProperty.call(d, pn)) return d[pn] || null;
+    return (file.types[type] && file.types[type][pn]) || null;
+  }
+  function effectiveRegistry() {
+    var out = { version: 1, updatedAt: new Date().toISOString(), types: {} };
+    Object.keys(file.types).forEach(function (t) { Object.keys(file.types[t]).forEach(function (p) { var e = eff(t, p); if (e) (out.types[t] = out.types[t] || {})[p] = e; }); });
+    Object.keys(draft).forEach(function (t) { Object.keys(draft[t]).forEach(function (p) { var e = eff(t, p); if (e) (out.types[t] = out.types[t] || {})[p] = e; }); });
+    var s = { version: 1, updatedAt: out.updatedAt, types: {} };
+    Object.keys(out.types).sort().forEach(function (t) { s.types[t] = {}; Object.keys(out.types[t]).sort().forEach(function (p) { s.types[t][p] = out.types[t][p]; }); });
+    return s;
+  }
+  function serialize() {
+    return "/* Eagle pin overrides - written by the Pin editor. Keep this file next to the HTML.\n   Delete a type/pin here to fall back to the defaults in the code. */\nwindow.EAGLE_PIN_OVERRIDES = " + JSON.stringify(effectiveRegistry(), null, 1) + ";\n";
+  }
+  function pendingCount() { var n = 0; Object.keys(draft).forEach(function (t) { n += Object.keys(draft[t]).length; }); return n; }
+  function totalCount() { var r = effectiveRegistry(), n = 0; Object.keys(r.types).forEach(function (t) { n += Object.keys(r.types[t]).length; }); return n; }
+
+  /* ---------- apply to component instances ---------- */
+  function applyToComp(c) {
+    if (!c || !c.pins || c.type === "custom") return false; /* "custom" parts have user-defined pins per instance */
+    var changed = false;
+    Object.keys(c.pins).forEach(function (pn) {
+      var p = c.pins[pn], e = eff(c.type, pn);
+      if (e) {
+        if (!p._o) p._o = { localX: p.localX, localY: p.localY, kind: p.kind || "io" };
+        FIELDS.forEach(function (k) {
+          if (e[k] != null) { if (p[k] !== e[k]) { p[k] = e[k]; changed = true; } }
+          else if (p._ovr) {
+            if (BASE.indexOf(k) >= 0) { if (p._o[k] != null && p[k] !== p._o[k]) { p[k] = p._o[k]; changed = true; } }
+            else if (k in p) { delete p[k]; changed = true; }
+          }
+        });
+        p._ovr = 1;
+      } else if (p._ovr) {
+        var o = p._o || {};
+        BASE.forEach(function (k) { if (o[k] != null) p[k] = o[k]; });
+        ["label", "note", "color", "showLabel", "_ovr"].forEach(function (k) { delete p[k]; });
+        changed = true;
+      }
+    });
+    return changed;
+  }
+  function comps() { return (typeof components !== "undefined" && components) ? components : []; }
+  function sweep(force) {
+    var any = false;
+    comps().forEach(function (c) {
+      if (!c) return;
+      if (!force && seen && seen.get(c) === REV) return;
+      if (applyToComp(c)) any = true;
+      if (seen) seen.set(c, REV);
+    });
+    return any;
+  }
+  function refresh() { REV++; var ch = sweep(true); root._forceFullRender = true; try { root.render(); } catch (e) {} return ch; }
+
+  /* ---------- called by the Pin editor on Save ---------- */
+  function capture(c, pn) {
+    if (!c || c.type === "custom" || !c.pins || !c.pins[pn]) return;
+    var p = c.pins[pn], o = p._o || {}, e = {};
+    ["localX", "localY"].forEach(function (k) { if (o[k] == null || p[k] !== o[k]) e[k] = p[k]; });
+    if (p.kind && p.kind !== (o.kind || "io")) e.kind = p.kind;
+    if (p.label) e.label = p.label; if (p.note) e.note = p.note; if (p.color) e.color = p.color; if (p.showLabel) e.showLabel = true;
+    var val = emptyObj(e) ? null : e, fe = (file.types[c.type] && file.types[c.type][pn]) || null;
+    draft[c.type] = draft[c.type] || {};
+    if (same(val, fe)) delete draft[c.type][pn]; else draft[c.type][pn] = val;
+    if (emptyObj(draft[c.type])) delete draft[c.type];
+    saveDraft();
+    if (val) p._ovr = 1; else delete p._ovr;
+    REV++; if (seen) seen.set(c, REV);
+    comps().forEach(function (x) { if (x !== c && x.type === c.type) { applyToComp(x); if (seen) seen.set(x, REV); } });
+    root._forceFullRender = true; try { root.render(); } catch (er) {}
+    badge(); autoSync();
+  }
+
+  /* ---------- writing the file ---------- */
+  function idb(fn) {
+    return new Promise(function (res, rej) {
+      try {
+        var rq = indexedDB.open("eagle-pin-store", 1);
+        rq.onupgradeneeded = function () { rq.result.createObjectStore("h"); };
+        rq.onerror = function () { rej(rq.error); };
+        rq.onsuccess = function () { var db = rq.result, tx = db.transaction("h", "readwrite"), r = fn(tx.objectStore("h")); tx.oncomplete = function () { res(r && r.result); }; tx.onerror = function () { rej(tx.error); }; };
+      } catch (e) { rej(e); }
+    });
+  }
+  var handle = null;
+  function loadHandle() { return idb(function (s) { return s.get("file"); }).then(function (h) { handle = h || null; }).catch(function () {}); }
+  async function writeHandle() {
+    if (!handle) return false;
+    var perm = await handle.queryPermission({ mode: "readwrite" });
+    if (perm !== "granted") perm = await handle.requestPermission({ mode: "readwrite" });
+    if (perm !== "granted") return false;
+    var w = await handle.createWritable(); await w.write(serialize()); await w.close(); return true;
+  }
+  function markSynced() { file = effectiveRegistry(); draft = {}; saveDraft(); badge(); }
+  var busy = false;
+  async function autoSync() {
+    if (busy || !pendingCount() || !handle) return;
+    busy = true;
+    try { if (await writeHandle()) { markSynced(); T("Pin data saved to " + (handle.name || FILE)); } else T("Pin file not writable yet - open Pin data… and reconnect", "warn"); }
+    catch (e) { T("Could not write pin file: " + (e.message || e), "err"); }
+    busy = false; badge();
+  }
+  async function linkFile() {
+    if (!root.showSaveFilePicker) { T("This browser cannot link a file - use Download or GitHub", "warn"); return; }
+    try {
+      handle = await root.showSaveFilePicker({ suggestedName: FILE, types: [{ description: "Pin overrides", accept: { "text/javascript": [".js"] } }] });
+      await idb(function (s) { return s.put(handle, "file"); });
+      if (await writeHandle()) { markSynced(); T("Linked " + handle.name + " - pin edits now save there automatically"); }
+    } catch (e) { if (e && e.name !== "AbortError") T("Link failed: " + e.message, "err"); }
+    dlg();
+  }
+  function download() {
+    var txt = serialize();
+    if (typeof root.__bridgePush === "function") { root.__bridgePush("download", { filename: FILE, content: "data:text/javascript;base64," + btoa(unescape(encodeURIComponent(txt))) }); }
+    else { var a = D.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/javascript" })); a.download = FILE; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }
+    T("Downloaded " + FILE + " - put it next to the HTML (or commit it to the repo)");
+  }
+  function ghCfg() {
+    var c = {}; try { c = JSON.parse(localStorage.getItem(LS_GH) || "{}") || {}; } catch (e) {}
+    var h = location.hostname, segs = location.pathname.split("/").filter(Boolean);
+    if (!c.owner && /\.github\.io$/.test(h)) { c.owner = h.split(".")[0]; c.repo = segs[0] && !/\.html?$/.test(segs[0]) ? segs[0] : h; }
+    c.branch = c.branch || "main"; c.path = c.path || FILE; return c;
+  }
+  async function ghCommit() {
+    var c = { owner: $("e111_o").value.trim(), repo: $("e111_r").value.trim(), branch: $("e111_b").value.trim() || "main", path: $("e111_p").value.trim() || FILE, token: $("e111_t").value.trim() };
+    if (!c.owner || !c.repo || !c.token) { T("Owner, repo and token are required", "warn"); return; }
+    try { localStorage.setItem(LS_GH, JSON.stringify(c)); } catch (e) {}
+    var api = "https://api.github.com/repos/" + c.owner + "/" + c.repo + "/contents/" + c.path.split("/").map(encodeURIComponent).join("/");
+    var h = { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json" }, sha;
+    try {
+      var r = await fetch(api + "?ref=" + encodeURIComponent(c.branch), { headers: h });
+      if (r.ok) sha = (await r.json()).sha; else if (r.status !== 404) throw new Error("GitHub " + r.status);
+      var body = { message: "Update pin overrides (" + totalCount() + " pins)", content: btoa(unescape(encodeURIComponent(serialize()))), branch: c.branch }; if (sha) body.sha = sha;
+      r = await fetch(api, { method: "PUT", headers: Object.assign({ "Content-Type": "application/json" }, h), body: JSON.stringify(body) });
+      if (!r.ok) throw new Error("GitHub " + r.status + " " + ((await r.text()).slice(0, 120)));
+      markSynced(); T("Committed " + c.path + " to " + c.owner + "/" + c.repo); dlg();
+    } catch (e) { T("Commit failed: " + e.message, "err"); }
+  }
+
+  /* ---------- UI: badge + dialog ---------- */
+  function $(i) { return D.getElementById(i); }
+  function badge() {
+    var n = pendingCount(), txt = n ? ("● " + n + " pin change(s) not saved to " + FILE) : (handle ? "✓ synced → " + (handle.name || FILE) : "✓ " + totalCount() + " pin(s) in " + FILE);
+    var s = $("pe_sync"); if (s) { s.textContent = txt; s.style.color = n ? "#cca700" : "#4ec9b0"; }
+    var f = $("e111chip"); if (n && !f) { f = D.createElement("div"); f.id = "e111chip"; f.onclick = dlg; D.body.appendChild(f); }
+    if (f) { if (n) { f.textContent = "📌 " + n + " unsaved pin change(s) — click to save"; f.style.display = "block"; } else f.style.display = "none"; }
+  }
+  function dlg() {
+    var b = $("e111dlg"); if (b) b.remove();
+    var g = ghCfg(), n = pendingCount();
+    b = D.createElement("div"); b.id = "e111dlg";
+    b.innerHTML = '<div class="bx"><div class="h"><b>Pin data</b><button class="btn" id="e111_x">✕</button></div>' +
+      '<p class="m">Pin positions are stored per component <b>type</b> in <code>' + FILE + '</code> next to this page. Types without an entry use the defaults from the code.<br>' + totalCount() + " customized pin(s) · " + (n ? '<span style="color:#cca700">' + n + " not written to the file yet</span>" : "file is up to date") + (handle ? " · linked: <b>" + handle.name + "</b>" : "") + "</p>" +
+      '<div class="s"><button class="btn primary" id="e111_link">' + (handle ? "Re-link / change file" : "Link local file (auto-save)") + '</button>' + (handle && n ? '<button class="btn" id="e111_flush">Write now</button>' : "") + '<button class="btn" id="e111_dl">Download ' + FILE + '</button></div>' +
+      '<div class="s2"><b>Commit to GitHub</b><div class="g"><input id="e111_o" placeholder="owner" value="' + (g.owner || "") + '"/><input id="e111_r" placeholder="repo" value="' + (g.repo || "") + '"/><input id="e111_b" placeholder="branch" value="' + g.branch + '"/><input id="e111_p" placeholder="path" value="' + g.path + '"/></div><input id="e111_t" type="password" placeholder="Personal access token (contents: write)" value="' + (g.token || "") + '"/><button class="btn" id="e111_gh">Commit file</button><p class="m">The token is kept only in this browser. Without a token, visitors of a hosted page still keep their own edits locally (draft) and can download the file.</p></div>' +
+      '<div class="s">' + (n ? '<button class="btn" id="e111_disc">Discard unsaved changes</button>' : "") + '</div></div>';
+    D.body.appendChild(b);
+    $("e111_x").onclick = function () { b.remove(); }; b.addEventListener("mousedown", function (e) { if (e.target === b) b.remove(); });
+    $("e111_link").onclick = linkFile; $("e111_dl").onclick = download; $("e111_gh").onclick = ghCommit;
+    if ($("e111_flush")) $("e111_flush").onclick = async function () { await autoSync(); dlg(); };
+    if ($("e111_disc")) $("e111_disc").onclick = function () { draft = {}; saveDraft(); refresh(); badge(); dlg(); };
+  }
+  var st = D.createElement("style");
+  st.textContent = "#e111chip{position:fixed;left:14px;bottom:14px;z-index:99991;background:#252526;color:#cca700;border:1px solid #cca700;border-radius:18px;padding:6px 12px;font:12px system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);display:none}" +
+    "#e111dlg{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}#e111dlg .bx{width:min(460px,94vw);background:#252526;color:#ccc;border:1px solid #3e3e42;border-radius:10px;padding:14px;font:12px system-ui,sans-serif;display:flex;flex-direction:column;gap:10px}" +
+    "#e111dlg .h{display:flex;justify-content:space-between;align-items:center;color:#3794ff;font-size:14px}#e111dlg .m{margin:0;color:#9d9d9d;line-height:1.5}#e111dlg code{color:#ce9178}#e111dlg .s{display:flex;gap:6px;flex-wrap:wrap}#e111dlg .s2{display:flex;flex-direction:column;gap:6px;border-top:1px solid #3e3e42;padding-top:10px}" +
+    "#e111dlg .g{display:grid;grid-template-columns:1fr 1fr;gap:6px}#e111dlg input{background:#2d2d2d;color:#ccc;border:1px solid #3e3e42;border-radius:5px;padding:5px 7px;font-size:12px;min-width:0}#pe_sync{font-size:11px;flex:1}";
+  D.head.appendChild(st);
+
+  /* ---------- hooks ---------- */
+  function wrapGlobal(name, mk) { var f = root[name]; if (typeof f !== "function" || f.__e111) return; var w = mk(f); w.__e111 = 1; root[name] = w; }
+  function install() {
+    wrapGlobal("makeComponent", function (f) { return function () { var c = f.apply(this, arguments); try { if (c) { applyToComp(c); if (seen) seen.set(c, REV); } } catch (e) {} return c; }; });
+    wrapGlobal("render", function (f) { return function () { try { if (sweep(false)) root._forceFullRender = true; } catch (e) {} return f.apply(this, arguments); }; });
+  }
+  root.E111 = { capture: capture, openDialog: dlg, refreshBadge: badge, refresh: refresh, serialize: serialize, effective: effectiveRegistry, _state: function () { return { file: file, draft: draft, handle: !!handle }; } };
+  install(); setTimeout(install, 700); setTimeout(install, 3000);
+  loadHandle().then(function () { badge(); });
+  function boot() { badge(); if (sweep(true)) { root._forceFullRender = true; try { root.render(); } catch (e) {} } }
+  if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+  setTimeout(boot, 800);
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<script id="e112-wokwi-live">
+/* E112 - Live Wokwi elements.
+ * Replaces the artwork of every part that has a Wokwi element with the real <wokwi-*> web component and drives it
+ * from the simulator state (c.props, pin levels, sim running). Needs wokwi-elements.bundle.min.js next to this page;
+ * if the bundle is missing nothing changes (the static components/*.svg artwork is used).
+ * Pin positions for these parts come from pin-overrides.js (aligned to the same artwork). */
+(function (root) {
+  "use strict";
+  if (root.E112) return;
+  var D = document;
+  var LIVE = {};
+  function def(types, tag, attrs, upd) { types.split(",").forEach(function (t) { LIVE[t] = { tag: tag, attrs: attrs || {}, upd: upd || function () {} }; }); }
+  function P(c, k, d) { var v = c.props && c.props[k]; return v == null ? d : v; }
+  function run() { return !!root.running; }
+  function high(c, pn) { try { return !!root.isPinDrivenHigh(c, pn); } catch (e) { return false; } }
+  function bytes(lines, cols, rows) {
+    var a = new Uint8Array(cols * rows);
+    for (var r = 0; r < rows; r++) { var s = String(lines[r] == null ? "" : lines[r]); for (var i = 0; i < cols; i++) a[r * cols + i] = i < s.length ? (s.charCodeAt(i) & 255) : 32; }
+    return a;
+  }
+  function hex3(h) { var m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return [0, 0, 0]; var n = parseInt(m[1], 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
+  var SEG = { "0": "ABCDEF", "1": "BC", "2": "ABDEG", "3": "ABCDG", "4": "BCFG", "5": "ACDFG", "6": "ACDEFG", "7": "ABC", "8": "ABCDEFG", "9": "ABCDFG", "A": "ABCEFG", "B": "CDEFG", "C": "ADEF", "D": "BCDEG", "E": "ADEFG", "F": "AEFG", "-": "G", "_": "D" };
+  function paint(el, w, h, drawFn) {
+    var cv = D.createElement("canvas"); cv.width = w; cv.height = h; var x = cv.getContext("2d"); drawFn(x); return x.getImageData(0, 0, w, h);
+  }
+  function textLines(c) {
+    var l = []; if (c.props.line1 || c.props.line2) { l.push(c.props.line1 || "", c.props.line2 || ""); } else l = String(c.props.text == null ? "" : c.props.text).split("\n");
+    return l;
+  }
+  function oledUpd(el, c) {
+    var lines = textLines(c);
+    el.imageData = paint(el, 128, 64, function (x) { x.fillStyle = "#000"; x.fillRect(0, 0, 128, 64); x.fillStyle = "#fff"; x.font = "10px monospace"; x.textBaseline = "top"; lines.forEach(function (t, i) { x.fillText(String(t).slice(0, 21), 0, 2 + i * 11); }); });
+    if (el.redraw) try { el.redraw(); } catch (e) {}
+  }
+  function tftUpd(el, c) {
+    var cv = el.canvas; if (!cv) return; var x = cv.getContext("2d"); if (!x) return;
+    x.fillStyle = "#000"; x.fillRect(0, 0, cv.width, cv.height); x.fillStyle = "#fff"; x.font = "16px monospace"; x.textBaseline = "top";
+    String(c.props.text == null ? "" : c.props.text).split("\n").forEach(function (t, i) { x.fillText(t.slice(0, 20), 4, 6 + i * 20); });
+  }
+  def("led", "led", {}, function (el, c) { el.value = !!P(c, "on", false); el.color = P(c, "color", "red"); var b = P(c, "brightness", 255); el.brightness = b > 1 ? b / 255 : b; });
+  def("led_rgb", "rgb-led", {}, function (el, c) { var r = P(c, "r", 0), g = P(c, "g", 0), b = P(c, "b", 0); var k = (r > 1 || g > 1 || b > 1) ? 255 : 1; el.ledRed = r / k; el.ledGreen = g / k; el.ledBlue = b / k; });
+  def("neopixel", "neopixel", {}, function (el, c) { var rgb = P(c, "on", false) ? hex3(P(c, "color", "#000000")) : [0, 0, 0]; el.r = rgb[0]; el.g = rgb[1]; el.b = rgb[2]; });
+  def("buzzer", "buzzer", {}, function (el, c) { el.hasSignal = !!P(c, "on", false); });
+  def("button", "pushbutton", {}, function (el, c) { el.pressed = !!P(c, "pressed", false); });
+  def("pot", "potentiometer", {}, function (el, c) { el.value = +P(c, "value", 512) || 0; });
+  def("resistor", "resistor", {}, function (el, c) { el.value = String(P(c, "ohms", 220)); });
+  def("servo,sg90", "servo", {}, function (el, c) { el.angle = +P(c, "angle", 90) || 0; });
+  def("servo_cont", "servo", {}, function (el, c) { var s = +P(c, "speed", 0) || 0; el.angle = 90 + Math.max(-100, Math.min(100, s)) * 0.9; });
+  def("stepper", "stepper-motor", {}, function (el, c) { el.angle = (+P(c, "step", 0) || 0) * 1.8; });
+  def("encoder", "ky-040", {}, function (el, c) { el.angle = (+P(c, "pos", 0) || 0) * 18; });
+  def("lcd1602", "lcd1602", {}, function (el, c) { el.characters = bytes([c.props.line1, c.props.line2], 16, 2); el.backlight = true; });
+  def("lcd_i2c", "lcd1602", { pins: "i2c" }, function (el, c) { el.characters = bytes([c.props.line1, c.props.line2], 16, 2); el.backlight = true; });
+  def("lcd2004", "lcd2004", { pins: "i2c" }, function (el, c) { el.characters = bytes([c.props.line1, c.props.line2, c.props.line3, c.props.line4], 20, 4); el.backlight = true; });
+  def("oled,oled_spi", "ssd1306", {}, oledUpd);
+  def("tft_display", "ili9341", {}, tftUpd);
+  def("sevenseg", "7segment", {}, function (el, c) {
+    var ch = String(P(c, "digit", "8")).toUpperCase().charAt(0), on = SEG[ch] || "", v = [];
+    "ABCDEFG".split("").forEach(function (s) { v.push(on.indexOf(s) >= 0 ? 1 : 0); }); v.push(P(c, "dp", false) ? 1 : 0); el.values = v;
+  });
+  def("uno", "arduino-uno", {}, function (el, c) { var pv = root.pinValues || {}; var d13 = pv.D13 != null ? pv.D13 : pv[13]; el.led13 = !!d13; el.ledPower = run(); });
+  def("sensor_light,photo_diode", "photoresistor-sensor", {}, function (el) { el.ledPower = run(); });
+  def("sensor_sound", "small-sound-sensor", {}, function (el) { el.ledPower = run(); });
+  def("sensor_gas,mq2,mq3,mq135", "gas-sensor", {}, function (el) { el.ledPower = run(); });
+  def("flame", "flame-sensor", {}, function (el) { el.ledPower = run(); });
+  def("mpu6050", "mpu6050", {}, function (el) { el.led1 = run(); });
+  def("sensor_ultra", "hc-sr04"); def("sensor_pir", "pir-motion-sensor"); def("ir_receiver", "ir-receiver"); def("ir_remote", "ir-remote");
+  def("sensor_dht", "dht22"); def("sensor_temp,thermistor", "ntc-temperature-sensor"); def("tilt", "tilt-switch");
+  def("keypad", "membrane-keypad"); def("joystick", "analog-joystick", {}, function (el, c) { el.xValue = ((+P(c, "x", 512)) - 512) / 512; el.yValue = ((+P(c, "y", 512)) - 512) / 512; });
+  def("dipswitch", "dip-switch-8", {}, function (el, c) { var b = P(c, "bits", []), v = []; for (var i = 0; i < 8; i++) v.push(b[i] ? 1 : 0); el.values = v; });
+  def("sd_module", "microsd-card");
+
+  /* natural (unscaled) size of each element, measured once in an off-screen box */
+  var NAT = {}, PEND = {}, host = null;
+  function key(L) { return L.tag + JSON.stringify(L.attrs); }
+  function measure(L) {
+    var k = key(L); if (NAT[k] || PEND[k]) return NAT[k]; PEND[k] = 1;
+    if (!host) { host = D.createElement("div"); host.style.cssText = "position:fixed;left:-99999px;top:0;visibility:hidden;pointer-events:none"; D.body.appendChild(host); }
+    var e = D.createElement("wokwi-" + L.tag); Object.keys(L.attrs).forEach(function (a) { e[a] = L.attrs[a]; }); host.appendChild(e);
+    Promise.resolve(e.updateComplete).catch(function () {}).then(function () { return new Promise(function (r) { setTimeout(r, 80); }); }).then(function () {
+      var best = null; [].forEach.call(e.shadowRoot ? e.shadowRoot.querySelectorAll("svg") : [], function (s) { if (!best || s.outerHTML.length > best.outerHTML.length) best = s; });
+      var r = (best || e).getBoundingClientRect(); NAT[k] = { w: r.width || 50, h: r.height || 50 }; e.remove();
+    });
+  }
+  function build(c, inner, L, nat) {
+    var W = c.baseW || c.w, H = c.baseH || c.h, s = Math.min(W / nat.w, H / nat.h);
+    var wrap = D.createElement("div"); wrap.className = "wk-live"; wrap.dataset.k = key(L) + "|" + W + "x" + H;
+    wrap.style.cssText = "position:relative;flex:none;pointer-events:none;width:" + W + "px;height:" + H + "px";
+    var e = D.createElement("wokwi-" + L.tag); Object.keys(L.attrs).forEach(function (a) { e[a] = L.attrs[a]; });
+    e.style.cssText = "position:absolute;display:block;pointer-events:none;transform-origin:0 0;width:" + nat.w + "px;height:" + nat.h + "px;left:" + ((W - nat.w * s) / 2) + "px;top:" + ((H - nat.h * s) / 2) + "px;transform:scale(" + s + ")";
+    wrap.appendChild(e); inner.appendChild(wrap); return wrap;
+  }
+  var SIG = (typeof WeakMap !== "undefined") ? new WeakMap() : null;
+  function tick() {
+    if (!root.customElements || !root.customElements.get("wokwi-led")) return;
+    var list = (typeof components !== "undefined" && components) ? components : [];
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i], L = c && LIVE[c.type]; if (!L || !root.customElements.get("wokwi-" + L.tag)) continue;
+      var el = D.getElementById(c.id), inner = el && el.querySelector(".comp-inner"); if (!inner) continue;
+      var nat = measure(L); if (!nat) continue;
+      var W = c.baseW || c.w, H = c.baseH || c.h, wrap = inner.querySelector(":scope > .wk-live");
+      if (wrap && wrap.dataset.k !== key(L) + "|" + W + "x" + H) { wrap.remove(); wrap = null; }
+      if (!wrap) wrap = build(c, inner, L, nat);
+      [].forEach.call(inner.children, function (ch) { if (ch !== wrap && ch.style.display !== "none") ch.style.setProperty("display", "none", "important"); });
+      var e = wrap.firstChild, sig = ""; try { sig = JSON.stringify(c.props) + "|" + run() + "|" + (c.type === "uno" ? JSON.stringify(root.pinValues && (root.pinValues.D13 != null ? root.pinValues.D13 : root.pinValues[13])) : ""); } catch (x) {}
+      if (!wrap._born) wrap._born = Date.now();
+      if (Date.now() - wrap._born > 800 && SIG && SIG.get(wrap) === sig) continue; if (SIG) SIG.set(wrap, sig); /* keep refreshing during the first 0.8s: some elements finish rendering late */
+      try { L.upd(e, c); } catch (x) { console.warn("E112", c.type, x); }
+    }
+  }
+  root.E112 = { LIVE: LIVE, tick: tick, types: function () { return Object.keys(LIVE); } };
+  setInterval(tick, 100);
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
 
