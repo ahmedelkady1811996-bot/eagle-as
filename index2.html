@@ -3819,9 +3819,13 @@ if(c.type==="custom")html+=row("Descriptor JSON","p_customdesc","text",c.props.d
 if(c.type==="custom")html+='<div class="frow"><label></label><div class="val"><button class="btn" id="p_custombuild">Build Descriptor</button></div></div>';
 if(c.type==="neopixel")html+=row("Color","p_color","color",c.props.color);
 if(c.type==="capacitor")html+=row("µF","p_uf","number",c.props.uF);
-html+='</div><div class="fgroup"><div class="gh">Pins</div>';
-for(var pn in c.pins)html+='<div class="frow"><label>'+pn+'</label><div class="val" style="font-size:11px;color:var(--muted)">('+c.pins[pn].localX+','+c.pins[pn].localY+')</div></div>';
+html+='</div><div class="fgroup" id="e110pins"><div class="gh">Pins ('+Object.keys(c.pins).length+')</div>';
+(function(){var keys=Object.keys(c.pins);for(var i=0;i<keys.length;i++){var pn=keys[i],p=c.pins[pn],nm=(p&&p.label)?p.label:pn,kd=(p&&p.kind)||'io',note=(p&&p.note)||'',col=(p&&p.color)||'';
+html+='<div class="pe-row frow" data-row="'+pn+'"><span class="dot" style="'+(col?'background:'+col:'')+'"></span><span class="nm" title="'+String(note).replace(/"/g,'&quot;')+'">'+String(nm).replace(/&/g,'&amp;').replace(/</g,'&lt;')+(p&&p.label?' <span class="kd">'+pn+'</span>':'')+'</span><span class="kd">'+kd+'</span><span class="val" style="font-size:10px;color:var(--muted);margin-right:4px">('+(p.localX)+','+(p.localY)+')</span><button class="btn" data-k="'+pn+'" type="button">Edit</button></div>';
+}})();
 html+='</div><div class="mini-btns"><button class="btn danger" onclick="deleteSelected()">Delete</button></div>';tb.innerHTML=html;
+/* wire Edit buttons to floating pin editor */
+(function(){var box=$("e110pins");if(!box)return;var cid=c.id;box.querySelectorAll("button[data-k]").forEach(function(b){b.onclick=function(){try{if(window.E110&&E110.openPinEditor)E110.openPinEditor(cid,b.dataset.k);else if(typeof openPinEditor==="function")openPinEditor(cid,b.dataset.k);}catch(e){console.warn(e);}};});})();
 function bind(id,fn){var el=$(id);if(el)el.addEventListener("input",fn)}
 bind("px",function(){c.x=parseInt(this.value,10)||0;render()});bind("py",function(){c.y=parseInt(this.value,10)||0;render()});
 bind("plabel",function(){c.props.label=this.value;render()});bind("p_color",function(){c.props.color=this.value; try{lightLeds()}catch(e){} try{updateComponentVisuals()}catch(e){} render();});
@@ -48046,12 +48050,10 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 #cx110 .cxsub{display:none;position:absolute;left:100%;top:-5px;min-width:190px;max-height:60vh;overflow:auto;background:#252526;border:1px solid #3e3e42;border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);color:#ccc}
 #cx110 .cxsub.left{left:auto;right:100%}
 #cx110 .cxi:hover>.cxsub,#cx110 .cxi.open>.cxsub{display:block}
-#pe110{position:static;width:auto;background:#1e1e1e;border:1px solid #3794ff;border-radius:8px;color:#ccc;font-size:12px;display:none;margin:4px 0 8px}
-#pe110.float{position:fixed;top:80px;right:16px;width:290px;z-index:99990;background:#252526;border:1px solid #3e3e42;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.6)}
-.pe-row.on{background:#2a2d2e;border-radius:4px}
-#pe110 .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #3e3e42;cursor:default;font-weight:600;color:#3794ff}
+#pe110{position:fixed;top:80px;right:16px;width:290px;z-index:99990;background:#252526;border:1px solid #3e3e42;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.6);color:#ccc;font-size:12px;display:none}
+#pe110 .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #3e3e42;cursor:move;font-weight:600;color:#3794ff}
 #pe110 .ph span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#pe110 .pb{padding:10px;display:flex;flex-direction:column;gap:7px}#pe110.float .pb{max-height:70vh;overflow:auto}#pe110.float .ph{cursor:move}
+#pe110 .pb{padding:10px;display:flex;flex-direction:column;gap:7px;max-height:70vh;overflow:auto}
 #pe110 .r{display:flex;align-items:center;gap:6px}#pe110 .r>label{width:70px;color:#858585;flex:0 0 auto}
 #pe110 input[type=text],#pe110 input[type=number],#pe110 select,#pe110 textarea{flex:1;min-width:0;background:#2d2d2d;color:#ccc;border:1px solid #3e3e42;border-radius:5px;padding:4px 6px;font-size:12px;font-family:inherit}
 #pe110 textarea{resize:vertical;min-height:46px}
@@ -48059,7 +48061,9 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 #pe110 .nb{display:inline-grid;grid-template-columns:repeat(3,22px);gap:2px}
 #pe110 .nb button{padding:1px 0;font-size:11px}
 #pe110 .hint{font-size:10px;color:#858585;line-height:1.4}
-.pe-row{display:flex;align-items:center;gap:6px;padding:4px 2px}
+.pe-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid rgba(42,49,66,.5)}
+.pe-row:last-child{border-bottom:none}
+#e110pins.fgroup .pe-row{padding:6px 10px}
 .pe-row .dot{width:10px;height:10px;border-radius:50%;background:#6e6e6e;flex:0 0 auto;border:1px solid #858585}
 .pe-row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pe-row .kd{color:#858585;font-size:10px}
 </style>
@@ -48150,7 +48154,6 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
 
   /* ================= 3) PIN EDITOR ================= */
-  var PANEL = null; /* the editor lives inside the inspector's "Pins" list (floats only as a fallback) */
   var ED = null; /* {cid, pin, orig, d} */
   var KINDS = ["io", "vcc", "gnd", "analog", "pwm", "digital", "input", "output", "signal"];
   function setOpt(p, k, v) { if (v === "" || v == null || v === false) delete p[k]; else p[k] = v; }
@@ -48162,8 +48165,8 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     return { x: +p.localX || 0, y: +p.localY || 0, kind: p.kind || "io", label: p.label || "", note: p.note || "", color: p.color || "#3794ff", useColor: !!p.color, showLabel: !!p.showLabel };
   }
   function ensurePanel() {
-    if (PANEL) return PANEL;
-    var b = D.createElement("div"); b.id = "pe110"; PANEL = b;
+    var b = $("pe110"); if (b) return b;
+    b = D.createElement("div"); b.id = "pe110";
     b.innerHTML = '<div class="ph" id="pe_h"><span id="pe_t">Pin editor</span><button class="btn" id="pe_x">✕</button></div>' +
       '<div class="pb">' +
       '<div class="r"><label>Pin</label><button class="btn" id="pe_prev">◀</button><select id="pe_sel"></select><button class="btn" id="pe_next">▶</button></div>' +
@@ -48214,26 +48217,14 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     var c = FC(cid); if (!c || !c.pins || !c.pins[pn]) return;
     var panel = ensurePanel();
     if (ED && (ED.cid !== cid)) cancelEd();
-    if (typeof selectedId === "undefined" || selectedId !== cid) { try { select(cid); } catch (e) {} }
-    try { if (typeof activeTab !== "undefined" && activeTab !== "props") switchTab("props"); } catch (e) {}
-    try { renderInspector(); } catch (e) {}
     var p = c.pins[pn];
     if (!p._o) p._o = { localX: p.localX, localY: p.localY, kind: p.kind || "io" };
     ED = { cid: cid, pin: pn, orig: JSON.parse(JSON.stringify(p)), d: toDraft(p) };
-    place(cid, pn);
     var keys = Object.keys(c.pins);
     $("pe_sel").innerHTML = keys.map(function (k) { return '<option value="' + esc(k) + '">' + esc(pinName(c, k) === k ? k : pinName(c, k) + " (" + k + ")") + "</option>"; }).join("");
     $("pe_sel").value = pn; $("pe_t").textContent = "Pin editor — " + cLabel(c);
     if (KINDS.indexOf(ED.d.kind) < 0) $("pe_kind").insertAdjacentHTML("beforeend", '<option value="' + esc(ED.d.kind) + '">' + esc(ED.d.kind) + "</option>");
     fill(); panel.style.display = "block"; try { root.E111.refreshBadge(); } catch (e) {}
-  }
-  function place(cid, pn) {
-    if (!PANEL) return;
-    var box = $("e110pins"), row = null;
-    if (box) Array.prototype.forEach.call(box.querySelectorAll(".pe-row"), function (r) { var on = r.getAttribute("data-row") === pn; r.classList.toggle("on", on); if (on) row = r; });
-    if (row && typeof selectedId !== "undefined" && selectedId === cid) { PANEL.classList.remove("float"); row.parentNode.insertBefore(PANEL, row.nextSibling); }
-    else { PANEL.classList.add("float"); D.body.appendChild(PANEL); }
-    PANEL.style.display = "block";
   }
   function step(dir) {
     var c = FC(ED.cid); if (!c) return; var k = Object.keys(c.pins), i = k.indexOf(ED.pin);
@@ -48254,7 +48245,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     if (c && c.pins[ED.pin]) { var p = c.pins[ED.pin]; Object.keys(p).forEach(function (k) { delete p[k]; }); Object.keys(ED.orig).forEach(function (k) { p[k] = ED.orig[k]; }); full(); }
     closeEd();
   }
-  function closeEd() { var b = PANEL; if (b) { b.style.display = "none"; b.classList.remove("float"); D.body.appendChild(b); } ED = null; try { renderInspector(); } catch (e) {} }
+  function closeEd() { var b = $("pe110"); if (b) b.style.display = "none"; ED = null; try { renderInspector(); } catch (e) {} }
   function resetEd() {
     if (!ED) return; var c = FC(ED.cid), p = c.pins[ED.pin], o = p._o || {};
     ED.d = { x: o.localX != null ? o.localX : ED.d.x, y: o.localY != null ? o.localY : ED.d.y, kind: o.kind || "io", label: "", note: "", color: "#3794ff", useColor: false, showLabel: false };
@@ -48287,22 +48278,17 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 
   /* inspector: pin list under component properties */
   function inspectorPins() {
+    /* Pins list with Edit buttons is now built inside renderInspector (above Delete).
+       Keep this hook so wrap("renderInspector", inspectorPins) still works, but do not
+       inject a second list. Only re-bind Edit buttons if the list is already present. */
     try {
-      var tb = $("tabbody"); if (PANEL && !D.body.contains(PANEL)) D.body.appendChild(PANEL);
-      if (!tb || typeof activeTab === "undefined" || activeTab !== "props") { if (ED) place(ED.cid, ED.pin); return; }
-      var old = $("e110pins");
-      if (old && ED && PANEL && old.contains(PANEL) && selectedId === ED.cid) return; /* keep typing focus while editing */
-      if (old) { if (PANEL && old.contains(PANEL)) D.body.appendChild(PANEL); old.remove(); }
-      if (typeof selectedWireId !== "undefined" && selectedWireId && !selectedId) return;
+      if (typeof activeTab === "undefined" || activeTab !== "props") return;
+      var box = $("e110pins"); if (!box) return;
       var c = selectedId && FC(selectedId); if (!c || !c.pins) return;
-      var keys = Object.keys(c.pins); if (!keys.length) return;
-      var box = D.createElement("div"); box.id = "e110pins";
-      box.innerHTML = '<div class="gh" style="margin-top:10px">Pins (' + keys.length + ")</div>" + keys.map(function (k) {
-        var p = c.pins[k]; return '<div class="pe-row" data-row="' + esc(k) + '"><span class="dot" style="' + (p.color ? "background:" + esc(p.color) : "") + '"></span><span class="nm" title="' + esc(p.note || "") + '">' + esc(pinName(c, k)) + (p.label ? ' <span class="kd">' + esc(k) + "</span>" : "") + '</span><span class="kd">' + esc(p.kind || "io") + '</span><button class="btn" data-k="' + esc(k) + '">Edit</button></div>';
-      }).join("");
-      tb.appendChild(box);
-      if (ED && ED.cid === c.id) place(ED.cid, ED.pin);
-      box.querySelectorAll("button[data-k]").forEach(function (b) { b.onclick = function () { openPinEditor(c.id, b.dataset.k); }; });
+      box.querySelectorAll("button[data-k]").forEach(function (b) {
+        if (b._e110) return; b._e110 = 1;
+        b.onclick = function () { openPinEditor(c.id, b.dataset.k); };
+      });
     } catch (e) {}
   }
 
