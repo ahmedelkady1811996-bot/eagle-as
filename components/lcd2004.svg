@@ -1,12 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 58" width="120" height="58">
-  <defs><linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3b4a"/><stop offset="1" stop-color="#16212b"/></linearGradient>
-  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd6a8"/><stop offset="1" stop-color="#5f9f6b"/></linearGradient></defs>
-  <rect x="2" y="2" width="116" height="54" rx="4" fill="url(#l)" stroke="#000"/>
-  <rect x="7" y="7" width="106" height="34" rx="2" fill="#243" />
-  <g fill="#7bd88a" opacity="0.92" font-family="monospace" font-size="7">
-   <text x="13" y="18">line one</text><text x="13" y="30">line two</text><text x="13" y="41">line three</text>
-  </g>
-  <rect x="7" y="44" width="106" height="9" rx="2" fill="#1b2833"/>
-  <g fill="#c8a24a"><rect x="11" y="46" width="4" height="5" rx="1"/><rect x="18.4" y="46" width="4" height="5" rx="1"/><rect x="25.8" y="46" width="4" height="5" rx="1"/><rect x="33.2" y="46" width="4" height="5" rx="1"/><rect x="40.6" y="46" width="4" height="5" rx="1"/><rect x="48" y="46" width="4" height="5" rx="1"/><rect x="55.400000000000006" y="46" width="4" height="5" rx="1"/><rect x="62.800000000000004" y="46" width="4" height="5" rx="1"/><rect x="70.2" y="46" width="4" height="5" rx="1"/><rect x="77.60000000000001" y="46" width="4" height="5" rx="1"/><rect x="85" y="46" width="4" height="5" rx="1"/><rect x="92.4" y="46" width="4" height="5" rx="1"/><rect x="99.80000000000001" y="46" width="4" height="5" rx="1"/><rect x="107.2" y="46" width="4" height="5" rx="1"/></g>
-  <text x="60" y="40" font-size="7" fill="#9fd8b0" text-anchor="middle" font-family="Arial">20x4 LCD</text>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" style="font-size: 1.5px; font-family: monospace" xmlns="http://www.w3.org/2000/svg" width="94.05mm" height="47.5mm" viewBox="0 0 94.05 47.5" xmlns:xlink="http://www.w3.org/1999/xlink"><style>
+.cursor-blink { animation: auto ease 0s 1 normal none running cursor-blink; }
+@keyframes cursor-blink { 
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}</style>
+        <defs>
+          <pattern id="characters" width="3.55" height="5.95" patternUnits="userSpaceOnUse" x="12.45" y="12.55">
+            <rect width="2.95" height="5.55" fill-opacity="0.05"></rect>
+          </pattern>
+          <pattern id="pins" width="2.54" height="3.255" patternUnits="userSpaceOnUse" y="1.1">
+            <path fill="#92926d" d="M0,0.55c0,0 0.21,-0.52 0.87,-0.52 0.67,0 0.81,0.51 0.81,0.51v1.81h-1.869z"></path>
+            <circle r="0.45" cx="0.827" cy="0.9" color="black"></circle>
+          </pattern>
+        </defs>
+        <rect fill="#087f45" width="94.05" height="47.5"></rect>
+        <rect x="4.95" y="5.7" width="85.25" height="36.7"></rect>
+        <rect x="7.55" y="10.3" rx="1.5" ry="1.5" width="80.05" height="27.5" fill="#6cb201"></rect>
+        <rect x="7.55" y="10.3" rx="1.5" ry="1.5" width="80.05" height="27.5" opacity="0"></rect>
+        
+      <rect x="7.55" y="-2.5" height="2.5" width="10.16" fill="url(#pins)" transform="rotate(90)"></rect>
+      <text fill="white" font-size="1.5px" font-family="monospace">
+      <tspan y="6.8" x="0.7" fill="white">1</tspan>
+      <tspan y="8.9" x="2.3" fill="white">GND</tspan>
+      <tspan y="11.4" x="2.3" fill="white">VCC</tspan>
+      <tspan y="14" x="2.3" fill="white">SDA</tspan>
+      <tspan y="16.6" x="2.3" fill="white">SCL</tspan>
+      </text>
+    
+        
+        <rect fill="url(#characters)" x="12.45" y="12.55" width="70.25" height="23"></rect>
+        <path d="" transform="translate(12.45, 12.55)" fill="black"></path>
+        
+      </svg>
