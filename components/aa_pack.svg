@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 40" width="78" height="40">
-  <rect x="2" y="6" width="62" height="28" rx="4" fill="#1d2733" stroke="#000"/>
-  <rect x="64" y="15" width="8" height="10" rx="2" fill="#c79a1e" stroke="#8a6d1e" id="gold2"/>
-  <rect x="8" y="11" width="48" height="18" rx="2" fill="#26313f"/>
-  <text x="32" y="24" font-size="9" fill="#facc15" text-anchor="middle" font-family="Arial" font-weight="bold">AA x2</text>
-  <rect x="10" y="13" width="44" height="3" rx="1.5" fill="#facc15" opacity="0.85"/>
-  <rect x="10" y="24" width="28" height="3" rx="1.5" fill="#ef4444" opacity="0.8"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138 180" width="138" height="180"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd0"/><stop offset="1" stop-color="#14489c"/></linearGradient>
+<linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9a4f"/><stop offset="1" stop-color="#176b33"/></linearGradient>
+<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d63b3b"/><stop offset="1" stop-color="#9c1c1c"/></linearGradient>
+<linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa8"/><stop offset="1" stop-color="#43207c"/></linearGradient>
+<linearGradient id="gK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3e"/><stop offset="1" stop-color="#17171a"/></linearGradient>
+<linearGradient id="gY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b923"/><stop offset="1" stop-color="#b78a0c"/></linearGradient>
+<linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="0.5" stop-color="#b9bcc0"/><stop offset="1" stop-color="#8b8e93"/></linearGradient>
+<linearGradient id="gV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9094"/><stop offset="0.35" stop-color="#f4f4f4"/><stop offset="1" stop-color="#7c7f84"/></linearGradient>
+<radialGradient id="gGl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe6f5" stop-opacity=".35"/></radialGradient></defs><rect x="30" y="18" width="78" height="148" rx="8" fill="#2a2a30" stroke="#000"/><rect x="38" y="26" width="62" height="58" rx="10" fill="url(#gY)" stroke="#6b5206"/><rect x="38" y="26" width="62" height="14" rx="6" fill="#222"/><rect x="38" y="92" width="62" height="58" rx="10" fill="url(#gY)" stroke="#6b5206"/><rect x="38" y="92" width="62" height="14" rx="6" fill="#222"/><text x="69" y="95" font-family="Arial,Helvetica,sans-serif" font-size="8" font-weight="bold" fill="#eee" text-anchor="middle">4×AA 6V</text><line x1="46" y1="18" x2="40" y2="6" stroke="#d62828" stroke-width="3" stroke-linecap="round"/><line x1="92" y1="18" x2="100" y2="6" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg>

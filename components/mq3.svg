@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="36.232mm" height="16.617mm" fill-rule="evenodd" version="1.1" viewBox="0 0 137 59.5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="36.232mm" height="16.617mm" fill-rule="evenodd" version="1.1" viewBox="0 0 137 59.5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><filter id="e114hue"><feColorMatrix type="hueRotate" values="150"/></filter></defs><g filter="url(#e114hue)">
         <defs>
           <pattern id="a" width="4.1" height="4.1" patternUnits="userSpaceOnUse">
             <path d="m0 0v4.09h0.4v-0.85l0.42 0.381v0.469h0.4v-0.0996l0.109 0.0996h0.711v-0.799l0.42 0.379v0.42h0.398v-0.0488l0.0547 0.0488h0.766v-0.75l0.42 0.381v0.369h0.4v-4.09h-0.4v0.311l-0.334-0.311h-0.598l0.111 0.0996v0.9l-0.42-0.379v-0.621h-0.398v0.25l-0.277-0.25h-0.6l0.0566 0.0508v0.9l-0.42-0.381v-0.57h-0.4v0.201l-0.223-0.201zm0.4 0.359 0.42 0.381v0.9l-0.42-0.381zm1.64 0.0508 0.42 0.391v0.889l-0.42-0.379zm1.64 0.0605 0.42 0.379v0.891l-0.42-0.381zm-2.46 0.639 0.42 0.381v0.9l-0.42-0.381zm1.64 0.0508 0.42 0.381v0.898l-0.42-0.379zm-2.46 0.641 0.42 0.379v0.9l-0.42-0.379zm1.64 0.0488 0.42 0.381v0.9l-0.42-0.381zm1.64 0.0508 0.42 0.379v0.9l-0.42-0.379zm-2.46 0.65 0.42 0.379v0.9l-0.42-0.379zm1.64 0.0488 0.42 0.381v0.9l-0.42-0.381z" fill="#949392"></path>
@@ -45,4 +45,4 @@
           <tspan x="80.213432" y="4.7265162">PWR LED</tspan>
           <tspan x="80.463821" y="55.852409">D0 LED</tspan>
         </text>
-      </svg>
+      </g><g id="e114"><rect x="24.440000000000005" y="21.75" width="27.84" height="12.8" rx="3" fill="#000" fill-opacity=".78"/><text x="38.36000000000001" y="32.55" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="8" fill="#fff">MQ-3</text></g></svg>

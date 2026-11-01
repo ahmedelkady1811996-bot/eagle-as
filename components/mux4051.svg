@@ -1,29 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 50" width="96" height="50">
-<defs>
-<linearGradient id="pcb" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#1f7a3d"/><stop offset="0.5" stop-color="#16693a"/><stop offset="1" stop-color="#0f4f2a"/>
-</linearGradient>
-<linearGradient id="pcb2" x1="0" y1="0" x2="1" y2="1">
-  <stop offset="0" stop-color="#24506b"/><stop offset="0.5" stop-color="#1b3f56"/><stop offset="1" stop-color="#12303f"/>
-</linearGradient>
-<linearGradient id="chip" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#3a3a3a"/><stop offset="0.45" stop-color="#1d1d1d"/><stop offset="1" stop-color="#101010"/>
-</linearGradient>
-<linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
-  <stop offset="0" stop-color="#e8e8e8"/><stop offset="0.45" stop-color="#b9b9b9"/><stop offset="0.6" stop-color="#f2f2f2"/><stop offset="1" stop-color="#8f8f8f"/>
-</linearGradient>
-<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#ffe07a"/><stop offset="1" stop-color="#c79a1e"/>
-</linearGradient>
-<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-  <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="0.5" stop-color="#cfe8ff" stop-opacity="0.2"/><stop offset="1" stop-color="#7fb2e0" stop-opacity="0.45"/>
-</linearGradient>
-<linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#ff6b5e"/><stop offset="1" stop-color="#b3271c"/>
-</linearGradient>
-<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-  <stop offset="0" stop-color="#fff" stop-opacity="0.9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-</radialGradient>
-</defs>
-<rect x="6" y="6" width="84" height="38" rx="2.5" fill="url(#chip)" stroke="#000"/><path d="M41,6.5 a7,7 0 0 1 14,0 z" fill="#0a0a0a"/><circle cx="14" cy="14" r="3" fill="#2b2b2b"/><rect x="9.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="19.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="30.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="41.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="51.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="62.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="73.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="83.4" y="19" width="3.2" height="6" fill="url(#metal)"/><rect x="9.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="19.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="30.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="41.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="51.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="62.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="73.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="83.4" y="25" width="3.2" height="6" fill="url(#metal)"/><rect x="28" y="19" width="40" height="12" rx="2" fill="#242424"/><text x="48" y="41" font-family="Arial,Helvetica,sans-serif" font-size="8" font-weight="bold" fill="#9fd8b0" text-anchor="middle">4051</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 82" width="108" height="82"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd0"/><stop offset="1" stop-color="#14489c"/></linearGradient>
+<linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9a4f"/><stop offset="1" stop-color="#176b33"/></linearGradient>
+<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d63b3b"/><stop offset="1" stop-color="#9c1c1c"/></linearGradient>
+<linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa8"/><stop offset="1" stop-color="#43207c"/></linearGradient>
+<linearGradient id="gK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3e"/><stop offset="1" stop-color="#17171a"/></linearGradient>
+<linearGradient id="gY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b923"/><stop offset="1" stop-color="#b78a0c"/></linearGradient>
+<linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="0.5" stop-color="#b9bcc0"/><stop offset="1" stop-color="#8b8e93"/></linearGradient>
+<linearGradient id="gV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9094"/><stop offset="0.35" stop-color="#f4f4f4"/><stop offset="1" stop-color="#7c7f84"/></linearGradient>
+<radialGradient id="gGl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe6f5" stop-opacity=".35"/></radialGradient></defs><rect x="10" y="18" width="88" height="44" rx="2" fill="url(#gK)" stroke="#000" stroke-width=".8"/><path d="M49.0 18 a5 5 0 0 0 10 0" fill="#111"/><circle cx="16" cy="56" r="1.8" fill="#666"/><text x="54.0" y="43.0" font-family="Arial,Helvetica,sans-serif" font-size="7" font-weight="bold" fill="#d0d0d0" text-anchor="middle">CD4051</text><path d="M14.2 62 L14.2 71 L17.8 71 L17.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M14.2 9 L14.2 18 L17.8 18 L17.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M24.2 62 L24.2 71 L27.8 71 L27.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M24.2 9 L24.2 18 L27.8 18 L27.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M34.2 62 L34.2 71 L37.8 71 L37.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M34.2 9 L34.2 18 L37.8 18 L37.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M44.2 62 L44.2 71 L47.8 71 L47.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M44.2 9 L44.2 18 L47.8 18 L47.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M54.2 62 L54.2 71 L57.8 71 L57.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M54.2 9 L54.2 18 L57.8 18 L57.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M64.2 62 L64.2 71 L67.8 71 L67.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M64.2 9 L64.2 18 L67.8 18 L67.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M74.2 62 L74.2 71 L77.8 71 L77.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M74.2 9 L74.2 18 L77.8 18 L77.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M84.2 62 L84.2 71 L87.8 71 L87.8 62Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/><path d="M84.2 9 L84.2 18 L87.8 18 L87.8 9Z" fill="url(#gM)" stroke="#777" stroke-width=".4"/></svg>

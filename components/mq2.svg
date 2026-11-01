@@ -45,4 +45,4 @@
           <tspan x="80.213432" y="4.7265162">PWR LED</tspan>
           <tspan x="80.463821" y="55.852409">D0 LED</tspan>
         </text>
-      </svg>
+      <g id="e114"><rect x="24.440000000000005" y="21.75" width="27.84" height="12.8" rx="3" fill="#000" fill-opacity=".78"/><text x="38.36000000000001" y="32.55" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="8" fill="#fff">MQ-2</text></g></svg>

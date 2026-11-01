@@ -1,62 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Ebene_1" xmlns:svg="http://www.w3.org/2000/svg"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="13.232px"
-	 height="35.113px" viewBox="0 0 13.232 35.113" enable-background="new 0 0 13.232 35.113" xml:space="preserve">
-<polygon fill="#FFFFFF" points="12.916,17.223 0.317,17.223 0,16.338 0,0 13.233,0 13.233,16.389 "/>
-<g id="breadboard">
-	<g >
-		<circle id="connector0pin" fill="none" cx="10.216" cy="34.176" r="1.494"/>
-		<circle id="connector1pin" fill="none" cx="3.017" cy="34.176" r="1.494"/>
-	</g>
-	<rect x="9.496" y="5.5" fill="#B3B3B3" width="1.439" height="29.613"/>
-	<rect x="2.296" y="8.287" fill="#B3B3B3" width="1.44" height="26.826"/>
-	<polygon fill="#E6E6E6" points="13.233,16.338 0,16.338 0.317,17.188 12.916,17.188 	"/>
-	<rect x="3.737" y="8.233" fill="#666666" width="3.567" height="0.107"/>
-	<rect x="6.256" y="5.485" fill="#666666" width="3.24" height="0.072"/>
-	<rect x="2.656" y="6.25" fill="#CCCCCC" width="4.647" height="2.037"/>
-	<rect x="6.256" y="3.463" fill="#B3B3B3" width="4.681" height="2.037"/>
-	<rect x="2.296" y="6.25" fill="#B3B3B3" width="5.009" height="2.037"/>
-	<polygon opacity="0.35" fill="#CCCCCC" enable-background="new    " points="12.916,0.875 0.317,0.875 0,0 13.233,0 	"/>
-	<polygon opacity="0.35" fill="#CCCCCC" enable-background="new    " points="0.317,17.188 0,16.338 0,0 0.317,0.875 	"/>
-	<polygon opacity="0.5" fill="#CCCCCC" enable-background="new    " points="13.233,16.338 12.916,17.188 12.916,0.875 13.233,0 	
-		"/>
-	<rect x="0.317" y="0.87" opacity="0.3" fill="#FFFFFF" enable-background="new    " width="12.6" height="0.166"/>
-	<polygon opacity="0.63" fill="#FFFFFF" enable-background="new    " points="13.173,0.166 0.06,0.166 0,0 13.233,0 	"/>
-	<rect x="2.296" y="6.25" fill="#F2F2F2" width="0.072" height="13.872"/>
-	<g>
-		<rect x="9.316" y="20.118" fill="#B3B3B3" width="1.801" height="2.514"/>
-		<rect x="2.116" y="20.118" fill="#B3B3B3" width="1.8" height="2.514"/>
-		<rect x="2.116" y="20.118" fill="#F2F2F2" width="0.072" height="2.514"/>
-		<rect x="9.316" y="20.118" fill="#F2F2F2" width="0.071" height="2.514"/>
-	</g>
-	<rect x="2.296" y="22.632" fill="#F2F2F2" width="0.072" height="12.481"/>
-	<rect x="9.496" y="5.5" fill="#F2F2F2" width="0.071" height="14.622"/>
-	<rect x="9.496" y="22.632" fill="#F2F2F2" width="0.071" height="12.481"/>
-	<polygon opacity="0.4" fill="#B3B3B3" enable-background="new    " points="10.936,16.762 10.936,16.908 9.447,16.908 
-		9.447,16.762 9.327,16.762 9.327,16.908 9.327,17.026 9.327,17.027 11.055,17.027 11.055,17.026 11.055,16.908 11.055,16.762 	"/>
-	<polygon opacity="0.4" fill="#B3B3B3" enable-background="new    " points="3.761,16.762 3.761,16.908 2.272,16.908 2.272,16.762 
-		2.153,16.762 2.153,16.908 2.153,17.026 2.153,17.027 3.88,17.027 3.88,17.026 3.88,16.908 3.88,16.762 	"/>
-	<rect x="0.317" y="0.875" opacity="0.4" fill="#B3B3B3" enable-background="new    " width="12.6" height="0.072"/>
-	<rect x="0.317" y="17.151" opacity="0.4" fill="#B3B3B3" enable-background="new    " width="12.6" height="0.071"/>
-	<rect x="2.368" y="17.223" fill="#808080" fill-opacity="0.5" width="1.369" height="0.118"/>
-	<rect x="9.566" y="17.223" fill="#808080" fill-opacity="0.5" width="1.37" height="0.118"/>
-	<rect x="2.368" y="22.632" fill="#B3B3B3" fill-opacity="0.5" width="1.369" height="0.119"/>
-	<rect x="9.566" y="22.632" fill="#B3B3B3" fill-opacity="0.5" width="1.37" height="0.119"/>
-	<rect x="2.188" y="20.118" fill="#FFFFFF" fill-opacity="0.2" width="1.728" height="0.08"/>
-	<rect x="9.386" y="20.138" fill="#FFFFFF" fill-opacity="0.2" width="1.729" height="0.079"/>
-	<rect x="2.368" y="22.618" fill="#666666" fill-opacity="0.2" width="1.369" height="0.08"/>
-	<rect x="9.567" y="22.638" fill="#666666" fill-opacity="0.2" width="1.369" height="0.079"/>
-	<rect x="0.317" y="0.875" opacity="0.76" fill="#F2F2F2" enable-background="new    " width="12.6" height="16.313"/>
-	<g>
-		<circle opacity="0.3" fill="#FFFFFF" enable-background="new    " cx="6.617" cy="5.793" r="2.588"/>
-		<path opacity="0.46" fill="#FFFFFF" enable-background="new    " d="M4.029,5.93c0-1.431,1.158-2.589,2.587-2.589
-			c1.43,0,2.588,1.158,2.588,2.589V5.793c0-1.429-1.158-2.587-2.588-2.587c-1.429,0-2.587,1.158-2.587,2.587V5.93L4.029,5.93z"/>
-		<path opacity="0.3" fill="#808080" enable-background="new    " d="M9.204,5.658c0,1.429-1.158,2.587-2.588,2.587
-			c-1.429,0-2.587-1.158-2.587-2.587v0.135c0,1.431,1.158,2.588,2.587,2.588c1.43,0,2.588-1.157,2.588-2.588V5.658z"/>
-		<circle opacity="0.5" fill="#FFFFFF" enable-background="new    " cx="6.617" cy="6.046" r="2.216"/>
-	</g>
-	<polygon opacity="0.1" enable-background="new    " points="13.233,16.338 13.154,16.531 13.154,0.166 13.233,0 	"/>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 108" width="120" height="108"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd0"/><stop offset="1" stop-color="#14489c"/></linearGradient>
+<linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9a4f"/><stop offset="1" stop-color="#176b33"/></linearGradient>
+<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d63b3b"/><stop offset="1" stop-color="#9c1c1c"/></linearGradient>
+<linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa8"/><stop offset="1" stop-color="#43207c"/></linearGradient>
+<linearGradient id="gK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3e"/><stop offset="1" stop-color="#17171a"/></linearGradient>
+<linearGradient id="gY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b923"/><stop offset="1" stop-color="#b78a0c"/></linearGradient>
+<linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="0.5" stop-color="#b9bcc0"/><stop offset="1" stop-color="#8b8e93"/></linearGradient>
+<linearGradient id="gV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9094"/><stop offset="0.35" stop-color="#f4f4f4"/><stop offset="1" stop-color="#7c7f84"/></linearGradient>
+<radialGradient id="gGl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe6f5" stop-opacity=".35"/></radialGradient></defs><rect x="4" y="40" width="112" height="60" rx="5" fill="url(#gP)" stroke="#2c1556" stroke-width="1.2"/><rect x="6" y="42" width="108" height="56" rx="4" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width=".8"/><circle cx="11" cy="47" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="11" cy="47" r="2" fill="#333"/><circle cx="109" cy="47" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="109" cy="47" r="2" fill="#333"/><circle cx="11" cy="93" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="11" cy="93" r="2" fill="#333"/><circle cx="109" cy="93" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="109" cy="93" r="2" fill="#333"/><rect x="10" y="20" width="52" height="28" rx="4" fill="url(#gY)" stroke="#6b5206"/><rect x="56" y="26" width="26" height="16" rx="2" fill="#b3b6bb" stroke="#666"/><circle cx="84" cy="34" r="3" fill="#ff2020"/><rect x="39" y="85" width="40" height="10" fill="#15151a" rx="1"/><rect x="41.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><text x="44" y="80" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="bold" fill="#f4f4f4" text-anchor="middle">S</text><rect x="55.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><rect x="69.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><text x="72" y="80" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="bold" fill="#f4f4f4" text-anchor="middle">GND</text><text x="80" y="70" font-family="Arial,Helvetica,sans-serif" font-size="6" font-weight="bold" fill="#fff" text-anchor="middle">KY-008</text></svg>

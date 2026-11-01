@@ -1,40 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.2" baseProfile="tiny" id="Layer_1" xmlns:svg="http://www.w3.org/2000/svg"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25.82px"
-	 height="35.359px" viewBox="0 0 25.82 35.359" xml:space="preserve">
-<g id="breadboard">
-	<polygon id="connector2pin" fill="#808080" points="6.48,28.162 4.941,28.162 4.168,24.81 7.252,24.81 	"/>
-	<polygon id="connector3pin" fill="#808080" points="13.656,35.339 12.117,35.339 11.344,31.986 14.428,31.986 	"/>
-	<polygon id="connector0pin" fill="#808080" points="20.879,28.162 19.342,28.162 18.568,24.81 21.652,24.81 	"/>
-	<polygon id="connector1pin" fill="#808080" points="13.68,22.48 12.142,22.48 11.369,19.128 14.453,19.128 	"/>
-	<g id="icon">
-	<polygon fill="#808080" points="4.168,15.462 4.168,24.81 4.941,28.162 6.48,28.162 7.252,24.81 7.252,15.462 	"/>
-	<polygon fill="#808080" points="6.991,24.81 6.219,28.162 6.48,28.162 7.252,24.81 	"/>
-	<polygon fill="#666666" points="5.222,28.162 4.449,24.81 4.168,24.81 4.941,28.162 	"/>
-	<polygon fill="#808080" points="11.344,22.639 11.344,31.986 12.117,35.339 13.656,35.339 14.428,31.986 14.428,22.639 	"/>
-	<polygon fill="#999999" points="14.042,22.639 14.042,31.986 13.271,35.339 13.656,35.339 14.428,31.986 14.428,22.639 	"/>
-	<polygon fill="#666666" points="12.503,35.339 11.73,31.986 11.73,22.639 11.344,22.639 11.344,31.986 12.117,35.339 	"/>
-	<polygon fill="#808080" points="11.369,9.78 11.369,19.128 12.142,22.48 13.68,22.48 14.453,19.128 14.453,9.78 	"/>
-	<polygon fill="#808080" points="18.568,15.462 18.568,24.81 19.342,28.162 20.879,28.162 21.652,24.81 21.652,15.462 	"/>
-	<polygon fill="#999999" points="21.373,24.81 20.6,28.162 20.879,28.162 21.652,24.81 	"/>
-	<path fill="#999999" d="M0,12.931c0,7.131,5.78,12.909,12.91,12.909c7.131,0,12.91-5.778,12.91-12.909v4.049
-		c0,7.131-5.779,12.91-12.91,12.91C5.78,29.89,0,24.11,0,16.979V12.931z"/>
-	<path fill="#808080" d="M0.001,16.734c0,7.131,5.78,12.91,12.91,12.91c7.131,0,12.91-5.779,12.91-12.91l-0.001,0.245
-		c0,7.131-5.779,12.91-12.91,12.91C5.78,29.89,0,24.11,0,16.979L0.001,16.734z"/>
-	
-		<rect x="21.667" y="24.98" transform="matrix(0.7074 0.7068 -0.7068 0.7074 25.2191 -8.2618)" fill="#CCCCCC" width="1.842" height="2.694"/>
-	<polygon fill="#B3B3B3" points="22.289,27.931 24.193,26.025 24.193,26.541 22.289,28.446 	"/>
-	<polygon fill="#999999" points="20.986,26.628 22.289,27.931 22.289,28.446 20.986,27.144 	"/>
-	<circle fill="#B3B3B3" cx="12.91" cy="12.931" r="12.91"/>
-	<path fill="#CCCCCC" d="M25.82,13.417c0-7.13-5.779-12.91-12.91-12.91C5.78,0.507,0,6.287,0,13.417v-0.485
-		c0-7.131,5.78-12.91,12.91-12.91c7.131,0,12.91,5.779,12.91,12.91V13.417z"/>
-	<path fill="#CCCCCC" d="M0,12.673c0,7.132,5.78,12.91,12.91,12.91c7.131,0,12.91-5.778,12.91-12.91v0.259
-		c0,7.131-5.779,12.909-12.91,12.909C5.78,25.841,0,20.062,0,12.931V12.673z"/>
-	
-		<rect x="3.201" y="6.479" transform="matrix(-0.7071 -0.7071 0.7071 -0.7071 12.8952 31.202)" fill="#3D4656" width="19.417" height="12.903"/>
-	<polygon fill="#2E3541" points="24.337,15.233 10.606,1.846 1.483,10.628 10.606,1.504 	"/>
-	<polygon fill="#CCCCCC" points="1.483,10.627 15.191,24.504 24.336,15.233 15.213,24.357 	"/>
-	</g>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 108" width="150" height="108"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6fd0"/><stop offset="1" stop-color="#14489c"/></linearGradient>
+<linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9a4f"/><stop offset="1" stop-color="#176b33"/></linearGradient>
+<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d63b3b"/><stop offset="1" stop-color="#9c1c1c"/></linearGradient>
+<linearGradient id="gP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa8"/><stop offset="1" stop-color="#43207c"/></linearGradient>
+<linearGradient id="gK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3e"/><stop offset="1" stop-color="#17171a"/></linearGradient>
+<linearGradient id="gY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b923"/><stop offset="1" stop-color="#b78a0c"/></linearGradient>
+<linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f2f2"/><stop offset="0.5" stop-color="#b9bcc0"/><stop offset="1" stop-color="#8b8e93"/></linearGradient>
+<linearGradient id="gV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9094"/><stop offset="0.35" stop-color="#f4f4f4"/><stop offset="1" stop-color="#7c7f84"/></linearGradient>
+<radialGradient id="gGl" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe6f5" stop-opacity=".35"/></radialGradient></defs><rect x="4" y="4" width="142" height="100" rx="5" fill="url(#gB)" stroke="#0d3470" stroke-width="1.2"/><rect x="6" y="6" width="138" height="96" rx="4" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width=".8"/><circle cx="11" cy="11" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="11" cy="11" r="2" fill="#333"/><circle cx="139" cy="11" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="139" cy="11" r="2" fill="#333"/><circle cx="11" cy="97" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="11" cy="97" r="2" fill="#333"/><circle cx="139" cy="97" r="3.4" fill="#e9e9e9" stroke="#b8a04a" stroke-width="1.3"/><circle cx="139" cy="97" r="2" fill="#333"/><ellipse cx="38" cy="36" rx="9" ry="12" fill="#e9e9ef" stroke="#999"/><ellipse cx="38" cy="36" rx="5" ry="8" fill="#ccd"/><ellipse cx="68" cy="36" rx="9" ry="12" fill="#222" stroke="#000"/><ellipse cx="68" cy="36" rx="5" ry="8" fill="#000"/><rect x="90" y="24" width="26" height="14" rx="1.5" fill="url(#gK)" stroke="#000" stroke-width=".6"/><circle cx="94" cy="28" r="1.3" fill="#888"/><text x="103.0" y="33.0" font-family="Arial,Helvetica,sans-serif" font-size="5.5" font-weight="bold" fill="#cfcfcf" text-anchor="middle">LM393</text><rect x="94" y="46" width="16" height="16" rx="1.5" fill="#2358c6" stroke="#0b2a70"/><circle cx="102.0" cy="54.0" r="5.28" fill="url(#gM)" stroke="#555" stroke-width=".5"/><rect x="101.2" y="49.2" width="1.6" height="4.8" fill="#333"/><rect x="120" y="24" width="6" height="3.4" fill="#d33" stroke="#111" stroke-width=".4"/><rect x="120" y="34" width="6" height="3.4" fill="#2ecc40" stroke="#111" stroke-width=".4"/><rect x="35" y="85" width="40" height="10" fill="#15151a" rx="1"/><rect x="37.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><text x="40" y="80" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="bold" fill="#f4f4f4" text-anchor="middle">VCC</text><rect x="51.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><text x="54" y="80" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="bold" fill="#f4f4f4" text-anchor="middle">OUT</text><rect x="65.8" y="87.8" width="4.4" height="4.4" fill="url(#gY)" stroke="#6b5206" stroke-width=".5"/><text x="68" y="80" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="bold" fill="#f4f4f4" text-anchor="middle">GND</text></svg>
