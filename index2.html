@@ -1153,7 +1153,7 @@ html, body { overscroll-behavior: none; }
     max-height: 88vh !important;
     border-radius: 14px;
   }
-  .CodeMirror { font-size: 14px !important; }
+  .CodeMirror { font-size: var(--cmfs,14px) !important; }
 
   body.eg-mobi-palette, body.eg-mobi-side { overflow: hidden; }
 }
@@ -3603,7 +3603,7 @@ document.addEventListener("mouseup", function(ev){
 });
 var drag=null;
 function onCompMouseDown(ev){if(ev.target.classList.contains("pin")||ev.button!==0)return;select(this.id);var c=findComp(this.id);if(!c)return;drag={id:this.id,ox:ev.clientX,oy:ev.clientY,sx:c.x,sy:c.y};this.classList.add("dragging");ev.preventDefault();try{eagleFocusWorkspace()}catch(eF){}}
-document.addEventListener("mousemove",function(ev){if(!drag)return;if(window.wireDrag)return;var c=findComp(drag.id);if(!c)return;var z=zoomLevel||1;c.x=drag.sx+(ev.clientX-drag.ox)/z;c.y=drag.sy+(ev.clientY-drag.oy)/z;if(gridOn){c.x=Math.round(c.x/10)*10;c.y=Math.round(c.y/10)*10}var el=document.getElementById(c.id);if(el){el.style.left=c.x+"px";el.style.top=c.y+"px"}renderWires()});
+document.addEventListener("mousemove",function(ev){if(!drag)return;if(window.wireDrag)return;var c=findComp(drag.id);if(!c)return;if(!drag.sn){if(Math.abs(ev.clientX-drag.ox)+Math.abs(ev.clientY-drag.oy)<3)return;drag.sn=1;try{c.x=drag.sx;c.y=drag.sy;snapshot();}catch(eS){}}var z=zoomLevel||1;c.x=drag.sx+(ev.clientX-drag.ox)/z;c.y=drag.sy+(ev.clientY-drag.oy)/z;if(gridOn){c.x=Math.round(c.x/10)*10;c.y=Math.round(c.y/10)*10}var el=document.getElementById(c.id);if(el){el.style.left=c.x+"px";el.style.top=c.y+"px"}renderWires()});
 function snapComponentToBreadboard(c){ return false; }
 document.addEventListener("mouseup",function(){
   if(drag){
@@ -3732,9 +3732,6 @@ var tb=$("tabbody");
 if(activeTab==="code"){tb.innerHTML='<div id="codeWrap"><div id="codeToolbar">'+
 '<button class="btn" id="btnTpl">Blink</button>'+
 '<button class="btn" id="btnTplFade">Fade</button>'+
-'<button class="btn" id="btnTplBtn">Button</button>'+
-'<button class="btn" id="btnTplSerial">Serial</button>'+
-'<button class="btn" id="btnTplUltra">Ultra</button>'+
 '<button class="btn" id="btnCompile">Check</button>'+
 '<button class="btn" id="btnFmt">Format</button>'+
 '<button class="btn" id="btnFind" title="Find">Find</button>'+
@@ -3819,13 +3816,9 @@ if(c.type==="custom")html+=row("Descriptor JSON","p_customdesc","text",c.props.d
 if(c.type==="custom")html+='<div class="frow"><label></label><div class="val"><button class="btn" id="p_custombuild">Build Descriptor</button></div></div>';
 if(c.type==="neopixel")html+=row("Color","p_color","color",c.props.color);
 if(c.type==="capacitor")html+=row("µF","p_uf","number",c.props.uF);
-html+='</div><div class="fgroup" id="e110pins"><div class="gh">Pins ('+Object.keys(c.pins).length+')</div>';
-(function(){var keys=Object.keys(c.pins);for(var i=0;i<keys.length;i++){var pn=keys[i],p=c.pins[pn],nm=(p&&p.label)?p.label:pn,kd=(p&&p.kind)||'io',note=(p&&p.note)||'',col=(p&&p.color)||'';
-html+='<div class="pe-row frow" data-row="'+pn+'"><span class="dot" style="'+(col?'background:'+col:'')+'"></span><span class="nm" title="'+String(note).replace(/"/g,'&quot;')+'">'+String(nm).replace(/&/g,'&amp;').replace(/</g,'&lt;')+(p&&p.label?' <span class="kd">'+pn+'</span>':'')+'</span><span class="kd">'+kd+'</span><span class="val" style="font-size:10px;color:var(--muted);margin-right:4px">('+(p.localX)+','+(p.localY)+')</span><button class="btn" data-k="'+pn+'" type="button">Edit</button></div>';
-}})();
+html+='</div><div class="fgroup"><div class="gh">Pins</div>';
+for(var pn in c.pins)html+='<div class="frow"><label>'+pn+'</label><div class="val" style="font-size:11px;color:var(--muted)">('+c.pins[pn].localX+','+c.pins[pn].localY+')</div></div>';
 html+='</div><div class="mini-btns"><button class="btn danger" onclick="deleteSelected()">Delete</button></div>';tb.innerHTML=html;
-/* wire Edit buttons to floating pin editor */
-(function(){var box=$("e110pins");if(!box)return;var cid=c.id;box.querySelectorAll("button[data-k]").forEach(function(b){b.onclick=function(){try{if(window.E110&&E110.openPinEditor)E110.openPinEditor(cid,b.dataset.k);else if(typeof openPinEditor==="function")openPinEditor(cid,b.dataset.k);}catch(e){console.warn(e);}};});})();
 function bind(id,fn){var el=$(id);if(el)el.addEventListener("input",fn)}
 bind("px",function(){c.x=parseInt(this.value,10)||0;render()});bind("py",function(){c.y=parseInt(this.value,10)||0;render()});
 bind("plabel",function(){c.props.label=this.value;render()});bind("p_color",function(){c.props.color=this.value; try{lightLeds()}catch(e){} try{updateComponentVisuals()}catch(e){} render();});
@@ -3973,8 +3966,8 @@ function updateCodeStats(){
   var el=$("codeStats");
   if(el) el.textContent="Ln "+(cur.line+1)+", Col "+(cur.ch+1)+"  |  "+lines+" lines  |  "+v.length+" chars";
 }
-if($("btnFontUp"))$("btnFontUp").onclick=function(){editorFont=Math.min(22,editorFont+1); codeEditor.getWrapperElement().style.fontSize=editorFont+"px"; codeEditor.refresh();};
-if($("btnFontDn"))$("btnFontDn").onclick=function(){editorFont=Math.max(10,editorFont-1); codeEditor.getWrapperElement().style.fontSize=editorFont+"px"; codeEditor.refresh();};
+if($("btnFontUp"))$("btnFontUp").onclick=function(){editorFont=Math.min(22,editorFont+1); codeEditor.getWrapperElement().style.fontSize=editorFont+"px"; document.documentElement.style.setProperty("--cmfs",editorFont+"px"); codeEditor.refresh();};
+if($("btnFontDn"))$("btnFontDn").onclick=function(){editorFont=Math.max(10,editorFont-1); codeEditor.getWrapperElement().style.fontSize=editorFont+"px"; document.documentElement.style.setProperty("--cmfs",editorFont+"px"); codeEditor.refresh();};
 if($("btnWrap"))$("btnWrap").onclick=function(){
   var on=!codeEditor.getOption("lineWrapping");
   codeEditor.setOption("lineWrapping", on);
@@ -5643,6 +5636,7 @@ $("btnDel").onclick=function(){if(selectedWireId)deleteSelectedWire();else delet
 /* Capture-phase Delete backup for JavaFX WebView */
 (function(){
   function onDelCapture(e){
+    if(e.__eagleDelKD)return; e.__eagleDelKD=1;
     var k = (typeof eagleKeyName==="function") ? eagleKeyName(e) : (e.key||"");
     if(k!=="Delete" && k!=="Backspace" && k!=="Del") return;
     if(typeof eagleInEditable==="function" && eagleInEditable(e)) return;
@@ -5813,6 +5807,7 @@ function eagleDoDeleteSelection(){
   return false;
 }
 window.addEventListener("keydown",function(e){
+  if(e.__eagleMainKD)return; e.__eagleMainKD=1; /* this handler can be registered more than once - run it once per key event */
   var ctrl=e.ctrlKey||e.metaKey;
   var k=eagleKeyName(e);
   var inEditor=eagleInEditable(e);
@@ -6941,7 +6936,7 @@ function exportNetlist(){
 }
 
 function wireExamBuilderAndPhysics(){
-  var bb=$("btnExamBuilder"); if(bb) bb.onclick=showExamBuilder;
+  var bb=$("btnExamBuilder"); if(bb){ if(typeof showExamBuilder==="function") bb.onclick=showExamBuilder; else bb.style.display="none"; /* feature not present in this build - hide the dead button instead of throwing and aborting init() */ }
   var bp=$("btnPhysics"); if(bp) bp.onclick=showPhysicsPanel;
   var bm=$("btnMultimeter"); if(bm) bm.onclick=function(){ setMeterMode(!meterMode); };
   var bs=$("btnSuggestR"); if(bs) bs.onclick=suggestResistors;
@@ -7725,8 +7720,10 @@ A.rewriteExtra=function(code){
     b=b.replace(new RegExp("\\b"+v+"\\s*\\.\\s*display\\s*\\(\\s*\\)","g"),"host.oledDisplay("+v+")");
     b=b.replace(new RegExp("\\b"+v+"\\s*\\.\\s*startscroll[a-z]*\\s*\\([^)]*\\)\\s*;?","g"),";");
   });
+  b=b.replace(/\b(?:SSD1306_)?WHITE\b/g,"1").replace(/\bSSD1306_(BLACK|INVERSE)\b/g,function(_,k){return k==="BLACK"?"0":"2"}).replace(/\bBLACK\b/g,"0");
   /* IR remote */
-  var ir=[];b=b.replace(/IRrecv\s+(\w+)\s*\(([^)]*)\)\s*;/g,function(_,n,a2){ir.push(n);return "scope."+n+"={};";});
+  b=b.replace(/\bdecode_results\s+(\w+)\s*;/g,"scope.$1={};");
+  var ir=[];b=b.replace(/IRrecv\s+(\w+)\s*\(([^)]*)\)\s*;/g,function(_,n,a2){ir.push(n);return "scope."+n+"={enableIRIn:function(){},begin:function(){},resume:function(){},decode:function(){var r=host.irResult();return !!(r&&r.ok)}};";});
   ir.forEach(function(v){
     b=b.replace(new RegExp("\\b"+v+"\\s*\\.\\s*enableIRIn\\s*\\(\\s*\\)\\s*;?","g"),";");
     b=b.replace(new RegExp("\\b"+v+"\\s*\\.\\s*decode\\s*\\(\\s*&?\\s*(\\w+)\\s*\\)","g"),"($1=host.irResult()).ok");
@@ -9124,7 +9121,28 @@ A.enrichExamples=function(){
     card.appendChild(btn);
   });
 };
-/* ---------- 36 gamification ---------- */
+/* ---------- 36 gamification + 35 analytics (progress store; was referenced but never defined, which aborted this whole module) ---------- */
+A.gam=(function(){
+  var BADGES=[{id:"first",t:"First steps",d:"Earn your first XP",xp:1},{id:"xp100",t:"Tinkerer",d:"100 XP",xp:100},{id:"xp500",t:"Maker",d:"500 XP",xp:500},{id:"xp2000",t:"Engineer",d:"2000 XP",xp:2000},{id:"streak3",t:"On a roll",d:"3-day streak",streak:3},{id:"stars10",t:"Star collector",d:"10 stars",stars:10}];
+  function st(){var s=null;try{s=A.S("gam")}catch(e){} s=s||{}; s.xp=s.xp||0; s.stars=s.stars||{}; s.badges=s.badges||{}; s.streak=s.streak||0; s.last=s.last||""; return s;}
+  function save(s){try{A.S("gam",s||st())}catch(e){}}
+  function totalStars(s){var n=0;for(var k in s.stars)n+=s.stars[k]||0;return n;}
+  function unlock(id){var s=st();if(s.badges[id])return false;s.badges[id]=Date.now();save(s);var b=BADGES.filter(function(x){return x.id===id})[0];try{toast("Badge unlocked: "+(b?b.t:id),"ok")}catch(e){}return true;}
+  function xp(n,why){var s=st();s.xp+=(+n||0);save(s);check();chip();}
+  function star(id,n){var s=st();s.stars[id]=Math.max(s.stars[id]||0,+n||0);save(s);check();}
+  function streak(){var s=st(),d=new Date().toISOString().slice(0,10);if(s.last!==d){var y=new Date(Date.now()-864e5).toISOString().slice(0,10);s.streak=(s.last===y)?s.streak+1:1;s.last=d;save(s);}return s.streak;}
+  function check(){var s=st();BADGES.forEach(function(b){if(s.badges[b.id])return;if((b.xp&&s.xp>=b.xp)||(b.streak&&s.streak>=b.streak)||(b.stars&&totalStars(s)>=b.stars))unlock(b.id);});}
+  function chip(){var e=document.getElementById("xpChip");if(e){var s=st();e.textContent=s.xp+" XP";e.title="Streak: "+s.streak+" day(s)";}}
+  return {st:st,save:save,unlock:unlock,xp:xp,star:star,streak:streak,check:check,chip:chip,BADGES:BADGES};
+})();
+A.ana=(function(){
+  var KEY="ana";function get(){var s=null;try{s=A.S(KEY)}catch(e){} s=s||{};s.fails=s.fails||{};s.minutes=s.minutes||0;s.events=s.events||[];return s;}
+  function put(s){try{A.S(KEY,s)}catch(e){}}
+  return {fail:function(t){var s=get();s.fails[t]=(s.fails[t]||0)+1;put(s);},time:function(m){var s=get();s.minutes+=(+m||0);put(s);},
+    ev:function(n){var s=get();s.events.push({n:n,t:Date.now()});if(s.events.length>200)s.events.shift();put(s);},
+    weak:function(){var s=get();return Object.keys(s.fails).sort(function(a,b){return s.fails[b]-s.fails[a]}).map(function(k){return {topic:k,fails:s.fails[k]}});},
+    recommend:function(){var w=this.weak();return w.length?w[0].topic:null;}};
+})();
 A.st=A.gam.st;A.save=A.gam.save;A.unlock=A.gam.unlock;A.star=A.gam.star;A.streak=A.gam.streak;A.chip=A.gam.chip;A.check=A.gam.check;A.BADGES=A.gam.BADGES;
 /* ---------- 35 analytics ---------- */
 A.weak=A.ana.weak;A.recommend=A.ana.recommend;A.ev=A.ana.ev;
@@ -9933,7 +9951,7 @@ return A;
    EAGLE PRO LAYER v4 - architecture: bus / graph / registries
    ============================================================ */
 window.E4=(function(){
-var X={version:"4.0-pro"};
+var X={version:"4.0-pro"}; try{window.X=X}catch(e){}
 function S(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem("eagle4."+k)||"null");localStorage.setItem("eagle4."+k,JSON.stringify(v))}catch(e){return null}}
 X.S=S;
 X.esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")};
@@ -10675,6 +10693,7 @@ X.initStatus=function(){
       var __host=it._host.bind(it);
       it._host=function(){
         var h=__host();
+        try{ if(window.E100&&typeof E100.patchHost==="function") E100.patchHost(h); }catch(_e100){} /* integer / and % helpers: this per-instance wrapper bypassed the prototype patch */
         ["delay","delayMicroseconds"].forEach(function(k){
           if(typeof h[k]==="function"){
             var f=h[k];
@@ -13817,7 +13836,7 @@ if(window.E6){
   };
   ["en","ar"].forEach(function(lang){
     if(!E6.i18n[lang]) E6.i18n[lang]={};
-    Object.keys(extra[lang]).forEach(function(k){ E6.i18n[lang][k]=extra[lang][k]; });
+    Object.keys(extra[lang]||{}).forEach(function(k){ E6.i18n[lang][k]=extra[lang][k]; });
   });
   // limits expansion
   E6.limits = E6.limits || {};
@@ -15568,7 +15587,7 @@ E14.hookLedNoR = function(){
           E14.blackenLed(c);
         }
         // If LED current extreme and burnout on, damage LED itself
-        if(!c.props.damaged && window.E6 && E6.burnoutEnabled && window.running){
+        if((c.type==="led"||c.type==="led_rgb") && !c.props.damaged && window.E6 && E6.burnoutEnabled && window.running){
           var mA = E14.safeCurrent(c);
           var Rs = E14.hasSeriesResistor(c);
           if(Rs < 50 && mA!=null && mA > 55){
@@ -20086,7 +20105,7 @@ var pv=pinV[pn];
 var pwmDuty = (typeof pv==="number" && pv>1 && pv<255) ? (pv/255) : 0;
 var force = (typeof window!=="undefined") ? window.__E62_force : null;
 var E = (force && pwmDuty>0) ? (force==="HIGH" ? 5.0 : 0.0)
-      : (pv===1 ? 5.0 : (typeof pv==="number"&&pv>1 ? pwmDuty*5 : 0));
+      : ((pv===1 || (typeof pv==="number" && pv>=255)) ? 5.0 : (typeof pv==="number"&&pv>1 ? pwmDuty*5 : 0));
 push("V", nA, mcuGnd, E, 25, false, c, pn,"GND");
 if(pwmDuty>0 && window.E62 && typeof E62.note==="function"){
   try{ E62.note(c.id, pn, pwmDuty, (window.E23&&E23.freq&&E23.freq[pn])||490); }catch(eP){}
@@ -22052,20 +22071,17 @@ function ensureRight(){
     var cb=el("div","",""); cb.id="cirkitBody"; cb.style.display="none";
     if(tb&&tb.parentNode)tb.parentNode.appendChild(cb);
   }
-  var tLib=null,tBom=null;
-  var have=side.querySelector('[data-tab="cirkitLib"]');
+  var tBom=null;
+  var have=side.querySelector('[data-tab="cirkitBom"]');
   if(!have){
-    tLib=el("button","tab","<svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" style=\"vertical-align:-1px;margin-right:4px\"><path d=\"M4 5a2 2 0 012-2h14v18H6a2 2 0 01-2-2V5z\"/></svg>Library");
-    tLib.id="tLib"; tLib.setAttribute("data-tab","cirkitLib");
+    /* Library tab intentionally not added to the inspector (examples stay available elsewhere). */
     tBom=el("button","tab","<svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" style=\"vertical-align:-1px;margin-right:4px\"><path d=\"M8 6h13M8 12h13M8 18h13\"/></svg>BOM");
     tBom.id="tBom"; tBom.setAttribute("data-tab","cirkitBom");
     tabsWrap.insertBefore(tBom, tabsWrap.children[1]||null);
-    tabsWrap.insertBefore(tLib, tabsWrap.children[1]||null);
-    tLib.addEventListener("click",function(){ openTab("cirkitLib",renderLib); });
     tBom.addEventListener("click",function(){ openTab("cirkitBom",renderBom); });
     tabsWrap.addEventListener("click",function(ev){
       var t=ev.target&&ev.target.closest?ev.target.closest(".tab"):null;
-      if(t&&t.getAttribute("data-tab")!=="cirkitLib"&&t.getAttribute("data-tab")!=="cirkitBom")showCirkit(false);
+      if(t&&t.getAttribute("data-tab")!=="cirkitBom")showCirkit(false);
     },true);
   }
 var insp=tabsWrap.querySelector('.tab[data-tab="props"]');
@@ -27423,8 +27439,9 @@ console.log("[SHAFT] motor shaft + servo arm only; LED no-pop");
 
   function firstWord(t) { return String(t || '').split(/\s+/)[0].replace(/\*$/, ''); }
   function parseNum(raw) {
-    var s = String(raw).replace(/[uUlLfF]+$/, '');
-    if (/^0[xX]/.test(s)) return parseInt(s, 16);
+    var s = String(raw);
+    if (/^0[xX]/.test(s)) return parseInt(s.replace(/[uUlL]+$/, ''), 16);
+    s = s.replace(/[uUlLfF]+$/, '');
     if (/^0[bB]/.test(s)) return parseInt(s.slice(2), 2);
     if (/[.eE]/.test(s)) return parseFloat(s);
     return parseInt(s, 10);
@@ -27923,7 +27940,26 @@ console.log("[SHAFT] motor shaft + servo arm only; LED no-pop");
     host.shiftOut = function (d, v) {
       for (var i = 7; i >= 0; i--) { var bitv = (v >> i) & 1; host.digitalWrite(d, bitv); host.digitalWrite(d, 0); }
     };
-    host.spiTransfer = function (v) { return v & 0xFF; };
+    var __spiBuf = [], __spiAt = 0;
+    host.spiTransfer = function (v) {
+      v = v & 0xFF;
+      try {
+        var now = Date.now(); if (now - __spiAt > 40) __spiBuf.length = 0; __spiAt = now;
+        __spiBuf.push(v);
+        if (__spiBuf.length >= 2) {
+          var reg = __spiBuf[0], val = __spiBuf[1]; __spiBuf.length = 0;
+          var cs = (typeof components !== 'undefined' ? components : []);
+          for (var i = 0; i < cs.length; i++) if (cs[i].type === 'matrix8') {
+            var p = cs[i].props; if (!p.frame || p.frame.length !== 8) p.frame = [0, 0, 0, 0, 0, 0, 0, 0];
+            if (reg >= 1 && reg <= 8) p.frame[reg - 1] = val;       /* digit registers = rows */
+            else if (reg === 0x0C) p.shutdown = !(val & 1);
+            else if (reg === 0x0A) p.intensity = val & 15;
+            else if (reg === 0x0F) p.test = !!(val & 1);
+          }
+        }
+      } catch (e) { }
+      return 0;
+    };
     host.ledcSetup = function () { return 0; };
     host.ledcAttachPin = function (p) { host.__pwm = host.__pwm || {}; host.__pwm[p] = 0; };
     host.ledcAttachChannel = function () { };
@@ -27999,7 +28035,7 @@ console.log("[SHAFT] motor shaft + servo arm only; LED no-pop");
       var t = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       if (t - lastCheck < 3) return;
       lastCheck = t;
-      if (t - (self.__tickStart || t) > 8) { var e = new Error('__E37_BUDGET__'); e.__e37 = true; throw e; }
+      if (t - (self.__tickStart || t) > 60) { var e = new Error('__E37_BUDGET__'); e.__e37 = true; throw e; }
     };
   }
 
@@ -28696,6 +28732,8 @@ case 'sensor_temp': return { kind: 'v', volts: (Number(p.celsius != null ? p.cel
   if (!root) return;
 
   var VCC = 5.0;
+  /* current through a part according to the MNA solve - lets loads behind a transistor / driver come alive */
+  function solvedI(c, p) { try { if (p && p.I != null) return Math.abs(p.I); var L = root.E30 && root.E30.last, e = L && L.byComp && L.byComp[c.id]; return e && e.I != null ? Math.abs(e.I) : 0; } catch (e) { return 0; } }
   var V_REF = 0.020;          /* 20 mA = full brightness (same yardstick as the HUD) */
   var PWM_WINDOW = 120;       /* ms of duty averaging */
 
@@ -28773,6 +28811,8 @@ case 'sensor_temp': return { kind: 'v', volts: (Number(p.celsius != null ? p.cel
   var lastHash = '';
   function solverState() {
     try {
+      /* re-solve the live circuit whenever the pins changed - otherwise loads behind a transistor/driver see a stale solve */
+      if (typeof E30 !== 'undefined' && E30 && typeof E30.run === 'function') E30.run();
       if (typeof E30 !== 'undefined' && E30 && E30.last && E30.last.byComp) return E30.last;
     } catch (e) { }
     return null;
@@ -29022,7 +29062,7 @@ case 'sensor_temp': return { kind: 'v', volts: (Number(p.celsius != null ? p.cel
   function stepLamp(c, p, t, dt) {
     var inA = pinDriven(c, pickPin(c, ['1', '+', 'A']) || '1');
     var inB = pinDriven(c, pickPin(c, ['2', '-', 'C', 'K']) || '2');
-    var powered = !!(inA.level > 0.5 || inB.level > 0.5 || inA.duty > 0.2 || inB.duty > 0.2);
+    var powered = !!(inA.level > 0.5 || inB.level > 0.5 || inA.duty > 0.2 || inB.duty > 0.2 || solvedI(c, p) > 0.003);
     var mA = (p && p.I != null) ? Math.abs(p.I) * 1000 : (powered ? V_REF * 1000 : 0);
     var st = S.therm[c.id] || (S.therm[c.id] = { T: 0 });
     var target = powered ? Math.max(0.2, Math.min(1.6, mA / (V_REF * 1000))) : 0;
@@ -29049,6 +29089,7 @@ case 'sensor_temp': return { kind: 'v', volts: (Number(p.celsius != null ? p.cel
     var a = pinDriven(c, pickPin(c, ['+', 'A', '1']) || '+');
     var b = pinDriven(c, pickPin(c, ['-', 'B', '2']) || '-');
     var fwd = a.level > 0.5 || a.duty > 0.05, rev = b.level > 0.5 || b.duty > 0.05;
+    if (!fwd && !rev && solvedI(c, p) > 0.003) { fwd = !(p && p.V != null && p.V < 0); rev = !fwd; }
     var duty = Math.max(fwd ? a.duty : 0, rev ? b.duty : 0);
     if (duty < 0.02 && fwd) duty = 1;
     if (duty < 0.02 && rev) duty = 1;
@@ -29405,7 +29446,7 @@ case 'sensor_temp': return { kind: 'v', volts: (Number(p.celsius != null ? p.cel
 
   function stepHeater(c, p, t, dt) {
     var a = pinDriven(c, pickPin(c, ['1', '+']) || '1');
-    var on = a.level > 0.5 || a.duty > 0.5;
+    var on = a.level > 0.5 || a.duty > 0.5 || solvedI(c, p) > 0.003;
     keep(c, '_e38On', on ? 1 : 0);
     var node = el(c.id);
     if (!node) return;
@@ -30575,7 +30616,12 @@ if (p._e40Auto) {
         keep(c, '_e40Detent', S.env[c.id + '_det'] || 0);
         break;
       }
-      case 'ir_remote': case 'ir_receiver': case 'ir_sensor': {
+      case 'ir_sensor': {
+        /* obstacle module: OUT idles HIGH, goes LOW when something reflects the IR */
+        publishDigital(c, pinOf(c, 'OUT', 'SIG', 'IN'), (p.detected || p.on || p.pressed) ? 0 : 1);
+        break;
+      }
+      case 'ir_remote': case 'ir_receiver': {
         /* a carrier burst when the "button" is held */
         var firing = p.on || p.pressed || p.firing;
         publishDigital(c, pinOf(c, 'OUT', 'SIG', 'IN'), firing ? 1 : 0);
@@ -30693,6 +30739,11 @@ if (p._e40Auto) {
   /* ===================== 6. actuators ===================== */
   function stepActuator(c, t) {
     var p = c.props;
+    /* loads switched by a transistor / driver: energised when the solved current flows */
+    if (c.type === 'solenoid' || c.type === 'pump' || c.type === 'laser' || c.type === 'vibmotor') {
+      var sI = 0; try { var L3 = window.E30 && window.E30.last, e3 = L3 && L3.byComp && L3.byComp[c.id]; sI = e3 && e3.I != null ? Math.abs(e3.I) : 0; } catch (e) { }
+      if (sI > 0.003) { p.on = true; p._e115I = 1; } else if (p._e115I) { p.on = false; p._e115I = 0; }
+    }
     switch (c.type) {
       case 'solenoid': {
         var on = p.on ? 1 : 0;
@@ -34913,7 +34964,7 @@ window.E53 = (function () {
     /* ================= dark code theme ================= */
     '.CodeMirror{background:#0f1218!important;color:#c9d1d9!important;',
     '  font-family:"JetBrains Mono","Cascadia Code",Consolas,"Courier New",monospace!important;',
-    '  font-size:12.5px!important;line-height:1.55!important;padding:6px 8px!important}',
+    '  font-size:var(--cmfs,12.5px)!important;line-height:1.55!important;padding:6px 8px!important}',
     '.CodeMirror-gutters{background:#0f1218!important;border-right:1px solid #1d2330!important}',
     '.CodeMirror-linenumber{color:#3d4657!important;font-size:11px!important;padding:0 6px 0 4px!important}',
     '.CodeMirror-cursor{border-left:2px solid #3794ff!important}',
@@ -35702,9 +35753,10 @@ window.E57 = (function () {
 
     mode = "op"; pinBase = false; pinColl = false;
     var Ib = Ib_(p, Vbe, Vce), Ic = Ic_(p, Vbe, Vce);
-    p._rbe = (Math.abs(Ib) > 1e-16) ? Math.max(RMIN, Math.abs(VT / Ib)) : RMAX;
-    var dIc = Math.abs(If_(p, Vbe) / VA);
-    p._rce = (Math.abs(Vce) > 1e-6 && dIc > 1e-18) ? Math.max(1, Math.abs(Vce / dIc)) : RMAX;
+    /* large-signal equivalents: the stamped resistors must carry exactly Ib at Vbe and Ic at Vce,
+       otherwise a heavy load (fan, motor) behind the transistor never gets its current */
+    p._rbe = (Math.abs(Ib) > 1e-16) ? Math.max(RMIN, Math.abs(Vbe / Ib)) : RMAX;
+    p._rce = (Math.abs(Vce) > 1e-6 && Math.abs(Ic) > 1e-12) ? Math.max(0.05, Math.abs(Vce / Ic)) : RMAX;
     if (!(p._rbe > 0) || !isFinite(p._rbe)) p._rbe = RMAX;
     if (!(p._rce > 0) || !isFinite(p._rce)) p._rce = RMAX;
 
@@ -35911,6 +35963,8 @@ window.E57 = (function () {
           }
         }
       } catch (e) { /* never let the envelope take the solver down */ }
+      /* the forced HIGH/LOW solves overwrote E30.last - put the bias (average) solve back so loads read real currents */
+      try { if (res && res.ok) E30.last = res; } catch (e) { }
       return res;
     };
     E30.__e62 = true;
@@ -43793,6 +43847,8 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
         patchCompile();
       }, ms);
     });
+    /* other modules re-wrap ArduinoInterpreter._host later, which silently dropped this patch (host.__div is not a function) - keep re-applying */
+    setInterval(patchInterpreterHost, 1000);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
@@ -44126,7 +44182,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
   document.addEventListener("contextmenu", function(e){
     var el = e.target;
-    while(el && !el.classList.contains("comp")) el = el.parentNode;
+    while(el && !(el.classList && el.classList.contains("comp"))) el = el.parentNode;
     if(!el) return;
     e.preventDefault();
     var type = el.getAttribute("data-type");
@@ -48051,6 +48107,8 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 #cx110 .cxsub.left{left:auto;right:100%}
 #cx110 .cxi:hover>.cxsub,#cx110 .cxi.open>.cxsub{display:block}
 #pe110{position:fixed;top:80px;right:16px;width:290px;z-index:99990;background:#252526;border:1px solid #3e3e42;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.6);color:#ccc;font-size:12px;display:none}
+.pe-edit{margin-left:auto;padding:1px 9px;font-size:11px}
+.pe-nm{color:#3794ff;margin-left:6px;font-size:10px}
 #pe110 .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #3e3e42;cursor:move;font-weight:600;color:#3794ff}
 #pe110 .ph span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pe110 .pb{padding:10px;display:flex;flex-direction:column;gap:7px;max-height:70vh;overflow:auto}
@@ -48061,9 +48119,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 #pe110 .nb{display:inline-grid;grid-template-columns:repeat(3,22px);gap:2px}
 #pe110 .nb button{padding:1px 0;font-size:11px}
 #pe110 .hint{font-size:10px;color:#858585;line-height:1.4}
-.pe-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid rgba(42,49,66,.5)}
-.pe-row:last-child{border-bottom:none}
-#e110pins.fgroup .pe-row{padding:6px 10px}
+.pe-row{display:flex;align-items:center;gap:6px;padding:4px 2px}
 .pe-row .dot{width:10px;height:10px;border-radius:50%;background:#6e6e6e;flex:0 0 auto;border:1px solid #858585}
 .pe-row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pe-row .kd{color:#858585;font-size:10px}
 </style>
@@ -48154,6 +48210,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
 
   /* ================= 3) PIN EDITOR ================= */
+  var PANEL = null; /* the editor lives inside the inspector's "Pins" list (floats only as a fallback) */
   var ED = null; /* {cid, pin, orig, d} */
   var KINDS = ["io", "vcc", "gnd", "analog", "pwm", "digital", "input", "output", "signal"];
   function setOpt(p, k, v) { if (v === "" || v == null || v === false) delete p[k]; else p[k] = v; }
@@ -48165,8 +48222,8 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     return { x: +p.localX || 0, y: +p.localY || 0, kind: p.kind || "io", label: p.label || "", note: p.note || "", color: p.color || "#3794ff", useColor: !!p.color, showLabel: !!p.showLabel };
   }
   function ensurePanel() {
-    var b = $("pe110"); if (b) return b;
-    b = D.createElement("div"); b.id = "pe110";
+    if (PANEL) return PANEL;
+    var b = D.createElement("div"); b.id = "pe110"; PANEL = b;
     b.innerHTML = '<div class="ph" id="pe_h"><span id="pe_t">Pin editor</span><button class="btn" id="pe_x">✕</button></div>' +
       '<div class="pb">' +
       '<div class="r"><label>Pin</label><button class="btn" id="pe_prev">◀</button><select id="pe_sel"></select><button class="btn" id="pe_next">▶</button></div>' +
@@ -48217,9 +48274,11 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     var c = FC(cid); if (!c || !c.pins || !c.pins[pn]) return;
     var panel = ensurePanel();
     if (ED && (ED.cid !== cid)) cancelEd();
+
     var p = c.pins[pn];
     if (!p._o) p._o = { localX: p.localX, localY: p.localY, kind: p.kind || "io" };
     ED = { cid: cid, pin: pn, orig: JSON.parse(JSON.stringify(p)), d: toDraft(p) };
+    PANEL.style.display = "block";
     var keys = Object.keys(c.pins);
     $("pe_sel").innerHTML = keys.map(function (k) { return '<option value="' + esc(k) + '">' + esc(pinName(c, k) === k ? k : pinName(c, k) + " (" + k + ")") + "</option>"; }).join("");
     $("pe_sel").value = pn; $("pe_t").textContent = "Pin editor — " + cLabel(c);
@@ -48245,7 +48304,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     if (c && c.pins[ED.pin]) { var p = c.pins[ED.pin]; Object.keys(p).forEach(function (k) { delete p[k]; }); Object.keys(ED.orig).forEach(function (k) { p[k] = ED.orig[k]; }); full(); }
     closeEd();
   }
-  function closeEd() { var b = $("pe110"); if (b) b.style.display = "none"; ED = null; try { renderInspector(); } catch (e) {} }
+  function closeEd() { var b = PANEL; if (b) b.style.display = "none"; ED = null; try { renderInspector(); } catch (e) {} }
   function resetEd() {
     if (!ED) return; var c = FC(ED.cid), p = c.pins[ED.pin], o = p._o || {};
     ED.d = { x: o.localX != null ? o.localX : ED.d.x, y: o.localY != null ? o.localY : ED.d.y, kind: o.kind || "io", label: "", note: "", color: "#3794ff", useColor: false, showLabel: false };
@@ -48278,16 +48337,24 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 
   /* inspector: pin list under component properties */
   function inspectorPins() {
-    /* Pins list with Edit buttons is now built inside renderInspector (above Delete).
-       Keep this hook so wrap("renderInspector", inspectorPins) still works, but do not
-       inject a second list. Only re-bind Edit buttons if the list is already present. */
     try {
-      if (typeof activeTab === "undefined" || activeTab !== "props") return;
-      var box = $("e110pins"); if (!box) return;
+      var tb = $("tabbody"); if (!tb || typeof activeTab === "undefined" || activeTab !== "props") return;
+      var old = $("e110pins"); if (old) old.remove();
+      if (typeof selectedWireId !== "undefined" && selectedWireId && !selectedId) return;
       var c = selectedId && FC(selectedId); if (!c || !c.pins) return;
-      box.querySelectorAll("button[data-k]").forEach(function (b) {
-        if (b._e110) return; b._e110 = 1;
-        b.onclick = function () { openPinEditor(c.id, b.dataset.k); };
+      var grp = null;
+      tb.querySelectorAll(".fgroup").forEach(function (g) { var h = g.querySelector(".gh"); if (h && /^\s*pins\s*$/i.test(h.textContent)) grp = g; });
+      if (!grp) return;
+      grp.querySelectorAll(".frow").forEach(function (row) {
+        if (row.querySelector(".pe-edit")) return;
+        var lb = row.querySelector("label"), v = row.querySelector(".val"); if (!lb || !v) return;
+        var k = lb.textContent.trim(), p = c.pins[k]; if (!p) return;
+        v.style.display = "flex"; v.style.alignItems = "center"; v.style.gap = "4px";
+        if (p.label) { var nm = D.createElement("span"); nm.className = "pe-nm"; nm.textContent = p.label; v.appendChild(nm); }
+        if (p.color) { var d = D.createElement("span"); d.style.cssText = "width:9px;height:9px;border-radius:50%;background:" + p.color; v.appendChild(d); }
+        var b = D.createElement("button"); b.className = "btn pe-edit"; b.textContent = "Edit"; b.title = "Edit pin " + k;
+        b.onclick = function (e) { e.stopPropagation(); openPinEditor(c.id, k); };
+        v.appendChild(b);
       });
     } catch (e) {}
   }
@@ -48431,7 +48498,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       { l: "Zoom in", fn: function () { toggleBtn("btnZoomIn"); } },
       { l: "Zoom out", fn: function () { toggleBtn("btnZoomOut"); } },
       { l: "Fit all in view", fn: function () { var b = $("btnZoomFit") || $("btnZoomAll"); if (b) b.click(); } },
-      { l: "Show grid", chk: gridNow, fn: function () { var on = !gridNow; if (wa) wa.classList.toggle("gridon", on); try { gridOn = on; } catch (e) {} var b = $("btnGrid"); if (b) b.classList.toggle("active", on); } },
+      { l: "Show grid", chk: gridNow, fn: function () { var b = $("btnGrid"); if (b) b.click(); } },
       { l: "Wire mode", chk: wm, fn: function () { var b = $("btnWire"); if (b) b.click(); if (D.body.classList.contains("wire-mode") === wm) { D.body.classList.toggle("wire-mode", !wm); if (b) b.classList.toggle("active", !wm); } } },
       { sep: true },
       { l: "Check circuit", fn: function () { try { if (root.E93 && E93.runAllDiagnostics) E93.runAllDiagnostics(); else if (root.E92 && E92.runDiagnostics) E92.runDiagnostics(false); else toggleBtn("btnCheckCircuit"); } catch (e) { T(String(e), "err"); } } },
@@ -48706,7 +48773,7 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
     for (var r = 0; r < rows; r++) { var s = String(lines[r] == null ? "" : lines[r]); for (var i = 0; i < cols; i++) a[r * cols + i] = i < s.length ? (s.charCodeAt(i) & 255) : 32; }
     return a;
   }
-  function hex3(h) { var m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return [0, 0, 0]; var n = parseInt(m[1], 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
+  function hex3(h) { h = String(h || ""); var r = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(h); if (r) return [r[1] / 255, r[2] / 255, r[3] / 255]; var m = /^#?([0-9a-f]{6})$/i.exec(h); if (!m) return [0, 0, 0]; var n = parseInt(m[1], 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
   var SEG = { "0": "ABCDEF", "1": "BC", "2": "ABDEG", "3": "ABCDG", "4": "BCFG", "5": "ACDFG", "6": "ACDEFG", "7": "ABC", "8": "ABCDEFG", "9": "ABCDFG", "A": "ABCEFG", "B": "CDEFG", "C": "ADEF", "D": "BCDEG", "E": "ADEFG", "F": "AEFG", "-": "G", "_": "D" };
   function paint(el, w, h, drawFn) {
     var cv = D.createElement("canvas"); cv.width = w; cv.height = h; var x = cv.getContext("2d"); drawFn(x); return x.getImageData(0, 0, w, h);
@@ -48727,13 +48794,14 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
   def("led", "led", {}, function (el, c) { el.value = !!P(c, "on", false); el.color = P(c, "color", "red"); var b = P(c, "brightness", 255); el.brightness = b > 1 ? b / 255 : b; });
   def("led_rgb", "rgb-led", {}, function (el, c) { var r = P(c, "r", 0), g = P(c, "g", 0), b = P(c, "b", 0); var k = (r > 1 || g > 1 || b > 1) ? 255 : 1; el.ledRed = r / k; el.ledGreen = g / k; el.ledBlue = b / k; });
-  def("neopixel", "neopixel", {}, function (el, c) { var rgb = P(c, "on", false) ? hex3(P(c, "color", "#000000")) : [0, 0, 0]; el.r = rgb[0]; el.g = rgb[1]; el.b = rgb[2]; });
+  def("neopixel", "neopixel", {}, function (el, c) { var rgb = hex3(P(c, "color", "#000000")); el.r = rgb[0]; el.g = rgb[1]; el.b = rgb[2]; });
   def("buzzer", "buzzer", {}, function (el, c) { el.hasSignal = !!P(c, "on", false); });
   def("button", "pushbutton", {}, function (el, c) { el.pressed = !!P(c, "pressed", false); });
   def("pot", "potentiometer", {}, function (el, c) { el.value = +P(c, "value", 512) || 0; });
   def("resistor", "resistor", {}, function (el, c) { el.value = String(P(c, "ohms", 220)); });
-  def("servo,sg90", "servo", {}, function (el, c) { el.angle = +P(c, "angle", 90) || 0; });
-  def("servo_cont", "servo", {}, function (el, c) { var s = +P(c, "speed", 0) || 0; el.angle = 90 + Math.max(-100, Math.min(100, s)) * 0.9; });
+  def("servo", "servo", { horn: "double" }, function (el, c) { el.angle = +P(c, "angle", 90) || 0; });
+  def("sg90", "servo", { horn: "single" }, function (el, c) { el.angle = +P(c, "angle", 90) || 0; });
+  def("servo_cont", "servo", { horn: "cross" }, function (el, c) { var s = +P(c, "speed", 0) || 0; el.angle = 90 + Math.max(-100, Math.min(100, s)) * 0.9; });
   def("stepper", "stepper-motor", {}, function (el, c) { el.angle = (+P(c, "step", 0) || 0) * 1.8; });
   def("encoder", "ky-040", {}, function (el, c) { el.angle = (+P(c, "pos", 0) || 0) * 18; });
   def("lcd1602", "lcd1602", {}, function (el, c) { el.characters = bytes([c.props.line1, c.props.line2], 16, 2); el.backlight = true; });
@@ -48742,22 +48810,30 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   def("oled,oled_spi", "ssd1306", {}, oledUpd);
   def("tft_display", "ili9341", {}, tftUpd);
   def("sevenseg", "7segment", {}, function (el, c) {
-    var ch = String(P(c, "digit", "8")).toUpperCase().charAt(0), on = SEG[ch] || "", v = [];
-    "ABCDEFG".split("").forEach(function (s) { v.push(on.indexOf(s) >= 0 ? 1 : 0); }); v.push(P(c, "dp", false) ? 1 : 0); el.values = v;
+    var v = [], names = "ABCDEFG".split("").concat(["DP"]);
+    if (run()) { /* real wiring: a segment lights when its pin is driven (common cathode) or pulled low (common anode) */
+      var cc = P(c, "commonCathode", true);
+      names.forEach(function (n) { var h = high(c, n); v.push((cc ? h : !h) ? 1 : 0); });
+    } else {
+      var ch = String(P(c, "digit", "8")).toUpperCase().charAt(0), on = SEG[ch] || "";
+      "ABCDEFG".split("").forEach(function (s) { v.push(on.indexOf(s) >= 0 ? 1 : 0); }); v.push(P(c, "dp", false) ? 1 : 0);
+    }
+    el.values = v;
   });
   def("uno", "arduino-uno", {}, function (el, c) { var pv = root.pinValues || {}; var d13 = pv.D13 != null ? pv.D13 : pv[13]; el.led13 = !!d13; el.ledPower = run(); });
-  def("sensor_light,photo_diode", "photoresistor-sensor", {}, function (el) { el.ledPower = run(); });
+  def("sensor_light", "photoresistor-sensor", {}, function (el) { el.ledPower = run(); });
   def("sensor_sound", "small-sound-sensor", {}, function (el) { el.ledPower = run(); });
   def("sensor_gas,mq2,mq3,mq135", "gas-sensor", {}, function (el) { el.ledPower = run(); });
   def("flame", "flame-sensor", {}, function (el) { el.ledPower = run(); });
   def("mpu6050", "mpu6050", {}, function (el) { el.led1 = run(); });
   def("sensor_ultra", "hc-sr04"); def("sensor_pir", "pir-motion-sensor"); def("ir_receiver", "ir-receiver"); def("ir_remote", "ir-remote");
-  def("sensor_dht", "dht22"); def("sensor_temp,thermistor", "ntc-temperature-sensor"); def("tilt", "tilt-switch");
+  def("sensor_dht", "dht22"); def("sensor_temp", "ntc-temperature-sensor"); def("tilt", "tilt-switch");
   def("keypad", "membrane-keypad"); def("joystick", "analog-joystick", {}, function (el, c) { el.xValue = ((+P(c, "x", 512)) - 512) / 512; el.yValue = ((+P(c, "y", 512)) - 512) / 512; });
   def("dipswitch", "dip-switch-8", {}, function (el, c) { var b = P(c, "bits", []), v = []; for (var i = 0; i < 8; i++) v.push(b[i] ? 1 : 0); el.values = v; });
   def("sd_module", "microsd-card");
 
   /* natural (unscaled) size of each element, measured once in an off-screen box */
+  var VAR = { sensor_gas: { b: "GAS" }, mq2: { b: "MQ-2" }, mq3: { b: "MQ-3", hue: 150 }, mq135: { b: "MQ-135", hue: -70 }, oled: { b: "I²C" }, oled_spi: { b: "SPI" }, sg90: { b: "SG90" }, servo_cont: { b: "360°" } };
   var NAT = {}, PEND = {}, host = null;
   function key(L) { return L.tag + JSON.stringify(L.attrs); }
   function measure(L) {
@@ -48771,11 +48847,15 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
   }
   function build(c, inner, L, nat) {
     var W = c.baseW || c.w, H = c.baseH || c.h, s = Math.min(W / nat.w, H / nat.h);
-    var wrap = D.createElement("div"); wrap.className = "wk-live"; wrap.dataset.k = key(L) + "|" + W + "x" + H;
+    var wrap = D.createElement("div"); wrap.className = "wk-live"; wrap.dataset.k = c.type + key(L) + "|" + W + "x" + H;
     wrap.style.cssText = "position:relative;flex:none;pointer-events:none;width:" + W + "px;height:" + H + "px";
     var e = D.createElement("wokwi-" + L.tag); Object.keys(L.attrs).forEach(function (a) { e[a] = L.attrs[a]; });
     e.style.cssText = "position:absolute;display:block;pointer-events:none;transform-origin:0 0;width:" + nat.w + "px;height:" + nat.h + "px;left:" + ((W - nat.w * s) / 2) + "px;top:" + ((H - nat.h * s) / 2) + "px;transform:scale(" + s + ")";
-    wrap.appendChild(e); inner.appendChild(wrap); return wrap;
+    var V = VAR[c.type];
+    if (V && V.hue) e.style.filter = "hue-rotate(" + V.hue + "deg)";
+    wrap.appendChild(e);
+    if (V && V.b) { var bd = D.createElement("div"); bd.textContent = V.b; bd.style.cssText = "position:absolute;left:50%;bottom:1px;transform:translateX(-50%);font:bold 8px Arial,sans-serif;color:#fff;background:rgba(0,0,0,.65);padding:0 4px;border-radius:3px;white-space:nowrap"; wrap.appendChild(bd); }
+    inner.appendChild(wrap); return wrap;
   }
   var SIG = (typeof WeakMap !== "undefined") ? new WeakMap() : null;
   function tick() {
@@ -48786,10 +48866,10 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
       var el = D.getElementById(c.id), inner = el && el.querySelector(".comp-inner"); if (!inner) continue;
       var nat = measure(L); if (!nat) continue;
       var W = c.baseW || c.w, H = c.baseH || c.h, wrap = inner.querySelector(":scope > .wk-live");
-      if (wrap && wrap.dataset.k !== key(L) + "|" + W + "x" + H) { wrap.remove(); wrap = null; }
+      if (wrap && wrap.dataset.k !== c.type + key(L) + "|" + W + "x" + H) { wrap.remove(); wrap = null; }
       if (!wrap) wrap = build(c, inner, L, nat);
-      [].forEach.call(inner.children, function (ch) { if (ch !== wrap && ch.style.display !== "none") ch.style.setProperty("display", "none", "important"); });
-      var e = wrap.firstChild, sig = ""; try { sig = JSON.stringify(c.props) + "|" + run() + "|" + (c.type === "uno" ? JSON.stringify(root.pinValues && (root.pinValues.D13 != null ? root.pinValues.D13 : root.pinValues[13])) : ""); } catch (x) {}
+      [].forEach.call(inner.children, function (ch) { if (ch !== wrap && !(ch.classList && ch.classList.contains("fx115")) && ch.style.display !== "none") ch.style.setProperty("display", "none", "important"); });
+      var e = wrap.firstChild, sig = ""; try { sig = JSON.stringify(c.props) + "|" + run() + "|" + (c.type === "uno" ? JSON.stringify(root.pinValues && (root.pinValues.D13 != null ? root.pinValues.D13 : root.pinValues[13])) : (c.type === "sevenseg" && run() ? "ABCDEFG".split("").map(function (n) { return high(c, n) ? 1 : 0; }).join("") : "")); } catch (x) {}
       if (!wrap._born) wrap._born = Date.now();
       if (Date.now() - wrap._born > 800 && SIG && SIG.get(wrap) === sig) continue; if (SIG) SIG.set(wrap, sig); /* keep refreshing during the first 0.8s: some elements finish rendering late */
       try { L.upd(e, c); } catch (x) { console.warn("E112", c.type, x); }
@@ -48800,6 +48880,1082 @@ html body #bottomTabs{flex-wrap:wrap!important;overflow:visible!important}
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
 
+<script id="e113-code-tools">
+/* E113 - Code editor tools: right-click context menu, Arduino autocomplete, searchable sketch-template gallery,
+ * cursor/selection status. Works on the global CodeMirror instance (window.codeEditor), which is re-created every
+ * time the Code tab opens, so everything is delegated / re-attached from a wrapper around initCodeEditor(). */
+(function (root) {
+  "use strict";
+  if (root.E113) return;
+  var D = document;
+  function $(i) { return D.getElementById(i); }
+  function T(m, k) { try { root.toast(m, k || "ok"); } catch (e) {} }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ED() { return root.codeEditor || null; }
+  function click(id) { var b = $(id); if (b) b.click(); }
+  function hasSel(cm) { return cm && cm.somethingSelected(); }
+
+  /* ================= clipboard ================= */
+  function copyText(t) {
+    function legacy() { try { var a = D.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;left:-9999px"; D.body.appendChild(a); a.select(); var ok = D.execCommand("copy"); a.remove(); return ok; } catch (e) { return false; } }
+    try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).catch(legacy); return true; } } catch (e) {}
+    try { var a = D.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;left:-9999px"; D.body.appendChild(a); a.select(); var ok = D.execCommand("copy"); a.remove(); return ok; } catch (e) { return false; }
+  }
+  function doPaste(cm) {
+    try { if (navigator.clipboard && navigator.clipboard.readText) { navigator.clipboard.readText().then(function (t) { cm.replaceSelection(t); cm.focus(); }, function () { T("Paste blocked by the browser - use Ctrl+V", "warn"); }); return; } } catch (e) {}
+    T("Paste blocked by the browser - use Ctrl+V", "warn");
+  }
+
+  /* ================= line / selection helpers ================= */
+  function lineRange(cm) { var f = cm.getCursor("from"), t = cm.getCursor("to"); if (t.ch === 0 && t.line > f.line) t = { line: t.line - 1, ch: 0 }; return { a: f.line, b: t.line }; }
+  function dupLine(cm) {
+    if (hasSel(cm)) { var s = cm.getSelection(); var to = cm.getCursor("to"); cm.replaceRange(s, to); return; }
+    var r = lineRange(cm), txt = []; for (var i = r.a; i <= r.b; i++) txt.push(cm.getLine(i));
+    cm.replaceRange("\n" + txt.join("\n"), { line: r.b, ch: cm.getLine(r.b).length });
+  }
+  function moveLines(cm, dir) {
+    var r = lineRange(cm), last = cm.lineCount() - 1; if ((dir < 0 && r.a === 0) || (dir > 0 && r.b === last)) return;
+    var blk = []; for (var i = r.a; i <= r.b; i++) blk.push(cm.getLine(i));
+    var nb = cm.getLine(dir < 0 ? r.a - 1 : r.b + 1), from = dir < 0 ? r.a - 1 : r.a, to = dir < 0 ? r.b : r.b + 1;
+    var out = dir < 0 ? blk.concat([nb]) : [nb].concat(blk);
+    cm.replaceRange(out.join("\n"), { line: from, ch: 0 }, { line: to, ch: cm.getLine(to).length });
+    cm.setSelection({ line: r.a + dir, ch: 0 }, { line: r.b + dir, ch: cm.getLine(r.b + dir).length });
+  }
+  function toggleComment(cm) { var k = cm.getOption("extraKeys"); if (k && k["Ctrl-/"]) k["Ctrl-/"](cm); }
+  function blockComment(cm) { var s = cm.getSelection(); if (!s) return; cm.replaceSelection(/^\/\*[\s\S]*\*\/$/.test(s) ? s.replace(/^\/\*\s?|\s?\*\/$/g, "") : "/* " + s + " */"); }
+  function transform(cm, f) { if (hasSel(cm)) cm.replaceSelection(f(cm.getSelection())); }
+  function wordAt(cm) { var c = cm.getCursor(), w = cm.findWordAt(c); var s = cm.getRange(w.anchor, w.head); return /^\w+$/.test(s) ? s : ""; }
+  function selectAllOcc(cm, word) {
+    var sels = [], n = cm.lineCount(), re = new RegExp("\\b" + word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "g");
+    for (var i = 0; i < n; i++) { var l = cm.getLine(i), m; while ((m = re.exec(l))) sels.push({ anchor: { line: i, ch: m.index }, head: { line: i, ch: m.index + word.length } }); }
+    if (sels.length) { cm.setSelections(sels); T(sels.length + " occurrence(s) selected - type to rename all"); }
+  }
+  function surround(cm, pre, post) {
+    var s = cm.getSelection(); if (!s) { var r = lineRange(cm); var ls = []; for (var i = r.a; i <= r.b; i++) ls.push(cm.getLine(i)); s = ls.join("\n"); cm.setSelection({ line: r.a, ch: 0 }, { line: r.b, ch: cm.getLine(r.b).length }); }
+    var base = (cm.getLine(cm.getCursor("from").line).match(/^\s*/) || [""])[0];
+    var body = s.split("\n").map(function (l) { return "  " + l; }).join("\n");
+    cm.replaceSelection(base + pre + " {\n" + body + "\n" + base + "}" + (post || ""));
+  }
+  function addInclude(cm, inc) {
+    var src = cm.getValue(); if (src.indexOf(inc) >= 0) { T("Already included"); return; }
+    var last = -1; for (var i = 0; i < cm.lineCount(); i++) if (/^\s*#include/.test(cm.getLine(i))) last = i;
+    cm.replaceRange(inc + "\n", { line: last + 1, ch: 0 }); T("Added " + inc);
+  }
+  var INCLUDES = [["Servo", "#include <Servo.h>"], ["LiquidCrystal (parallel LCD)", "#include <LiquidCrystal.h>"], ["LiquidCrystal I2C", "#include <LiquidCrystal_I2C.h>"], ["Wire (I2C)", "#include <Wire.h>"], ["SPI", "#include <SPI.h>"], ["Adafruit SSD1306 (OLED)", "#include <Adafruit_SSD1306.h>"], ["Adafruit NeoPixel", "#include <Adafruit_NeoPixel.h>"], ["DHT sensor", "#include <DHT.h>"], ["OneWire + DallasTemperature", "#include <OneWire.h>\n#include <DallasTemperature.h>"], ["Keypad", "#include <Keypad.h>"], ["IRremote", "#include <IRremote.h>"], ["Stepper", "#include <Stepper.h>"], ["EEPROM", "#include <EEPROM.h>"]];
+
+  /* ================= context menu ================= */
+  var M = null;
+  function css() {
+    if ($("e113css")) return; var s = D.createElement("style"); s.id = "e113css";
+    s.textContent = "#cxcode{position:fixed;z-index:100000;min-width:230px;max-width:min(320px,96vw);background:#252526;border:1px solid #3e3e42;border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);font:12px system-ui,sans-serif;color:#ccc;display:none;max-height:min(92vh,720px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}#cxcode::-webkit-scrollbar{width:8px}#cxcode::-webkit-scrollbar-thumb{background:#3e3e42;border-radius:4px}#cxcode::-webkit-scrollbar-track{background:transparent}" +
+      "#cxcode .i{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:5px;cursor:pointer;position:relative;white-space:nowrap}#cxcode .i:hover{background:#094771;color:#fff}#cxcode .i.dis{opacity:.4;pointer-events:none}" +
+      "#cxcode .k{margin-left:auto;padding-left:18px;font-size:10px;opacity:.6}#cxcode .s{height:1px;background:#3e3e42;margin:4px 2px}#cxcode .h{padding:3px 10px;font-size:10px;color:#858585;text-transform:uppercase;letter-spacing:.5px}" +
+      "#cxcode .sub{display:none;position:fixed;min-width:210px;max-height:min(60vh,420px);overflow:auto;background:#252526;border:1px solid #3e3e42;border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:100001}" +
+      "#e113pos{font-size:10px;color:#9d9d9d;margin-left:6px;white-space:nowrap}" +
+      "#e113tpl{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font:12px system-ui,sans-serif}" +
+      "#e113tpl .bx{width:min(980px,96vw);height:min(640px,92vh);background:#1e1e1e;border:1px solid #3e3e42;border-radius:10px;display:flex;flex-direction:column;color:#ccc;overflow:hidden}" +
+      "#e113tpl .hd{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #3e3e42}#e113tpl .hd b{color:#3794ff;font-size:14px}#e113tpl input{flex:1;background:#2d2d2d;color:#ddd;border:1px solid #3e3e42;border-radius:6px;padding:6px 9px}" +
+      "#e113tpl .cats{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #2d2d2d}#e113tpl .chip{padding:3px 10px;border:1px solid #3e3e42;border-radius:12px;cursor:pointer;color:#aaa}#e113tpl .chip.on{background:#094771;color:#fff;border-color:#3794ff}" +
+      "#e113tpl .bd{flex:1;display:flex;min-height:0}#e113tpl .ls{width:300px;overflow:auto;border-right:1px solid #2d2d2d}#e113tpl .it{padding:8px 12px;cursor:pointer;border-bottom:1px solid #262626}#e113tpl .it:hover{background:#2a2d2e}#e113tpl .it.on{background:#094771;color:#fff}#e113tpl .it small{display:block;color:#858585;margin-top:2px}#e113tpl .it.on small{color:#cde}" +
+      "#e113tpl .pv{flex:1;display:flex;flex-direction:column;min-width:0}#e113tpl .pv .mt{padding:10px 14px;border-bottom:1px solid #2d2d2d}#e113tpl .pv .mt h3{margin:0 0 4px;color:#ddd;font-size:14px}#e113tpl .pv .mt p{margin:2px 0;color:#9d9d9d}#e113tpl pre{flex:1;margin:0;padding:12px 14px;overflow:auto;background:#1b1b1b;color:#d4d4d4;font:12px Consolas,monospace;white-space:pre}" +
+      "#e113tpl .ft{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #3e3e42;justify-content:flex-end;align-items:center}#e113tpl .ft .msg{margin-right:auto;color:#cca700}";
+    D.head.appendChild(s);
+  }
+  function hideMenu() { if (M) M.style.display = "none"; }
+  function build(host, items) {
+    items.forEach(function (it) {
+      if (it.sep) { var s = D.createElement("div"); s.className = "s"; host.appendChild(s); return; }
+      if (it.hd) { var h = D.createElement("div"); h.className = "h"; h.textContent = it.hd; host.appendChild(h); return; }
+      var d = D.createElement("div"); d.className = "i" + (it.dis ? " dis" : "");
+      d.innerHTML = "<span>" + esc(it.l) + "</span>" + (it.k ? '<span class="k">' + esc(it.k) + "</span>" : "") + (it.sub ? '<span class="k">▸</span>' : "");
+      if (it.sub) {
+        var sub = D.createElement("div"); sub.className = "sub"; build(sub, it.sub); d.appendChild(sub);
+        function placeSub() {
+          sub.style.display = "block";
+          var ir = d.getBoundingClientRect();
+          var sw = 220, sh = Math.min(sub.scrollHeight || 200, Math.min(innerHeight * 0.6, 420));
+          var left = ir.right + 2;
+          var top = ir.top;
+          if (left + sw > innerWidth - 4) left = Math.max(4, ir.left - sw - 2);
+          if (top + sh > innerHeight - 4) top = Math.max(4, innerHeight - sh - 4);
+          if (top < 4) top = 4;
+          sub.style.left = left + "px";
+          sub.style.top = top + "px";
+          sub.style.maxHeight = sh + "px";
+        }
+        d.addEventListener("mouseenter", function () {
+          host.querySelectorAll(".sub").forEach(function (x) { if (x !== sub) x.style.display = "none"; });
+          placeSub();
+        });
+        d.addEventListener("mouseleave", function (e) {
+          var to = e.relatedTarget;
+          if (to && (sub.contains(to) || d.contains(to))) return;
+          sub.style.display = "none";
+        });
+        sub.addEventListener("mouseleave", function (e) {
+          var to = e.relatedTarget;
+          if (to && d.contains(to)) return;
+          sub.style.display = "none";
+        });
+        d.addEventListener("click", function (e) {
+          if (e.target && e.target.closest && e.target.closest(".sub")) return;
+          e.stopPropagation(); e.preventDefault();
+          var open = sub.style.display === "block";
+          host.querySelectorAll(".sub").forEach(function (x) { x.style.display = "none"; });
+          if (!open) placeSub();
+        });
+      } else {
+        var ran = false;
+        function run(e) {
+          if (ran) return;
+          if (e) { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); }
+          ran = true;
+          var fn = it.fn, keep = !!it.keepBlur;
+          hideMenu();
+          setTimeout(function () {
+            try { fn(); } catch (er) { console.warn("E113", er); try { T("Action failed: " + (er && er.message ? er.message : er), "err"); } catch (e2) {} }
+            if (!keep) { var cm2 = ED(); if (cm2) try { cm2.focus(); } catch (e3) {} }
+          }, 20);
+        }
+        /* mousedown: keep focus race from killing the menu before click */
+        d.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); }, true);
+        d.addEventListener("pointerdown", function (e) { e.preventDefault(); e.stopPropagation(); }, true);
+        d.addEventListener("mouseup", run, true);
+        d.addEventListener("pointerup", run, true);
+        d.addEventListener("click", run, true);
+      }
+      host.appendChild(d);
+    });
+  }
+  function snippets() { try { return root.getBuiltinSnippets ? root.getBuiltinSnippets() : {}; } catch (e) { return {}; } }
+  function tryFormat(cm) {
+    if (!cm) return;
+    var src = cm.getValue(), lines = src.split("\n"), out = [], depth = 0;
+    for (var i = 0; i < lines.length; i++) {
+      var t = lines[i].replace(/^\s+/, "");
+      if (t.indexOf("}") === 0) depth = Math.max(0, depth - 1);
+      out.push(new Array(depth + 1).join("  ") + t);
+      var opens = (t.match(/\{/g) || []).length, closes = (t.match(/\}/g) || []).length;
+      depth = Math.max(0, depth + opens - closes);
+    }
+    cm.setValue(out.join("\n"));
+  }
+  function tryFind() {
+    var cm = ED(); if (!cm) return;
+    var lastQ = (root.__edFindQ) || "";
+    if (typeof root.openEdDialog === "function") {
+      /* fall through to button if dialog API not global */
+    }
+    if ($("btnFind")) { $("btnFind").click(); return; }
+    var q = window.prompt ? window.prompt("Find:", lastQ) : null;
+    if (q == null || q === "") return;
+    root.__edFindQ = q;
+    var cur = cm.getSearchCursor ? null : null;
+    var text = cm.getValue(), idx = text.indexOf(q, cm.indexFromPos(cm.getCursor()));
+    if (idx < 0) idx = text.indexOf(q);
+    if (idx < 0) { T("Not found", "warn"); return; }
+    var from = cm.posFromIndex(idx), to = cm.posFromIndex(idx + q.length);
+    cm.setSelection(from, to); cm.scrollIntoView(from); cm.focus();
+  }
+  function tryReplace() { if ($("btnReplace")) $("btnReplace").click(); else T("Open the Code tab toolbar → Replace", "warn"); }
+  function tryGoto() {
+    if ($("btnGoto")) { $("btnGoto").click(); return; }
+    var cm = ED(); if (!cm) return;
+    var n = window.prompt ? window.prompt("Go to line:", String(cm.getCursor().line + 1)) : null;
+    n = parseInt(n, 10); if (!n || n < 1) return;
+    var line = Math.min(cm.lineCount(), n) - 1;
+    cm.setCursor({ line: line, ch: 0 }); cm.scrollIntoView({ line: line, ch: 0 }); cm.focus();
+  }
+  function menuItems(cm) {
+    var sel = hasSel(cm), w = wordAt(cm), sn = snippets();
+    var run = root.running;
+    return [
+      { l: "Undo", k: "Ctrl+Z", fn: function () { var c = ED() || cm; c.undo(); }, dis: !cm.historySize().undo },
+      { l: "Redo", k: "Ctrl+Y", fn: function () { var c = ED() || cm; c.redo(); }, dis: !cm.historySize().redo },
+      { sep: 1 },
+      { l: "Cut", k: "Ctrl+X", fn: function () { var c = ED() || cm; copyText(c.getSelection()); c.replaceSelection(""); }, dis: !sel },
+      { l: "Copy", k: "Ctrl+C", fn: function () { var c = ED() || cm; copyText(c.getSelection()); T("Copied"); }, dis: !sel },
+      { l: "Paste", k: "Ctrl+V", fn: function () { doPaste(ED() || cm); } },
+      { l: "Select all", k: "Ctrl+A", fn: function () { var c = ED() || cm; c.execCommand("selectAll"); } },
+      { sep: 1 },
+      { l: "Toggle line comment", k: "Ctrl+/", fn: function () { toggleComment(ED() || cm); } },
+      { l: "Toggle block comment", fn: function () { blockComment(ED() || cm); }, dis: !sel },
+      { l: "Edit lines", sub: [
+        { l: "Duplicate line / selection", fn: function () { dupLine(cm); } },
+        { l: "Delete line", k: "Ctrl+D", fn: function () { cm.execCommand("deleteLine"); } },
+        { l: "Move line up", fn: function () { moveLines(cm, -1); } },
+        { l: "Move line down", fn: function () { moveLines(cm, 1); } },
+        { l: "Indent", fn: function () { cm.execCommand("indentMore"); } },
+        { l: "Outdent", fn: function () { cm.execCommand("indentLess"); } },
+        { l: "Trim trailing spaces", fn: function () { var v = cm.getValue().replace(/[ \t]+$/gm, ""); var cur = cm.getCursor(); cm.setValue(v); cm.setCursor(cur); } },
+        { l: "Join lines", fn: function () { var r = lineRange(cm); if (r.a === r.b) r.b = Math.min(r.b + 1, cm.lineCount() - 1); var ls = []; for (var i = r.a; i <= r.b; i++) ls.push(cm.getLine(i).trim()); cm.replaceRange(ls.join(" "), { line: r.a, ch: 0 }, { line: r.b, ch: cm.getLine(r.b).length }); } }
+      ] },
+      { l: "Transform selection", sub: [
+        { l: "UPPERCASE", fn: function () { transform(cm, function (s) { return s.toUpperCase(); }); }, dis: !sel },
+        { l: "lowercase", fn: function () { transform(cm, function (s) { return s.toLowerCase(); }); }, dis: !sel },
+        { l: "Sort lines A→Z", fn: function () { transform(cm, function (s) { return s.split("\n").sort().join("\n"); }); }, dis: !sel },
+        { l: "Wrap in Serial.println( )", fn: function () { transform(cm, function (s) { return "Serial.println(" + s.replace(/;\s*$/, "") + ");"; }); }, dis: !sel }
+      ] },
+      { l: "Surround with", sub: [
+        { l: "if ( ) { }", fn: function () { surround(cm, "if (true)"); } },
+        { l: "for loop", fn: function () { surround(cm, "for (int i = 0; i < 10; i++)"); } },
+        { l: "while ( ) { }", fn: function () { surround(cm, "while (true)"); } },
+        { l: "{ } block", fn: function () { surround(cm, ""); } }
+      ] },
+      { sep: 1 },
+      w ? { l: 'Select all occurrences of "' + (w.length > 14 ? w.slice(0, 14) + "…" : w) + '"', fn: function () { selectAllOcc(cm, w); } } : { l: "Select all occurrences", dis: true, fn: function () {} },
+      { l: "Find…", k: "Ctrl+F", fn: function () { if ($("btnFind")) click("btnFind"); else tryFind(); }, keepBlur: 1 },
+      { l: "Replace…", fn: function () { if ($("btnReplace")) click("btnReplace"); else tryReplace(); }, keepBlur: 1 },
+      { l: "Go to line…", fn: function () { if ($("btnGoto")) click("btnGoto"); else tryGoto(); }, keepBlur: 1 },
+      { sep: 1 },
+      { l: "Insert snippet", sub: Object.keys(sn).length ? Object.keys(sn).map(function (k) { return { l: k, fn: function () { try { if (root.insertSnippetText) root.insertSnippetText(sn[k]); else if (typeof insertSnippetText === "function") insertSnippetText(sn[k]); } catch (e) {} }, keepBlur: 1 }; }) : [{ l: "(none)", dis: true, fn: function () {} }] },
+      { l: "Add library #include", sub: INCLUDES.map(function (x) { return { l: x[0], fn: function () { addInclude(cm, x[1]); } }; }) },
+      { l: "Sketch templates…", k: "Gallery", fn: function () { openTemplates(); }, keepBlur: 1 },
+      { sep: 1 },
+      { l: "Format code", fn: function () { if ($("btnFmt")) click("btnFmt"); else tryFormat(cm); } },
+      { l: "Check code", fn: function () { if ($("btnCompile")) click("btnCompile"); else try { if (root.startSim) {} ; var b=$("btnCompile"); if(b)b.click(); } catch(e){} } },
+      run ? { l: "Stop simulation", fn: function () { try { root.stopSim(); } catch (e) {} } } : { l: "Run simulation", k: "Ctrl+Enter", fn: function () { try { root.startSim(); } catch (e) {} } },
+      { sep: 1 },
+      { l: "View", sub: [
+        { l: "Toggle word wrap", fn: function () { if ($("btnWrap")) click("btnWrap"); else { var c = ED(); if (c) c.setOption("lineWrapping", !c.getOption("lineWrapping")); } } },
+        { l: "Larger font (A+)", fn: function () { if ($("btnFontUp")) click("btnFontUp"); } },
+        { l: "Smaller font (A-)", fn: function () { if ($("btnFontDn")) click("btnFontDn"); } }
+      ] }
+    ];
+  }
+  function showMenu(x, y) {
+    var cm = ED(); if (!cm) return; css();
+    if (!M) { M = D.createElement("div"); M.id = "cxcode"; D.body.appendChild(M); }
+    M.innerHTML = "";
+    build(M, menuItems(cm));
+    var maxH = Math.max(180, Math.min(innerHeight - 16, 720));
+    M.style.cssText = "position:fixed;z-index:100000;min-width:230px;max-width:min(320px,96vw);background:#252526;border:1px solid #3e3e42;border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);font:12px system-ui,sans-serif;color:#ccc;display:block;max-height:" + maxH + "px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;-webkit-overflow-scrolling:touch;";
+    var r = M.getBoundingClientRect();
+    var nx = x, ny = y;
+    if (nx + r.width + 8 > innerWidth) nx = Math.max(4, innerWidth - r.width - 8);
+    if (ny + Math.min(r.height, maxH) + 8 > innerHeight) ny = Math.max(4, innerHeight - Math.min(r.height, maxH) - 8);
+    if (ny < 4) ny = 4;
+    if (nx < 4) nx = 4;
+    M.style.left = nx + "px";
+    M.style.top = ny + "px";
+    M.scrollTop = 0;
+  }
+  D.addEventListener("contextmenu", function (e) {
+    var t = e.target; if (!t || !t.closest || !t.closest(".CodeMirror")) return; var cm = ED(); if (!cm) return;
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    try { if (root.__ctxHide) root.__ctxHide(); } catch (eH) {}
+    try { var om = D.getElementById("ctxMenu"); if (om) { om.classList.remove("on"); om.style.display = "none"; } } catch (eH2) {}
+    if (!cm.somethingSelected()) { try { var p = cm.coordsChar({ left: e.clientX, top: e.clientY }); cm.setCursor(p); } catch (eC) {} }
+    showMenu(e.clientX, e.clientY);
+  }, true);
+  ["mousedown", "pointerdown", "wheel", "keydown", "resize"].forEach(function (n) {
+    root.addEventListener(n, function (e) {
+      if (!M || M.style.display !== "block") return;
+      if (e.target && e.target.closest && e.target.closest("#cxcode")) return;
+      hideMenu();
+    }, true);
+  });
+  /* Escape closes the menu; do NOT hide on CodeMirror blur (that races with item clicks) */
+  D.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && M && M.style.display === "block") hideMenu();
+  }, true);
+
+  /* ================= Arduino autocomplete ================= */
+  var API = ["pinMode(pin, mode)", "digitalWrite(pin, value)", "digitalRead(pin)", "analogRead(pin)", "analogWrite(pin, value)", "analogReference(type)", "delay(ms)", "delayMicroseconds(us)", "millis()", "micros()", "map(value, fromLow, fromHigh, toLow, toHigh)", "constrain(x, a, b)", "min(a, b)", "max(a, b)", "abs(x)", "pow(base, exp)", "sqrt(x)", "sin(rad)", "cos(rad)", "random(max)", "randomSeed(seed)", "tone(pin, freq)", "noTone(pin)", "pulseIn(pin, value)", "shiftOut(data, clock, order, value)", "attachInterrupt(digitalPinToInterrupt(pin), isr, mode)", "Serial.begin(baud)", "Serial.print(val)", "Serial.println(val)", "Serial.available()", "Serial.read()", "Serial.parseInt()", "Serial.readStringUntil('\\n')", "Serial.write(val)", "Serial.flush()", "lcd.begin(cols, rows)", "lcd.setCursor(col, row)", "lcd.print(val)", "lcd.clear()", "lcd.backlight()", "myServo.attach(pin)", "myServo.write(angle)", "myServo.read()", "Wire.begin()", "Wire.beginTransmission(addr)", "Wire.write(val)", "Wire.endTransmission()", "Wire.requestFrom(addr, n)", "Wire.read()", "dht.readTemperature()", "dht.readHumidity()", "display.clearDisplay()", "display.setCursor(x, y)", "display.println(text)", "display.display()", "strip.setPixelColor(i, color)", "strip.show()", "strip.begin()", "String(val)", "sizeof(x)"];
+  var KW = ["void", "int", "long", "float", "double", "char", "byte", "bool", "boolean", "unsigned", "const", "static", "volatile", "String", "if", "else", "for", "while", "do", "switch", "case", "break", "continue", "return", "setup", "loop", "HIGH", "LOW", "INPUT", "OUTPUT", "INPUT_PULLUP", "LED_BUILTIN", "A0", "A1", "A2", "A3", "A4", "A5", "true", "false", "PI", "RISING", "FALLING", "CHANGE", "#include", "#define"];
+  function hint(cm) {
+    var cur = cm.getCursor(), line = cm.getLine(cur.line).slice(0, cur.ch), m = /[\w.#]*$/.exec(line), word = m ? m[0] : "", from = { line: cur.line, ch: cur.ch - word.length };
+    var lw = word.toLowerCase(), list = [], seen = {};
+    function add(text, disp, cls) { if (seen[text]) return; seen[text] = 1; list.push({ text: text, displayText: disp || text, className: cls }); }
+    if (!word) return { list: [], from: from, to: cur };
+    API.forEach(function (a) { var name = a.slice(0, a.indexOf("(")); if (name.toLowerCase().indexOf(lw) === 0) add(name + "(", a); });
+    KW.forEach(function (k) { if (k.toLowerCase().indexOf(lw) === 0 && k !== word) add(k); });
+    var src = cm.getValue(), re = /[A-Za-z_]\w{2,}/g, x; while ((x = re.exec(src))) if (x[0].toLowerCase().indexOf(lw) === 0 && x[0] !== word) add(x[0]);
+    list.sort(function (a, b) { return a.text.length - b.text.length; });
+    return { list: list.slice(0, 40), from: from, to: cur };
+  }
+  function showHint(cm) { try { cm.showHint({ hint: hint, completeSingle: false }); } catch (e) {} }
+
+  /* ================= status + wiring into the editor ================= */
+  function attach() {
+    var cm = ED(); if (!cm || cm.__e113) return; cm.__e113 = 1; css();
+    var ek = cm.getOption("extraKeys") || {}; ek["Ctrl-Space"] = showHint; ek["Ctrl-D"] = function (c) { c.execCommand("deleteLine"); }; ek["Alt-Up"] = function (c) { moveLines(c, -1); }; ek["Alt-Down"] = function (c) { moveLines(c, 1); }; ek["Shift-Alt-Down"] = dupLine; ek["Shift-Alt-Up"] = dupLine;
+    cm.setOption("extraKeys", ek); cm.setOption("hintOptions", { hint: hint, completeSingle: false });
+    var tm = null;
+    cm.on("inputRead", function (c, ch) { if (!ch || !ch.text || !/^[A-Za-z_#]$/.test(ch.text[0] || "") || (c.state.completionActive)) return; clearTimeout(tm); tm = setTimeout(function () { var l = c.getLine(c.getCursor().line).slice(0, c.getCursor().ch); if (/[A-Za-z_#.]{2,}$/.test(l) && !/\/\/.*$/.test(l)) showHint(c); }, 120); });
+    var tb = $("codeToolbar");
+    if (tb && !$("btnTplLib")) {
+      var b = D.createElement("button"); b.className = "btn"; b.id = "btnTplLib"; b.title = "Searchable sketch templates"; b.textContent = "Templates ▾"; b.onclick = openTemplates;
+      var anchor = $("btnCompile"); tb.insertBefore(b, anchor || tb.firstChild);
+      var pos = D.createElement("span"); pos.id = "e113pos"; var st = $("codeStats"); if (st && st.parentNode) st.parentNode.insertBefore(pos, st); else tb.appendChild(pos);
+    }
+    function upd() { var p = $("e113pos"); if (!p) return; var c = cm.getCursor(), n = cm.getSelection().length; p.textContent = "Ln " + (c.line + 1) + ", Col " + (c.ch + 1) + (n ? " · " + n + " sel" : "") + " · " + cm.lineCount() + " lines"; }
+    cm.on("cursorActivity", upd); upd();
+  }
+  function wrapInit() { var f = root.initCodeEditor; if (typeof f !== "function" || f.__e113) return; var w = function () { var r = f.apply(this, arguments); try { attach(); } catch (e) { console.warn("E113", e); } return r; }; w.__e113 = 1; root.initCodeEditor = w; }
+
+  /* ================= template gallery ================= */
+  var TPL = [];
+  function t(cat, name, desc, parts, code) { TPL.push({ cat: cat, name: name, desc: desc, parts: parts, code: code }); }
+  var S = "\n";
+  t("Basics", "Blink without delay", "Blink the on-board LED using millis() so the loop stays free for other work.", "Arduino Uno (LED on pin 13)", "const int LED = 13;" + S + "unsigned long last = 0;" + S + "bool state = false;" + S + S + "void setup() {" + S + "  pinMode(LED, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  if (millis() - last >= 500) {" + S + "    last = millis();" + S + "    state = !state;" + S + "    digitalWrite(LED, state);" + S + "  }" + S + "}" + S);
+  t("Basics", "Fade LED (PWM)", "Smooth breathing effect with analogWrite.", "LED + 220Ω on pin 9", "const int LED = 9;" + S + S + "void setup() {" + S + "  pinMode(LED, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  for (int b = 0; b <= 255; b += 5) { analogWrite(LED, b); delay(15); }" + S + "  for (int b = 255; b >= 0; b -= 5) { analogWrite(LED, b); delay(15); }" + S + "}" + S);
+  t("Basics", "Button toggles LED", "Debounced push button that toggles an LED on every press.", "Button (pin 2 to GND) + LED on pin 13", "const int BTN = 2, LED = 13;" + S + "bool ledOn = false;" + S + "int lastBtn = HIGH;" + S + "unsigned long lastChange = 0;" + S + S + "void setup() {" + S + "  pinMode(BTN, INPUT_PULLUP);" + S + "  pinMode(LED, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  int now = digitalRead(BTN);" + S + "  if (now != lastBtn && millis() - lastChange > 30) {" + S + "    lastChange = millis();" + S + "    if (now == LOW) { ledOn = !ledOn; digitalWrite(LED, ledOn); }" + S + "    lastBtn = now;" + S + "  }" + S + "}" + S);
+  t("Basics", "Traffic light", "Three LEDs cycling green → yellow → red.", "3 LEDs (green 10, yellow 9, red 8)", "const int G = 10, Y = 9, R = 8;" + S + S + "void setup() {" + S + "  pinMode(G, OUTPUT); pinMode(Y, OUTPUT); pinMode(R, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  digitalWrite(G, HIGH); delay(3000); digitalWrite(G, LOW);" + S + "  digitalWrite(Y, HIGH); delay(1000); digitalWrite(Y, LOW);" + S + "  digitalWrite(R, HIGH); delay(3000); digitalWrite(R, LOW);" + S + "}" + S);
+  t("Basics", "Knight Rider", "Back-and-forth chaser across six LEDs.", "6 LEDs on pins 2-7", "int first = 2, last = 7;" + S + S + "void setup() {" + S + "  for (int p = first; p <= last; p++) pinMode(p, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  for (int p = first; p <= last; p++) { digitalWrite(p, HIGH); delay(80); digitalWrite(p, LOW); }" + S + "  for (int p = last - 1; p > first; p--) { digitalWrite(p, HIGH); delay(80); digitalWrite(p, LOW); }" + S + "}" + S);
+  t("Basics", "SOS in Morse", "Blinks ··· −−− ··· repeatedly.", "LED on pin 13", "const int LED = 13;" + S + S + "void flash(int ms) {" + S + "  digitalWrite(LED, HIGH); delay(ms);" + S + "  digitalWrite(LED, LOW);  delay(150);" + S + "}" + S + S + "void setup() { pinMode(LED, OUTPUT); }" + S + S + "void loop() {" + S + "  for (int i = 0; i < 3; i++) flash(150);" + S + "  for (int i = 0; i < 3; i++) flash(450);" + S + "  for (int i = 0; i < 3; i++) flash(150);" + S + "  delay(1500);" + S + "}" + S);
+  t("Basics", "Potentiometer dims LED", "Reads a pot on A0 and maps it to LED brightness.", "Potentiometer on A0, LED on pin 9", "void setup() {" + S + "  pinMode(9, OUTPUT);" + S + "  Serial.begin(9600);" + S + "}" + S + S + "void loop() {" + S + "  int v = analogRead(A0);" + S + "  int b = map(v, 0, 1023, 0, 255);" + S + "  analogWrite(9, b);" + S + "  Serial.println(b);" + S + "  delay(50);" + S + "}" + S);
+  t("Serial", "Serial echo", "Prints back everything received on the Serial Monitor.", "Arduino only", "void setup() {" + S + "  Serial.begin(9600);" + S + "  Serial.println(\"Type something...\");" + S + "}" + S + S + "void loop() {" + S + "  if (Serial.available()) {" + S + "    char c = Serial.read();" + S + "    Serial.print(\"got: \");" + S + "    Serial.println(c);" + S + "  }" + S + "}" + S);
+  t("Serial", "Serial LED commands", "Type 1 to switch the LED on and 0 to switch it off.", "LED on pin 13", "void setup() {" + S + "  pinMode(13, OUTPUT);" + S + "  Serial.begin(9600);" + S + "  Serial.println(\"1 = ON, 0 = OFF\");" + S + "}" + S + S + "void loop() {" + S + "  if (Serial.available()) {" + S + "    char c = Serial.read();" + S + "    if (c == '1') { digitalWrite(13, HIGH); Serial.println(\"LED on\"); }" + S + "    if (c == '0') { digitalWrite(13, LOW);  Serial.println(\"LED off\"); }" + S + "  }" + S + "}" + S);
+  t("Serial", "Serial plotter wave", "Streams a sine wave for the Serial Plotter tab.", "Arduino only", "void setup() {" + S + "  Serial.begin(115200);" + S + "}" + S + S + "void loop() {" + S + "  float t = millis() / 1000.0;" + S + "  Serial.println(sin(t * 3.14159) * 100);" + S + "  delay(20);" + S + "}" + S);
+  t("Sensors", "Ultrasonic distance", "HC-SR04 distance in centimetres.", "HC-SR04: TRIG 7, ECHO 8", "const int TRIG = 7, ECHO = 8;" + S + S + "void setup() {" + S + "  pinMode(TRIG, OUTPUT);" + S + "  pinMode(ECHO, INPUT);" + S + "  Serial.begin(9600);" + S + "}" + S + S + "void loop() {" + S + "  digitalWrite(TRIG, LOW);  delayMicroseconds(2);" + S + "  digitalWrite(TRIG, HIGH); delayMicroseconds(10);" + S + "  digitalWrite(TRIG, LOW);" + S + "  long us = pulseIn(ECHO, HIGH);" + S + "  Serial.print(us / 58);" + S + "  Serial.println(\" cm\");" + S + "  delay(200);" + S + "}" + S);
+  t("Sensors", "Parking sensor", "Buzzer beeps faster as an obstacle gets closer.", "HC-SR04 (7, 8) + buzzer on pin 6", "const int TRIG = 7, ECHO = 8, BUZ = 6;" + S + S + "long distance() {" + S + "  digitalWrite(TRIG, LOW);  delayMicroseconds(2);" + S + "  digitalWrite(TRIG, HIGH); delayMicroseconds(10);" + S + "  digitalWrite(TRIG, LOW);" + S + "  return pulseIn(ECHO, HIGH) / 58;" + S + "}" + S + S + "void setup() {" + S + "  pinMode(TRIG, OUTPUT); pinMode(ECHO, INPUT); pinMode(BUZ, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  long d = distance();" + S + "  if (d < 100) {" + S + "    tone(BUZ, 1000);" + S + "    delay(60);" + S + "    noTone(BUZ);" + S + "    delay(d * 4);" + S + "  } else {" + S + "    noTone(BUZ);" + S + "    delay(100);" + S + "  }" + S + "}" + S);
+  t("Sensors", "LDR night light", "Turns an LED on when it gets dark.", "LDR divider on A0, LED on pin 9", "const int LDR = A0, LED = 9;" + S + "const int DARK = 300;" + S + S + "void setup() {" + S + "  pinMode(LED, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  int light = analogRead(LDR);" + S + "  digitalWrite(LED, light < DARK ? HIGH : LOW);" + S + "  delay(100);" + S + "}" + S);
+  t("Sensors", "LM35 temperature", "Converts the LM35 voltage to °C.", "LM35 on A0", "void setup() {" + S + "  Serial.begin(9600);" + S + "}" + S + S + "void loop() {" + S + "  int raw = analogRead(A0);" + S + "  float volts = raw * 5.0 / 1023.0;" + S + "  float tempC = volts * 100.0;" + S + "  Serial.print(tempC);" + S + "  Serial.println(\" C\");" + S + "  delay(500);" + S + "}" + S);
+  t("Sensors", "DHT22 climate", "Temperature and humidity with the DHT library.", "DHT22 data on pin 2", "#include <DHT.h>" + S + S + "DHT dht(2, DHT22);" + S + S + "void setup() {" + S + "  Serial.begin(9600);" + S + "  dht.begin();" + S + "}" + S + S + "void loop() {" + S + "  float h = dht.readHumidity();" + S + "  float t = dht.readTemperature();" + S + "  Serial.print(\"T=\"); Serial.print(t);" + S + "  Serial.print(\"C  H=\"); Serial.print(h);" + S + "  Serial.println(\"%\");" + S + "  delay(1000);" + S + "}" + S);
+  t("Sensors", "PIR motion alarm", "Lights an LED and beeps when motion is detected.", "PIR on pin 2, LED 13, buzzer 6", "const int PIR = 2, LED = 13, BUZ = 6;" + S + S + "void setup() {" + S + "  pinMode(PIR, INPUT);" + S + "  pinMode(LED, OUTPUT);" + S + "  pinMode(BUZ, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  if (digitalRead(PIR) == HIGH) {" + S + "    digitalWrite(LED, HIGH);" + S + "    tone(BUZ, 880);" + S + "  } else {" + S + "    digitalWrite(LED, LOW);" + S + "    noTone(BUZ);" + S + "  }" + S + "  delay(50);" + S + "}" + S);
+  t("Sensors", "Soil moisture watering alert", "Warns when the soil is too dry.", "Soil sensor on A0, LED on pin 8", "const int SOIL = A0, LED = 8;" + S + S + "void setup() {" + S + "  pinMode(LED, OUTPUT);" + S + "  Serial.begin(9600);" + S + "}" + S + S + "void loop() {" + S + "  int m = analogRead(SOIL);" + S + "  Serial.println(m);" + S + "  digitalWrite(LED, m < 350 ? HIGH : LOW);" + S + "  delay(500);" + S + "}" + S);
+  t("Sensors", "Gas leak alarm", "Beeps when an MQ sensor passes a threshold.", "MQ-2 on A0, buzzer on pin 6", "const int GAS = A0, BUZ = 6;" + S + "const int LIMIT = 500;" + S + S + "void setup() {" + S + "  pinMode(BUZ, OUTPUT);" + S + "  Serial.begin(9600);" + S + "}" + S + S + "void loop() {" + S + "  int g = analogRead(GAS);" + S + "  Serial.println(g);" + S + "  if (g > LIMIT) tone(BUZ, 1500); else noTone(BUZ);" + S + "  delay(200);" + S + "}" + S);
+  t("Displays", "LCD 16x2 hello", "Classic parallel LCD with a running seconds counter.", "LCD 16x2 (RS 12, E 11, D4-D7 5-2)", "#include <LiquidCrystal.h>" + S + S + "LiquidCrystal lcd(12, 11, 5, 4, 3, 2);" + S + S + "void setup() {" + S + "  lcd.begin(16, 2);" + S + "  lcd.print(\"Hello, World!\");" + S + "}" + S + S + "void loop() {" + S + "  lcd.setCursor(0, 1);" + S + "  lcd.print(millis() / 1000);" + S + "  lcd.print(\" s\");" + S + "  delay(200);" + S + "}" + S);
+  t("Displays", "LCD I2C", "16x2 LCD over I2C at address 0x27.", "LCD I2C (SDA A4, SCL A5)", "#include <Wire.h>" + S + "#include <LiquidCrystal_I2C.h>" + S + S + "LiquidCrystal_I2C lcd(0x27, 16, 2);" + S + S + "void setup() {" + S + "  lcd.init();" + S + "  lcd.backlight();" + S + "  lcd.setCursor(0, 0);" + S + "  lcd.print(\"I2C LCD ready\");" + S + "}" + S + S + "void loop() {" + S + "  lcd.setCursor(0, 1);" + S + "  lcd.print(millis() / 1000);" + S + "  delay(250);" + S + "}" + S);
+  t("Displays", "OLED text", "SSD1306 128x64 OLED printing text.", "SSD1306 I2C (SDA A4, SCL A5)", "#include <Wire.h>" + S + "#include <Adafruit_SSD1306.h>" + S + S + "Adafruit_SSD1306 display(128, 64, &Wire, -1);" + S + S + "void setup() {" + S + "  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);" + S + "  display.clearDisplay();" + S + "  display.setTextSize(1);" + S + "  display.setCursor(0, 0);" + S + "  display.println(\"Hello OLED\");" + S + "  display.display();" + S + "}" + S + S + "void loop() {" + S + "}" + S);
+  t("Motors", "Servo sweep", "Sweeps a hobby servo from 0 to 180 degrees.", "Servo signal on pin 9", "#include <Servo.h>" + S + S + "Servo myServo;" + S + S + "void setup() {" + S + "  myServo.attach(9);" + S + "}" + S + S + "void loop() {" + S + "  for (int a = 0; a <= 180; a += 2) { myServo.write(a); delay(15); }" + S + "  for (int a = 180; a >= 0; a -= 2) { myServo.write(a); delay(15); }" + S + "}" + S);
+  t("Motors", "Servo follows potentiometer", "Pot on A0 controls the servo angle.", "Pot on A0, servo on pin 9", "#include <Servo.h>" + S + S + "Servo myServo;" + S + S + "void setup() {" + S + "  myServo.attach(9);" + S + "}" + S + S + "void loop() {" + S + "  int v = analogRead(A0);" + S + "  int angle = map(v, 0, 1023, 0, 180);" + S + "  myServo.write(angle);" + S + "  delay(15);" + S + "}" + S);
+  t("Motors", "DC motor speed", "Pot controls motor speed through a PWM pin.", "Pot on A0, motor driver PWM on pin 9", "const int MOTOR = 9;" + S + S + "void setup() {" + S + "  pinMode(MOTOR, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  int speed = map(analogRead(A0), 0, 1023, 0, 255);" + S + "  analogWrite(MOTOR, speed);" + S + "  delay(20);" + S + "}" + S);
+  t("Projects", "Reaction timer", "LED lights after a random delay; press the button as fast as you can.", "Button on pin 2, LED on pin 13", "const int BTN = 2, LED = 13;" + S + S + "void setup() {" + S + "  pinMode(BTN, INPUT_PULLUP);" + S + "  pinMode(LED, OUTPUT);" + S + "  Serial.begin(9600);" + S + "  randomSeed(analogRead(A0));" + S + "}" + S + S + "void loop() {" + S + "  digitalWrite(LED, LOW);" + S + "  delay(random(1000, 4000));" + S + "  digitalWrite(LED, HIGH);" + S + "  unsigned long start = millis();" + S + "  while (digitalRead(BTN) == HIGH) { }" + S + "  Serial.print(\"Reaction: \");" + S + "  Serial.print(millis() - start);" + S + "  Serial.println(\" ms\");" + S + "  digitalWrite(LED, LOW);" + S + "  delay(1500);" + S + "}" + S);
+  t("Projects", "Simple door alarm", "Armed by a button; a PIR trips the siren.", "Button 2, PIR 3, buzzer 6, LED 13", "const int BTN = 2, PIR = 3, BUZ = 6, LED = 13;" + S + "bool armed = false;" + S + S + "void setup() {" + S + "  pinMode(BTN, INPUT_PULLUP);" + S + "  pinMode(PIR, INPUT);" + S + "  pinMode(BUZ, OUTPUT);" + S + "  pinMode(LED, OUTPUT);" + S + "}" + S + S + "void loop() {" + S + "  if (digitalRead(BTN) == LOW) { armed = !armed; digitalWrite(LED, armed); delay(300); }" + S + "  if (armed && digitalRead(PIR) == HIGH) tone(BUZ, 1200); else noTone(BUZ);" + S + "}" + S);
+  function cats() { return ["All"].concat(TPL.map(function (x) { return x.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; })); }
+  var G = { cat: "All", q: "", sel: 0, confirm: false };
+  /* one-click circuit: clears the canvas, places the parts, wires them and loads the sketch. circuit = {parts:[{k,t,x?,y?,props?}], wires:[["uno.D13","r1.1"],...]} */
+  function buildCircuit(x) {
+    var C = x && x.circuit; if (!C) return false;
+    try {
+      root.clearAll(true);
+      var ids = {}, n = 0;
+      C.parts.forEach(function (p) {
+        var px = p.x, py = p.y;
+        if (p.t === "uno") { px = 40; py = 40; } else if (px == null) { px = 40 + (n % 4) * 200; py = 490 + Math.floor(n / 4) * 130; n++; }
+        var id = root.addComponent(p.t, px, py); if (!id) throw new Error("cannot place " + p.t);
+        ids[p.k] = id; var c = root.findComp(id); if (p.props) Object.keys(p.props).forEach(function (k) { c.props[k] = p.props[k]; }); if (p.label) c.props.label = p.label;
+        if (p.t === "resistor" && c.props.ohms && !p.label) { var oh = +c.props.ohms; c.props.label = oh >= 1e6 ? (oh / 1e6) + "MOhm" : oh >= 1000 ? (oh / 1000) + "kOhm" : oh + "Ohm"; }
+      });
+      C.wires.forEach(function (w) {
+        var a = w[0].split("."), b = w[1].split("."); if (!ids[a[0]] || !ids[b[0]]) throw new Error("bad wire " + w.join("-"));
+        var col = /GND|\.-$|NEG|\.K$|\.C$/.test(w[0] + w[1]) ? "#475569" : /5V|VCC|VIN|3V3|\+/.test(w[0] + w[1]) ? "#ef4444" : "#fbbf24";
+        root.wires.push({ id: "w" + (root.nextWireId++), a: { compId: ids[a[0]], pin: a.slice(1).join(".") }, b: { compId: ids[b[0]], pin: b.slice(1).join(".") }, color: col, shape: "curve" });
+      });
+      root.sketchCode = x.code; try { var cm = ED(); if (cm) cm.setValue(x.code); } catch (e) {}
+      root._forceFullRender = true; root.render(); try { root.notify(); } catch (e) {}
+      return true;
+    } catch (e) { T("Build failed: " + e.message, "err"); console.warn("E113 build", e); return false; }
+  }
+  function openTemplates() {
+    css(); var old = $("e113tpl"); if (old) old.remove(); hideMenu();
+    var o = D.createElement("div"); o.id = "e113tpl";
+    o.innerHTML = '<div class="bx"><div class="hd"><b>Sketch templates</b><input id="e113q" placeholder="Search templates (blink, servo, lcd, sensor…)" autocomplete="off"/><button class="btn" id="e113x">✕</button></div><div class="cats" id="e113c"></div><div class="bd"><div class="ls" id="e113l"></div><div class="pv"><div class="mt" id="e113m"></div><pre id="e113p"></pre></div></div><div class="ft"><span class="msg" id="e113msg"></span><button class="btn" id="e113cp">Copy</button><button class="btn" id="e113ins">Insert at cursor</button><button class="btn" id="e113bld" style="display:none">Build circuit</button><button class="btn primary" id="e113rep">Replace sketch</button></div></div>';
+    D.body.appendChild(o);
+    o.addEventListener("mousedown", function (e) { if (e.target === o) o.remove(); });
+    $("e113x").onclick = function () { o.remove(); };
+    $("e113q").value = G.q; $("e113q").oninput = function () { G.q = this.value; G.sel = 0; draw(); };
+    D.addEventListener("keydown", function esc2(e) { if (!$("e113tpl")) { D.removeEventListener("keydown", esc2); return; } if (e.key === "Escape") { $("e113tpl").remove(); } });
+    $("e113cp").onclick = function () { var x = cur(); if (x) { copyText(x.code); msg("Copied to clipboard"); } };
+    $("e113ins").onclick = function () { var x = cur(), cm = ED(); if (!x || !cm) return msg("Open the Code tab first"); cm.replaceRange(x.code, cm.getCursor()); msg("Inserted at cursor"); };
+    $("e113rep").onclick = function () {
+      var x = cur(), cm = ED(); if (!x || !cm) return msg("Open the Code tab first");
+      var dirty = cm.getValue().trim() && cm.getValue().trim() !== String(root.defaultSketch ? root.defaultSketch() : "").trim();
+      if (dirty && !G.confirm) { G.confirm = true; this.textContent = "Click again to overwrite"; msg("Your current sketch will be replaced (Ctrl+Z undoes it)"); return; }
+      cm.setValue(x.code); root.sketchCode = x.code; G.confirm = false; o.remove(); T("Template loaded: " + x.name);
+    };
+    $("e113bld").onclick = function () { var x = cur(); if (!x || !x.circuit) return; if (buildCircuit(x)) { o.remove(); T("Circuit built + sketch loaded: " + x.name + " - press Run"); } };
+    draw();
+    setTimeout(function () { $("e113q").focus(); }, 30);
+  }
+  function list() { var q = G.q.toLowerCase(); return TPL.filter(function (x) { return (G.cat === "All" || x.cat === G.cat) && (!q || (x.name + " " + x.desc + " " + x.parts + " " + x.cat).toLowerCase().indexOf(q) >= 0); }); }
+  function cur() { return list()[G.sel] || null; }
+  function msg(m) { var e = $("e113msg"); if (e) e.textContent = m || ""; }
+  function draw() {
+    G.confirm = false; var b = $("e113rep"); if (b) b.textContent = "Replace sketch"; msg("");
+    $("e113c").innerHTML = cats().map(function (c) { return '<span class="chip' + (c === G.cat ? " on" : "") + '" data-c="' + esc(c) + '">' + esc(c) + "</span>"; }).join("");
+    [].forEach.call($("e113c").querySelectorAll(".chip"), function (ch) { ch.onclick = function () { G.cat = ch.dataset.c; G.sel = 0; draw(); }; });
+    var L = list(); if (G.sel >= L.length) G.sel = 0;
+    $("e113l").innerHTML = L.length ? L.map(function (x, i) { return '<div class="it' + (i === G.sel ? " on" : "") + '" data-i="' + i + '">' + esc(x.name) + "<small>" + esc(x.cat) + " · " + esc(x.parts) + "</small></div>"; }).join("") : '<div class="it">No templates match.</div>';
+    [].forEach.call($("e113l").querySelectorAll(".it[data-i]"), function (it) { it.onclick = function () { G.sel = +it.dataset.i; draw(); }; });
+    var x = L[G.sel];
+    $("e113m").innerHTML = x ? "<h3>" + esc(x.name) + "</h3><p>" + esc(x.desc) + "</p><p><b>Parts:</b> " + esc(x.parts) + "</p>" : "";
+    $("e113p").textContent = x ? x.code : "";
+    var bb = $("e113bld"); if (bb) { bb.style.display = x && x.circuit ? "" : "none"; if (x && x.circuit) bb.textContent = "Build circuit + load code"; }
+  }
+  function add(o) { TPL.push({ cat: o.cat, name: o.name, desc: o.desc || "", parts: o.parts || "", code: o.code, circuit: o.circuit || null, expect: o.expect || null, subject: o.subject || null }); }
+  root.E113 = { open: openTemplates, templates: function () { return TPL; }, add: add, build: buildCircuit, menu: showMenu, hint: hint };
+  wrapInit(); setTimeout(wrapInit, 800); setTimeout(wrapInit, 3000); setTimeout(function () { try { attach(); } catch (e) {} }, 1200);
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<script id="e115-live-fx">
+/* E115 - Live visual effects for every part that had a static picture:
+   spinning rotors, glow, beams, sound waves, level bars, readouts.
+   Driven by the same props / pin state the simulator already maintains. */
+(function (root) {
+  "use strict";
+  if (root.E115) return;
+  var D = root.document;
+  var css = D.createElement("style");
+  css.textContent =
+    "@keyframes fx115spin{to{transform:rotate(360deg)}}" +
+    "@keyframes fx115shake{0%{transform:translate(0,0)}25%{transform:translate(-1.2px,.8px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-.8px,-.6px)}100%{transform:translate(0,0)}}" +
+    "@keyframes fx115pulse{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}" +
+    "@keyframes fx115rise{0%{transform:translateY(0);opacity:0}30%{opacity:.8}100%{transform:translateY(-12px);opacity:0}}" +
+    "@keyframes fx115blink{0%,60%{opacity:1}61%,100%{opacity:.15}}" +
+    "@keyframes fx115flick{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.25)}}" +
+    "@keyframes fx115roll{0%{transform:translateX(-5px)}50%{transform:translateX(5px)}100%{transform:translateX(-5px)}}" +
+    ".fx115{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:7}" +
+    ".fx115 *{pointer-events:none}" +
+    ".fx115 .o{transform-box:fill-box;transform-origin:center}" +
+    ".fx115 text{font:bold 6.5px Consolas,Menlo,monospace}";
+  D.head.appendChild(css);
+
+  function P(c, k, d) { var v = c.props && c.props[k]; return v == null ? d : v; }
+  function run() { return !!root.running; }
+  function num(v, d) { v = +v; return isFinite(v) ? v : d; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function f1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+  function drv(c, pin) { try { return !!root.isPinDrivenHigh(c, pin); } catch (e) { return false; } }
+  function on(c) { return !!(P(c, "on", false) || num(P(c, "speed", 0), 0) > 0 || P(c, "_out", 0) > 0 && false); }
+  var CHIPOK = { rtc_ds3231: 1, gps_neo: 1, tcs34725: 1 }, CUR = "";
+  function chip(x, y, w, txt, col) {
+    if (!CHIPOK[CUR]) return ""; /* other parts already get a value badge from the inspector layer */
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="9" rx="2" fill="#0b1220" stroke="#334155" stroke-width=".6" opacity=".92"/>' +
+      '<text x="' + (x + w / 2) + '" y="' + (y + 6.9) + '" text-anchor="middle" fill="' + (col || "#7dd3fc") + '">' + txt + "</text>";
+  }
+  function dur(v, lo, hi) { return (clamp(1 - v, 0.04, 1) * (hi - lo) + lo).toFixed(2) + "s"; }
+
+  /* each def: [sizeFn(c)->sig string extras, draw(c,W,H)->svg inner markup] */
+  var FX = {};
+  function def(types, fn) { types.split(",").forEach(function (t) { FX[t] = fn; }); }
+
+  function spinStyle(rpm, dir) {
+    var d = clamp(3000 / Math.max(rpm, 1), 0.06, 3), ph = -(((Date.now() / 1000) % d) + 0);
+    return "animation:fx115spin " + d.toFixed(3) + "s linear infinite;animation-delay:" + ph.toFixed(3) + "s;animation-direction:" + (dir < 0 ? "reverse" : "normal");
+  }
+  def("motor_dc", function (c, W, H) {
+    var rpm = num(P(c, "_e38Rpm", 0), 0), dir = num(P(c, "_e38Dir", 1), 1);
+    var cx = W / 2, cy = H * 0.42, spin = rpm > 12;
+    return '<g transform="translate(' + cx + ' ' + cy + ')"><circle r="9" fill="#1f2937" stroke="#9ca3af" stroke-width="1"/>' +
+      '<g class="o" style="' + (spin ? spinStyle(rpm, dir) : "") + '"><rect x="-8" y="-1.6" width="16" height="3.2" rx="1.4" fill="#fbbf24"/><rect x="-1.6" y="-8" width="3.2" height="16" rx="1.4" fill="#f59e0b"/></g>' +
+      '<circle r="2.2" fill="#e5e7eb"/>' + (spin ? '<circle r="11" fill="none" stroke="#fbbf24" stroke-width=".8" opacity="' + clamp(0.2 + rpm / 6000, 0.2, 0.8) + '"/>' : "") + (P(c, "stall", false) ? '<circle r="12" fill="none" stroke="#ef4444" stroke-width="1.6"/>' : "") + "</g>";
+  });
+  def("fan", function (c, W, H) {
+    var rpm = num(P(c, "_e38Rpm", 0), 0), dir = num(P(c, "_e38Dir", 1), 1), spin = rpm > 12;
+    var cx = W / 2, cy = H / 2, blade = "";
+    for (var i = 0; i < 5; i++) blade += '<path d="M0 0 C6 -4 14 -8 10 -17 C2 -13 -2 -7 0 0Z" fill="#38bdf8" opacity="' + (spin ? 0.8 : 0.95) + '" transform="rotate(' + i * 72 + ')"/>';
+    return '<g transform="translate(' + cx + ' ' + cy + ')"><circle r="20" fill="#0f172a" opacity=".92"/><circle r="20" fill="none" stroke="#475569" stroke-width="1.4"/>' +
+      '<g class="o" style="' + (spin ? spinStyle(rpm, dir) : "") + '">' + blade + '</g><circle r="3.2" fill="#e2e8f0"/>' +
+      (spin ? '<circle r="18" fill="none" stroke="#7dd3fc" stroke-width="3" opacity="' + clamp(0.08 + rpm / 9000, 0.08, 0.4) + '" stroke-dasharray="3 5" class="o" style="' + spinStyle(rpm * 0.6, dir) + '"/>' : "") + "</g>";
+  });
+  def("vibmotor", function (c, W, H) {
+    if (!P(c, "on", false) && !num(P(c, "speed", 0), 0)) return "";
+    var s = "";
+    for (var i = 0; i < 3; i++) s += '<path d="M' + (W - 3 + i * 3.5) + ' ' + (H * .3) + ' q3 ' + (H * .2) + ' 0 ' + (H * .4) + '" fill="none" stroke="#f472b6" stroke-width="1.2" opacity="' + (0.8 - i * .22) + '"><animate attributeName="opacity" values="1;.1;1" dur="' + (0.18 + i * .04) + 's" repeatCount="indefinite"/></path>' +
+      '<path d="M' + (3 - i * 3.5) + ' ' + (H * .3) + ' q-3 ' + (H * .2) + ' 0 ' + (H * .4) + '" fill="none" stroke="#f472b6" stroke-width="1.2" opacity="' + (0.8 - i * .22) + '"/>';
+    return '<g class="o" style="animation:fx115shake .09s linear infinite">' + s + "</g>";
+  });
+  def("solenoid", function (c, W, H) {
+    var a = !!P(c, "on", false);
+    return '<rect x="' + (a ? W - 18 : W - 28) + '" y="' + (H / 2 - 4) + '" width="18" height="8" rx="2" fill="#cbd5e1" stroke="#64748b" stroke-width=".8"/>' +
+      (a ? '<rect x="3" y="3" width="' + (W - 6) + '" height="' + (H - 6) + '" rx="6" fill="none" stroke="#60a5fa" stroke-width="1.6" opacity=".8"><animate attributeName="opacity" values=".9;.3;.9" dur=".5s" repeatCount="indefinite"/></rect>' : "");
+  });
+  def("heater", function (c, W, H) {
+    if (!P(c, "_e38On", 0)) return "";
+    var s = '<rect x="2" y="2" width="' + (W - 4) + '" height="' + (H - 4) + '" rx="4" fill="#ef4444" opacity=".32"><animate attributeName="opacity" values=".18;.42;.18" dur="1.4s" repeatCount="indefinite"/></rect>';
+    for (var i = 0; i < 4; i++) s += '<path d="M' + (10 + i * 12) + ' 6 q3 -4 0 -8 t0 -8" fill="none" stroke="#fb923c" stroke-width="1.3" class="o" style="animation:fx115rise 1.5s ease-in infinite;animation-delay:' + (i * .35) + 's"/>';
+    return s;
+  });
+  def("lamp", function (c, W, H) {
+    var b = clamp(num(P(c, "_e38Level", P(c, "on", false) ? 1 : 0), 0) * num(P(c, "brightness", 255), 255) / 255, 0, 1);
+    if (b < 0.03) return "";
+    var cx = W / 2, cy = H * 0.38, s = "";
+    for (var i = 0; i < 8; i++) s += '<line x1="0" y1="-17" x2="0" y2="-24" stroke="#fde047" stroke-width="1.6" stroke-linecap="round" opacity="' + (0.4 + b * 0.5) + '" transform="rotate(' + i * 45 + ')"/>';
+    return '<defs><radialGradient id="fxg' + c.id + '"><stop offset="0" stop-color="#fef08a" stop-opacity="' + (0.95 * b) + '"/><stop offset="1" stop-color="#facc15" stop-opacity="0"/></radialGradient></defs>' +
+      '<g transform="translate(' + cx + ' ' + cy + ')"><circle r="' + (22 + b * 8) + '" fill="url(#fxg' + c.id + ')"/>' + s + "</g>";
+  });
+  def("laser", function (c, W, H) {
+    if (!P(c, "on", false) && !drv(c, "S")) return "";
+    return '<line x1="' + (W - 4) + '" y1="' + (H / 2) + '" x2="' + (W + 70) + '" y2="' + (H / 2) + '" stroke="#ef4444" stroke-width="1.4"/><line x1="' + (W - 4) + '" y1="' + (H / 2) + '" x2="' + (W + 70) + '" y2="' + (H / 2) + '" stroke="#fecaca" stroke-width=".5"/>' +
+      '<circle cx="' + (W + 70) + '" cy="' + (H / 2) + '" r="3" fill="#ef4444"><animate attributeName="r" values="2;4;2" dur=".4s" repeatCount="indefinite"/></circle>';
+  });
+  def("speaker", function (c, W, H) {
+    var f = num(P(c, "freq", 0), 0); if (!P(c, "on", false) && !f) return "";
+    var d = f ? clamp(1 / (f / 80), 0.08, 0.8) : 0.5, s = "";
+    for (var i = 0; i < 3; i++) s += '<path d="M' + (W - 2 + i * 5) + ' ' + (H / 2 - 6 - i * 3) + ' q' + (4 + i * 2) + ' ' + (6 + i * 3) + ' 0 ' + (12 + i * 6) + '" fill="none" stroke="#a78bfa" stroke-width="1.5" class="o" style="animation:fx115blink ' + d.toFixed(2) + 's linear infinite;animation-delay:' + (i * 0.07) + 's"/>';
+    return '<circle cx="' + W / 2 + '" cy="' + H / 2 + '" r="7" fill="none" stroke="#c4b5fd" stroke-width="1.4" class="o" style="animation:fx115pulse ' + d.toFixed(2) + 's ease-out infinite"/>' + s;
+  });
+  def("relay", function (c, W, H) {
+    var a = !!P(c, "on", false) || drv(c, "IN");
+    return '<circle cx="' + (W - 8) + '" cy="7" r="3" fill="' + (a ? "#22c55e" : "#14532d") + '"/>' + (a ? '<circle cx="' + (W - 8) + '" cy="7" r="6" fill="#22c55e" opacity=".35"/>' : "") +
+      chip(W / 2 - 14, H / 2 - 5, 28, a ? "CLOSED" : "OPEN", a ? "#86efac" : "#94a3b8");
+  });
+  def("sensor_pir", function (c, W, H) {
+    var m = !!P(c, "motion", false), s = "";
+    if (m) for (var i = 0; i < 3; i++) s += '<circle cx="' + W / 2 + '" cy="' + H * 0.45 + '" r="14" fill="none" stroke="#fbbf24" stroke-width="1.4" class="o" style="animation:fx115pulse 1.2s ease-out infinite;animation-delay:' + i * .4 + 's"/>';
+    return s + '<circle cx="' + W / 2 + '" cy="' + H * 0.45 + '" r="9" fill="#fbbf24" opacity="' + (m ? 0.55 : 0) + '"/>' + chip(2, H - 10, 26, m ? "MOTION" : "idle", m ? "#fde047" : "#64748b");
+  });
+  def("sensor_ultra", function (c, W, H) {
+    var cm = num(P(c, "cm", 42), 42), s = "";
+    if (run()) for (var i = 0; i < 3; i++) s += '<path d="M' + (W / 2 - 6) + ' -2 a' + (8 + i * 6) + ' ' + (8 + i * 6) + ' 0 0 0 12 0" transform="translate(0 ' + (-i * 5) + ')" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity="' + (0.9 - i * .25) + '" class="o" style="animation:fx115blink .9s linear infinite;animation-delay:' + i * .2 + 's"/>';
+    return s + chip(W / 2 - 17, H - 10, 34, f1(cm) + " cm", "#7dd3fc");
+  });
+  def("sensor_dht", function (c, W, H) { return chip(1, H - 10, W - 2, f1(num(P(c, "celsius", 24), 24)) + "C " + Math.round(num(P(c, "humidity", 55), 55)) + "%", "#86efac"); });
+  def("lm35,sensor_temp,ds18b20,bmp280", function (c, W, H) {
+    var t = num(P(c, "celsius", 25), 25), k = clamp((t + 10) / 90, 0, 1), col = "hsl(" + Math.round(220 - 220 * k) + ",85%,55%)";
+    return '<rect x="3" y="3" width="4" height="' + (H - 16) + '" rx="2" fill="#0b1220" stroke="#334155" stroke-width=".5"/><rect x="3.4" y="' + (3 + (H - 16) * (1 - k)) + '" width="3.2" height="' + ((H - 16) * k) + '" rx="1.6" fill="' + col + '"/>' +
+      chip(W / 2 - 17, H - 10, 34, f1(t) + "C", col) + (P(c, "pressure", null) != null ? '<text x="' + (W - 2) + '" y="9" text-anchor="end" fill="#a5b4fc">' + Math.round(num(P(c, "pressure", 0), 0)) + "hPa</text>" : "");
+  });
+  def("sensor_soil,rain,water_level", function (c, W, H) {
+    var v = num(P(c, "value", 0), 0), k = clamp(v / 1023, 0, 1), col = c.type === "sensor_soil" ? "#a16207" : "#38bdf8", s = "";
+    s += '<rect x="' + (W - 9) + '" y="3" width="5" height="' + (H - 14) + '" rx="2" fill="#0b1220" stroke="#334155" stroke-width=".5"/><rect x="' + (W - 8.6) + '" y="' + (3 + (H - 14) * (1 - k)) + '" width="4.2" height="' + ((H - 14) * k) + '" rx="2" fill="' + col + '"/>';
+    if (c.type === "rain" && k > 0.15) for (var i = 0; i < 4; i++) s += '<path d="M' + (8 + i * 9) + ' 4 q-1.8 3 0 5 q1.8 -2 0 -5z" fill="#60a5fa" class="o" style="animation:fx115rise 1s linear infinite reverse;animation-delay:' + i * .22 + 's"/>';
+    return s + chip(2, H - 10, 30, String(Math.round(v)), "#7dd3fc");
+  });
+  def("tilt", function (c, W, H) {
+    var t = !!P(c, "tilted", false);
+    return '<circle cx="' + (t ? W / 2 + 5 : W / 2 - 5) + '" cy="' + H / 2 + '" r="3.2" fill="#e5e7eb" stroke="#64748b" stroke-width=".6"/>' + chip(W / 2 - 14, H - 10, 28, t ? "TILTED" : "level", t ? "#fca5a5" : "#94a3b8");
+  });
+  def("ir_sensor", function (c, W, H) {
+    var d = !!P(c, "detected", false), s = "";
+    if (run()) for (var i = 0; i < 2; i++) s += '<path d="M' + (W - 8 + i * 4) + ' ' + (H / 2 - 5 - i * 2) + ' q4 ' + (5 + i * 2) + ' 0 ' + (10 + i * 4) + '" fill="none" stroke="#f87171" stroke-width="1.2" class="o" style="animation:fx115blink .6s linear infinite;animation-delay:' + i * .2 + 's"/>';
+    return s + '<circle cx="8" cy="7" r="3" fill="' + (d ? "#ef4444" : "#450a0a") + '"/>' + (d ? '<circle cx="8" cy="7" r="6" fill="#ef4444" opacity=".35"/>' : "");
+  });
+  def("current_acs", function (c, W, H) { return chip(W / 2 - 17, H - 10, 34, f1(num(P(c, "amps", 0), 0)) + " A", "#fcd34d"); });
+  def("gps_neo", function (c, W, H) {
+    return '<circle cx="8" cy="7" r="2.6" fill="#22c55e" class="o" style="' + (run() ? "animation:fx115blink 1s steps(1) infinite" : "opacity:.2") + '"/>' + chip(2, H - 10, W - 4, f1(num(P(c, "lat", 0), 0)) + "," + f1(num(P(c, "lon", 0), 0)), "#a7f3d0");
+  });
+  def("rgb_strip", function (c, W, H) {
+    var fr = c.props && c.props._frame;
+    if (fr && fr.length) {
+      var o = "", n = fr.length, cw = (W - 6) / n;
+      for (var q = 0; q < n; q++) { var px = fr[q] || [0, 0, 0], lit = px[0] + px[1] + px[2] > 0, col = "rgb(" + px[0] + "," + px[1] + "," + px[2] + ")";
+        if (lit) o += '<circle cx="' + (3 + q * cw + cw / 2) + '" cy="' + H / 2 + '" r="' + cw * 0.95 + '" fill="' + col + '" opacity=".28"/>';
+        o += '<circle cx="' + (3 + q * cw + cw / 2) + '" cy="' + H / 2 + '" r="' + cw * 0.36 + '" fill="' + (lit ? col : "#111827") + '" opacity="' + (lit ? 1 : 0.35) + '"/>'; }
+      return o;
+    }
+    var col = P(c, "color", "#ff0000"), a = !!P(c, "on", false) || (col && col !== "#000000" && run());
+    if (!a) return "";
+    return '<rect x="3" y="' + (H / 2 - 5) + '" width="' + (W - 6) + '" height="10" rx="5" fill="' + col + '" opacity=".85"/><rect x="0" y="' + (H / 2 - 9) + '" width="' + W + '" height="18" rx="9" fill="' + col + '" opacity=".25"/>';
+  });
+  def("vl53l0x", function (c, W, H) {
+    var mm = num(P(c, "mm", P(c, "targetMm", 120)), 120);
+    return (run() ? '<line x1="' + W / 2 + '" y1="0" x2="' + W / 2 + '" y2="-' + clamp(mm / 12, 8, 40) + '" stroke="#f87171" stroke-width="1" stroke-dasharray="2 2"/>' : "") + chip(W / 2 - 17, H - 10, 34, Math.round(mm) + " mm", "#fca5a5");
+  });
+  def("tcs34725", function (c, W, H) {
+    var r = num(P(c, "r", 0), 0), g = num(P(c, "g", 0), 0), b = num(P(c, "b", 0), 0);
+    return '<rect x="3" y="3" width="12" height="12" rx="2" fill="rgb(' + r + ',' + g + ',' + b + ')" stroke="#e2e8f0" stroke-width=".8"/>' + chip(W / 2 - 17, H - 10, 34, "R" + r + " G" + g, "#e2e8f0");
+  });
+  def("touch_ttp", function (c, W, H) {
+    var t = !!P(c, "touched", false);
+    return t ? '<circle cx="' + W / 2 + '" cy="' + H / 2 + '" r="12" fill="none" stroke="#a3e635" stroke-width="2" class="o" style="animation:fx115pulse .9s ease-out infinite"/>' : "";
+  });
+  def("rtc_ds3231", function (c, W, H) {
+    var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
+    return chip(W / 2 - 18, H - 10, 36, z(d.getHours()) + ":" + z(d.getMinutes()) + ":" + z(d.getSeconds()), "#fde68a");
+  });
+  def("hc05,nrf24,rc522", function (c, W, H) {
+    return '<circle cx="8" cy="7" r="2.6" fill="' + (c.type === "hc05" ? "#3b82f6" : "#22c55e") + '" class="o" style="' + (run() ? "animation:fx115blink " + (c.type === "hc05" ? "1.2s" : "2s") + " steps(1) infinite" : "opacity:.15") + '"/>';
+  });
+
+  function sig(c) {
+    return c.type + "|" + (c.baseW || c.w) + "|" + (c.baseH || c.h) + "|" + run() + "|" + JSON.stringify(c.props) +
+      (c.type === "laser" ? "|" + drv(c, "S") : c.type === "relay" ? "|" + drv(c, "IN") : c.type === "rtc_ds3231" ? "|" + Math.floor(Date.now() / 1000) : "");
+  }
+  function tick() {
+    var list = (typeof root.components !== "undefined" && root.components) || (typeof components !== "undefined" ? components : []);
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i], fn = c && FX[c.type]; if (!fn) continue;
+      var el = D.getElementById(c.id), inner = el && el.querySelector(".comp-inner"); if (!inner) continue;
+      var W = c.baseW || c.w, H = c.baseH || c.h, s = sig(c), svg = inner.querySelector(":scope > .fx115");
+      if (svg && svg.dataset.s === s) continue;
+      var body = ""; CUR = c.type; try { body = fn(c, W, H); } catch (e) { console.warn("E115", c.type, e); }
+      if (!svg) {
+        svg = D.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("class", "fx115");
+        if (getComputedStyle(inner).position === "static") inner.style.position = "relative";
+        inner.appendChild(svg);
+      }
+      svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      svg.dataset.s = s; svg.innerHTML = body;
+      var sh = body.indexOf("fx115shake") >= 0; el.style.animation = ""; /* keep body still; shake is inside the svg */
+    }
+  }
+  setInterval(tick, 120);
+  root.E115 = { FX: FX, tick: tick, types: function () { return Object.keys(FX); } };
+})(window);
+</script>
+<script id="e114-component-templates">
+/* E114 - One working template (circuit + sketch) per component type. "By component" in the Sketch templates gallery
+ * (Code tab -> right-click -> Sketch templates...). Each template builds the parts on the canvas, wires them and loads the code. */
+(function (root) {
+  "use strict";
+  if (root.__E114) return; root.__E114 = 1;
+  var N = "\n";
+  function code() { return [].slice.call(arguments).join(N) + N; }
+  /* T(category, name, description, parts, wires, code[, expect]) - parts: ["key:type" or "key:type:{props json}"], wires: "a.PIN b.PIN" strings.
+     An Arduino Uno ("uno") is always part 0. */
+  var LIST = [];
+  function T(cat, name, desc, parts, wires, src, expect, subject) {
+    var ps = [{ k: "uno", t: "uno" }];
+    parts.forEach(function (s) { var a = s.split(":"), pr = a.length > 2 ? JSON.parse(a.slice(2).join(":")) : null; ps.push({ k: a[0], t: a[1], props: pr }); });
+    LIST.push({ cat: cat, name: name, desc: desc, parts: ps.slice(1).map(function (p) { return p.t; }).join(" + ") + " on an Arduino Uno",
+      circuit: { parts: ps, wires: wires.map(function (w) { return w.split(" "); }) }, code: src, expect: expect || null, subject: subject || ps[ps.length - 1].k });
+  }
+  root.__E114_T = T; root.__E114_LIST = LIST; root.__E114_code = code;
+  /* ===================== OUTPUT ===================== */
+  var O = "Output";
+  T(O, "LED + resistor blink", "The classic: pin 13 -> 220 ohm -> LED -> GND.", ["r1:resistor:{\"ohms\":220}", "led1:led"],
+    ["uno.D13 r1.1", "r1.2 led1.A", "led1.C uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(13, HIGH); Serial.println(\"LED ON\");  delay(500);", "  digitalWrite(13, LOW);  Serial.println(\"LED OFF\"); delay(500);", "}"), "serial:LED ON");
+  T(O, "RGB LED color cycle", "Three PWM pins mix any color on a common-cathode RGB LED.", ["rr:resistor", "rg:resistor", "rb:resistor", "rgb:led_rgb"],
+    ["uno.D9 rr.1", "rr.2 rgb.R", "uno.D10 rg.1", "rg.2 rgb.G", "uno.D11 rb.1", "rb.2 rgb.B", "rgb.C uno.GND1"],
+    code("const int R = 9, G = 10, B = 11;", "void setup() { pinMode(R, OUTPUT); pinMode(G, OUTPUT); pinMode(B, OUTPUT); Serial.begin(9600); }", "void color(int r, int g, int b) { analogWrite(R, r); analogWrite(G, g); analogWrite(B, b); }", "void loop() {", "  color(255, 0, 0);   Serial.println(\"red\");     delay(600);", "  color(0, 255, 0);   Serial.println(\"green\");   delay(600);", "  color(0, 0, 255);   Serial.println(\"blue\");    delay(600);", "  color(255, 140, 0); Serial.println(\"orange\");  delay(600);", "}"), "serial:green");
+  T(O, "NeoPixel rainbow", "One WS2812 pixel cycling through the hue wheel (Adafruit_NeoPixel).", ["px:neopixel"],
+    ["uno.D6 px.DIN", "uno.5V px.VCC", "uno.GND1 px.GND"],
+    code("#include <Adafruit_NeoPixel.h>", "Adafruit_NeoPixel strip(1, 6, NEO_GRB + NEO_KHZ800);", "void setup() { strip.begin(); strip.setBrightness(80); strip.show(); Serial.begin(9600); }", "void loop() {", "  for (int i = 0; i < 256; i += 8) {", "    strip.setPixelColor(0, strip.Color(255 - i, i, 128));", "    strip.show(); delay(40);", "  }", "  Serial.println(\"cycle\");", "}"), "prop:color!=='#000000'&&color!=='rgb(0, 0, 0)'&&color!=='rgb(0,0,0)'");
+  T(O, "RGB strip chase", "A WS2812 strip animation with colour wipes.", ["strip:rgb_strip"],
+    ["uno.D6 strip.DIN", "uno.5V strip.VCC", "uno.GND1 strip.GND"],
+    code("#include <Adafruit_NeoPixel.h>", "Adafruit_NeoPixel strip(8, 6, NEO_GRB + NEO_KHZ800);", "void setup() { strip.begin(); strip.show(); }", "void loop() {", "  for (int i = 0; i < 8; i++) { strip.clear(); strip.setPixelColor(i, strip.Color(0, 120, 255)); strip.show(); delay(120); }", "}"));
+  T(O, "Buzzer melody", "tone() plays a short melody on a piezo buzzer.", ["bz:buzzer"],
+    ["uno.D8 bz.+", "bz.- uno.GND1"],
+    code("int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};", "void setup() { Serial.begin(9600); }", "void loop() {", "  for (int i = 0; i < 8; i++) { tone(8, melody[i], 180); Serial.println(melody[i]); delay(250); }", "  noTone(8); delay(800);", "}"), "serial:262");
+  T(O, "Speaker siren", "Rising and falling siren tone through an 8 ohm speaker.", ["sp:speaker"],
+    ["uno.D9 sp.+", "sp.- uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() {", "  for (int f = 400; f < 1200; f += 40) { tone(9, f); delay(20); }", "  for (int f = 1200; f > 400; f -= 40) { tone(9, f); delay(20); }", "  Serial.println(\"siren\");", "}"));
+  T(O, "Lamp dimmer (PWM)", "Bulb driven by an NPN transistor; PWM fades it in and out.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "lamp:lamp"],
+    ["uno.D9 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V lamp.1", "lamp.2 q.C"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() {", "  for (int b = 0; b <= 255; b += 5) { analogWrite(9, b); delay(15); }", "  Serial.println(\"peak\");", "  for (int b = 255; b >= 0; b -= 5) { analogWrite(9, b); delay(15); }", "}"));
+  T(O, "Heater on a timer", "A heating element switched by a transistor.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "h:heater"],
+    ["uno.D7 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V h.1", "h.2 q.C"],
+    code("void setup() { pinMode(7, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(7, HIGH); Serial.println(\"heating\"); delay(1500);", "  digitalWrite(7, LOW);  Serial.println(\"off\");     delay(1500);", "}"));
+  T(O, "Relay switching a lamp", "A relay module switched from pin 7 controlling a lamp circuit.", ["rl:relay", "lamp:lamp"],
+    ["uno.D7 rl.IN", "uno.5V rl.VCC", "uno.GND1 rl.GND", "uno.5V lamp.1", "lamp.2 uno.GND2"],
+    code("void setup() { pinMode(7, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(7, HIGH); Serial.println(\"relay ON\");  delay(1200);", "  digitalWrite(7, LOW);  Serial.println(\"relay OFF\"); delay(1200);", "}"), "serial:relay ON", "rl");
+  T(O, "DC fan speed steps", "Fan switched by an NPN transistor with PWM speed steps.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "fan:fan"],
+    ["uno.D9 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V fan.+", "fan.- q.C"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int speeds[] = {0, 90, 170, 255};", "  for (int i = 0; i < 4; i++) { analogWrite(9, speeds[i]); Serial.println(speeds[i]); delay(1500); }", "}"));
+  T(O, "Water pump timer", "Pump runs 2 s every 6 s through a transistor.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "pump:pump"],
+    ["uno.D8 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V pump.+", "pump.- q.C"],
+    code("void setup() { pinMode(8, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(8, HIGH); Serial.println(\"pumping\"); delay(2000);", "  digitalWrite(8, LOW);  Serial.println(\"idle\");    delay(4000);", "}"));
+  T(O, "Vibration motor pulses", "Haptic buzz pattern from a vibration motor.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "vm:vibmotor"],
+    ["uno.D6 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V vm.+", "vm.- q.C"],
+    code("void setup() { pinMode(6, OUTPUT); Serial.begin(9600); }", "void loop() {", "  for (int i = 0; i < 3; i++) { digitalWrite(6, HIGH); delay(150); digitalWrite(6, LOW); delay(150); }", "  Serial.println(\"pattern done\"); delay(1500);", "}"));
+  T(O, "Solenoid lock", "Solenoid latch energised for one second per cycle.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "sol:solenoid"],
+    ["uno.D5 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V sol.+", "sol.- q.C"],
+    code("void setup() { pinMode(5, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(5, HIGH); Serial.println(\"unlocked\"); delay(1000);", "  digitalWrite(5, LOW);  Serial.println(\"locked\");   delay(3000);", "}"));
+  T(O, "Laser pulses", "Laser diode module blinking a signal.", ["las:laser"],
+    ["uno.D4 las.S", "las.GND uno.GND1"],
+    code("void setup() { pinMode(4, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(4, HIGH); delay(300); digitalWrite(4, LOW); delay(300);", "  Serial.println(\"pulse\");", "}"));
+  T(O, "DC motor with L298N", "Direction + PWM speed of a DC motor through an L298N driver.", ["drv:l298n", "m:motor_dc"],
+    ["uno.D8 drv.IN1", "uno.D7 drv.IN2", "uno.D9 drv.ENA", "uno.5V drv.VCC", "uno.GND1 drv.GND", "drv.OUT1 m.+", "drv.OUT2 m.-"],
+    code("void setup() { pinMode(7, OUTPUT); pinMode(8, OUTPUT); pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(8, HIGH); digitalWrite(7, LOW); analogWrite(9, 200); Serial.println(\"forward\"); delay(2000);", "  digitalWrite(8, LOW);  digitalWrite(7, LOW); analogWrite(9, 0);   Serial.println(\"stop\");    delay(1000);", "  digitalWrite(8, LOW);  digitalWrite(7, HIGH); analogWrite(9, 120); Serial.println(\"reverse\"); delay(2000);", "}"), null, "m");
+  T(O, "Servo sweep", "Standard hobby servo sweeping 0-180 degrees.", ["sv:servo"],
+    ["uno.D9 sv.SIG", "uno.5V sv.VCC", "uno.GND1 sv.GND"],
+    code("#include <Servo.h>", "Servo myServo;", "void setup() { myServo.attach(9); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a <= 180; a += 3) { myServo.write(a); delay(20); }", "  Serial.println(\"sweep right\");", "  for (int a = 180; a >= 0; a -= 3) { myServo.write(a); delay(20); }", "}"), "prop:angle!==90");
+  T(O, "SG90 preset angles", "Micro servo jumping to preset angles.", ["sv:sg90"],
+    ["uno.D9 sv.SIG", "uno.5V sv.VCC", "uno.GND1 sv.GND"],
+    code("#include <Servo.h>", "Servo s;", "void setup() { s.attach(9); Serial.begin(9600); }", "void loop() {", "  int pos[] = {0, 45, 90, 135, 180};", "  for (int i = 0; i < 5; i++) { s.write(pos[i]); Serial.println(pos[i]); delay(900); }", "}"), "prop:angle!==90");
+  T(O, "Continuous servo drive", "360 degree servo: forward, stop, reverse (90 = stop).", ["sv:servo_cont"],
+    ["uno.D9 sv.SIG", "uno.5V sv.VCC", "uno.GND1 sv.GND"],
+    code("#include <Servo.h>", "Servo s;", "void setup() { s.attach(9); Serial.begin(9600); }", "void loop() {", "  s.write(180); Serial.println(\"forward\"); delay(1500);", "  s.write(90);  Serial.println(\"stop\");    delay(1000);", "  s.write(0);   Serial.println(\"reverse\"); delay(1500);", "}"));
+  T(O, "Stepper motor revolutions", "Stepper driven through four pins (Stepper library).", ["st:stepper"],
+    ["uno.D8 st.IN1", "uno.D9 st.IN2", "uno.D10 st.IN3", "uno.D11 st.IN4"],
+    code("#include <Stepper.h>", "Stepper motor(200, 8, 9, 10, 11);", "void setup() { motor.setSpeed(60); Serial.begin(9600); }", "void loop() {", "  Serial.println(\"clockwise\");         motor.step(50); delay(300);", "  Serial.println(\"counter-clockwise\"); motor.step(-50); delay(300);", "}"), "prop:step!==0");
+  /* ===================== INPUT ===================== */
+  var I = "Input";
+  T(I, "Button toggles LED", "Push button with INPUT_PULLUP toggling an LED (debounced).", ["b:button", "r:resistor", "led:led"],
+    ["uno.D2 b.1", "b.2 uno.GND2", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("bool on = false; int last = HIGH;", "void setup() { pinMode(2, INPUT_PULLUP); pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int s = digitalRead(2);", "  if (last == HIGH && s == LOW) { on = !on; digitalWrite(13, on); Serial.println(on ? \"ON\" : \"OFF\"); delay(30); }", "  last = s; delay(5);", "}"), null, "b");
+  T(I, "Potentiometer dims LED", "A pot on A0 sets LED brightness via PWM.", ["p:pot:{\"value\":700}", "r:resistor", "led:led"],
+    ["uno.5V p.VCC", "p.SIG uno.A0", "p.GND uno.GND2", "uno.D9 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  analogWrite(9, map(v, 0, 1023, 0, 255));", "  Serial.println(v); delay(200);", "}"), "serial:700");
+  T(I, "Trimpot threshold alarm", "Trimmer sets a threshold; LED lights when the pot reading crosses it.", ["t:trimpot:{\"value\":300}", "r:resistor", "led:led"],
+    ["uno.5V t.VCC", "t.SIG uno.A0", "t.GND uno.GND2", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  digitalWrite(13, v < 512);", "  Serial.println(v < 512 ? \"below\" : \"above\"); delay(250);", "}"), "serial:below");
+  T(I, "Joystick reader", "Two-axis analog joystick with push switch.", ["j:joystick"],
+    ["uno.5V j.VCC", "uno.GND2 j.GND", "j.X uno.A0", "j.Y uno.A1", "j.SW uno.D2"],
+    code("void setup() { pinMode(2, INPUT_PULLUP); Serial.begin(9600); }", "void loop() {", "  Serial.print(\"X=\"); Serial.print(analogRead(A0));", "  Serial.print(\" Y=\"); Serial.print(analogRead(A1));", "  Serial.print(\" SW=\"); Serial.println(digitalRead(2));", "  delay(300);", "}"), "serial:X=512");
+  T(I, "Keypad 4x3", "Reads keys from a 3x4 membrane keypad with the Keypad library.", ["k:keypad"],
+    ["uno.D9 k.R1", "uno.D8 k.R2", "uno.D7 k.R3", "uno.D6 k.R4", "uno.D5 k.C1", "uno.D4 k.C2", "uno.D3 k.C3"],
+    code("#include <Keypad.h>", "Keypad kp(4, 3, \"123456789*0#\", {9, 8, 7, 6}, {5, 4, 3});", "void setup() { Serial.begin(9600); Serial.println(\"press a key\"); }", "void loop() { char k = kp.getKey(); if (k) Serial.println(k); delay(60); }"), "serial:press a key");
+  T(I, "DIP switch reader", "Four DIP switches read as a binary number.", ["d:dipswitch:{\"bits\":[1,0,1,0]}"],
+    ["uno.D2 d.S1", "uno.D3 d.S2", "uno.D4 d.S3", "uno.D5 d.S4"],
+    code("void setup() { for (int p = 2; p <= 5; p++) pinMode(p, INPUT_PULLUP); Serial.begin(9600); }", "void loop() {", "  int v = 0;", "  for (int i = 0; i < 4; i++) if (digitalRead(2 + i) == LOW) v |= (1 << i);", "  Serial.print(\"value=\"); Serial.println(v); delay(400);", "}"), "serial:value=");
+  T(I, "Rotary encoder counter", "KY-040 style encoder counting clicks and the push switch.", ["e:encoder"],
+    ["uno.D2 e.A", "uno.D3 e.B", "uno.D4 e.SW", "uno.5V e.VCC", "uno.GND1 e.GND"],
+    code("volatile int count = 0; int lastA;", "void setup() { pinMode(2, INPUT); pinMode(3, INPUT); pinMode(4, INPUT_PULLUP); Serial.begin(9600); lastA = digitalRead(2); }", "void loop() {", "  int a = digitalRead(2);", "  if (a != lastA && a == HIGH) { if (digitalRead(3) != a) count++; else count--; Serial.println(count); }", "  lastA = a; delay(2);", "  if (digitalRead(4) == LOW) { count = 0; Serial.println(\"reset\"); delay(250); }", "}"), "no-error");
+  T(I, "IR remote decoder", "IRremote receiver printing the pressed key code.", ["ir:ir_receiver"],
+    ["uno.D11 ir.OUT", "uno.GND1 ir.GND", "uno.5V ir.VCC"],
+    code("#include <IRremote.h>", "IRrecv irrecv(11);", "decode_results results;", "void setup() { Serial.begin(9600); irrecv.enableIRIn(); Serial.println(\"IR ready\"); }", "void loop() {", "  if (irrecv.decode(&results)) { Serial.println(results.value, HEX); irrecv.resume(); }", "  delay(100);", "}"), "serial:IR ready");
+  T(I, "IR remote + LED", "The remote controller part feeds codes; the receiver toggles an LED.", ["rem:ir_remote", "ir:ir_receiver", "r:resistor", "led:led"],
+    ["uno.D11 ir.OUT", "uno.GND1 ir.GND", "uno.5V ir.VCC", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND2"],
+    code("#include <IRremote.h>", "IRrecv irrecv(11);", "decode_results results;", "bool on = false;", "void setup() { pinMode(13, OUTPUT); Serial.begin(9600); irrecv.enableIRIn(); Serial.println(\"point the remote\"); }", "void loop() {", "  if (irrecv.decode(&results)) { on = !on; digitalWrite(13, on); Serial.println(results.value, HEX); irrecv.resume(); }", "  delay(80);", "}"), "serial:point the remote", "rem");
+  T(I, "Tilt switch alarm", "A tilt switch lights an LED when the board tips.", ["t:tilt", "r:resistor", "led:led"],
+    ["uno.D2 t.1", "t.2 uno.GND2", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(2, INPUT_PULLUP); pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  bool tilted = digitalRead(2) == LOW;", "  digitalWrite(13, tilted);", "  Serial.println(tilted ? \"TILTED\" : \"level\"); delay(300);", "}"), "serial:level", "t");
+  T(I, "Touch sensor light", "TTP223 capacitive touch pad toggling an LED.", ["tp:touch_ttp", "r:resistor", "led:led"],
+    ["uno.D2 tp.SIG", "uno.5V tp.VCC", "uno.GND2 tp.GND", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(2, INPUT); pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  bool touched = digitalRead(2) == HIGH;", "  digitalWrite(13, touched);", "  Serial.println(touched ? \"touched\" : \"idle\"); delay(300);", "}"), "serial:idle", "tp");
+  T(I, "Reed switch door sensor", "A magnet reed switch reports a door open or closed.", ["rs:reed"],
+    ["uno.D2 rs.1", "rs.2 uno.GND1"],
+    code("void setup() { pinMode(2, INPUT_PULLUP); Serial.begin(9600); }", "void loop() {", "  Serial.println(digitalRead(2) == LOW ? \"door CLOSED\" : \"door OPEN\"); delay(400);", "}"), "serial:door");
+  T(I, "Hall effect magnet detector", "Hall sensor output goes low near a magnet.", ["h:hall"],
+    ["uno.5V h.VCC", "uno.GND1 h.GND", "uno.D2 h.OUT"],
+    code("void setup() { pinMode(2, INPUT); Serial.begin(9600); }", "void loop() {", "  Serial.println(digitalRead(2) ? \"no magnet\" : \"MAGNET\"); delay(400);", "}"), "serial:magnet");
+  T(I, "Voltage divider reader", "Measures a divider output on A0 and converts to volts.", ["vd:voltage_div"],
+    ["uno.5V vd.VCC", "uno.GND1 vd.GND", "vd.OUT uno.A0"],
+    code("void setup() { Serial.begin(9600); }", "void loop() {", "  int raw = analogRead(A0);", "  Serial.print(\"A0=\"); Serial.print(raw); Serial.print(\"  V=\"); Serial.println(raw * 5.0 / 1023.0);", "  delay(400);", "}"), "serial:A0=");
+
+  /* ===================== SENSORS ===================== */
+  var S = "Sensors";
+  T(S, "Ultrasonic distance (HC-SR04)", "Distance in cm printed over Serial.", ["u:sensor_ultra:{\"cm\":42}"],
+    ["uno.5V u.VCC", "uno.D7 u.TRIG", "uno.D8 u.ECHO", "uno.GND1 u.GND"],
+    code("void setup() { pinMode(7, OUTPUT); pinMode(8, INPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(7, LOW); delayMicroseconds(2);", "  digitalWrite(7, HIGH); delayMicroseconds(10); digitalWrite(7, LOW);", "  long us = pulseIn(8, HIGH);", "  Serial.print(us * 0.034 / 2); Serial.println(\" cm\");", "  delay(400);", "}"), "serial:cm");
+  T(S, "Laser-ranging VL53L0X", "Time-of-flight distance over I2C.", ["v:vl53l0x"],
+    ["uno.5V v.VCC", "uno.GND1 v.GND", "uno.SDA v.SDA", "uno.SCL v.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); }", "void loop() {", "  Wire.beginTransmission(0x29);", "  byte err = Wire.endTransmission();", "  Serial.print(\"I2C 0x29 status=\"); Serial.println(err);", "  delay(500);", "}"), "serial:I2C");
+  T(S, "PIR motion alarm", "PIR sensor lights an LED and sounds a buzzer.", ["p:sensor_pir", "r:resistor", "led:led", "bz:buzzer"],
+    ["uno.5V p.VCC", "uno.GND1 p.GND", "uno.D2 p.OUT", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND2", "uno.D6 bz.+", "bz.- uno.GND3"],
+    code("void setup() { pinMode(2, INPUT); pinMode(13, OUTPUT); pinMode(6, OUTPUT); Serial.begin(9600); }", "void loop() {", "  if (digitalRead(2)) { digitalWrite(13, HIGH); tone(6, 880); Serial.println(\"MOTION\"); }", "  else { digitalWrite(13, LOW); noTone(6); Serial.println(\"clear\"); }", "  delay(300);", "}"), "serial:clear", "p");
+  T(S, "IR obstacle sensor", "Digital IR proximity module.", ["s:ir_sensor"],
+    ["uno.5V s.VCC", "uno.GND1 s.GND", "uno.D2 s.OUT"],
+    code("void setup() { pinMode(2, INPUT); Serial.begin(9600); }", "void loop() {", "  Serial.println(digitalRead(2) ? \"clear\" : \"OBSTACLE\"); delay(300);", "}"), "serial:clear");
+  T(S, "DHT22 climate station", "Temperature and humidity with the DHT library.", ["d:sensor_dht"],
+    ["uno.5V d.VCC", "uno.D2 d.DATA", "uno.GND1 d.GND"],
+    code("#include <DHT.h>", "DHT dht(2, DHT22);", "void setup() { Serial.begin(9600); dht.begin(); }", "void loop() {", "  Serial.print(\"T=\"); Serial.print(dht.readTemperature());", "  Serial.print(\"C  H=\"); Serial.print(dht.readHumidity()); Serial.println(\"%\");", "  delay(800);", "}"), "serial:T=");
+  T(S, "DS18B20 thermometer", "1-Wire digital temperature probe.", ["d:ds18b20"],
+    ["uno.5V d.VDD", "uno.D2 d.DATA", "uno.GND1 d.GND"],
+    code("#include <OneWire.h>", "#include <DallasTemperature.h>", "OneWire ow(2); DallasTemperature sensors(&ow);", "void setup() { Serial.begin(9600); sensors.begin(); }", "void loop() { sensors.requestTemperatures(); Serial.print(\"T=\"); Serial.println(sensors.getTempCByIndex(0)); delay(800); }"), "serial:T=");
+  T(S, "LM35 analog thermometer", "LM35 volts to degrees Celsius.", ["l:lm35:{\"celsius\":25}"],
+    ["uno.5V l.VCC", "l.OUT uno.A0", "uno.GND1 l.GND"],
+    code("void setup() { Serial.begin(9600); }", "void loop() {", "  int raw = analogRead(A0);", "  float c = raw * 5.0 / 1023.0 * 100.0;", "  Serial.print(c); Serial.println(\" C\"); delay(500);", "}"), "serial: C");
+  T(S, "Analog temperature sensor", "Generic analog temperature module on A0.", ["t:sensor_temp"],
+    ["uno.5V t.VCC", "t.SIG uno.A0", "uno.GND1 t.GND"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.print(\"raw=\"); Serial.println(analogRead(A0)); delay(400); }"), "serial:raw=");
+  T(S, "NTC thermistor", "Thermistor + fixed divider read on A0.", ["rf:resistor:{\"ohms\":10000}", "th:thermistor"],
+    ["uno.5V rf.1", "rf.2 uno.A0", "rf.2 th.1", "th.2 uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { int raw = analogRead(A0); Serial.print(\"raw=\"); Serial.println(raw); delay(500); }"), "serial:raw=");
+  T(S, "LDR night light", "Light sensor switches an LED when it gets dark.", ["ls:sensor_light:{\"lux\":120}", "r:resistor", "led:led"],
+    ["uno.5V ls.VCC", "ls.SIG uno.A0", "uno.GND1 ls.GND", "uno.D9 r.1", "r.2 led.A", "led.C uno.GND2"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  digitalWrite(9, v < 300);", "  Serial.println(v < 300 ? \"dark -> LED on\" : \"bright\"); delay(400);", "}"), "serial:bright|serial:dark", "ls");
+  T(S, "Photodiode light meter", "Bare photodiode in a transimpedance-style divider.", ["rf:resistor:{\"ohms\":10000}", "pd:photo_diode"],
+    ["uno.5V pd.A", "pd.K rf.1", "rf.1 uno.A0", "rf.2 uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.print(\"light=\"); Serial.println(analogRead(A0)); delay(500); }"), "serial:light=");
+  T(S, "Sound level monitor", "Microphone module level on A0 with a clap detector.", ["s:sensor_sound", "r:resistor", "led:led"],
+    ["uno.5V s.VCC", "s.SIG uno.A0", "uno.GND1 s.GND", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND2"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  digitalWrite(13, v > 400);", "  Serial.print(\"level=\"); Serial.println(v); delay(200);", "}"), "serial:level=", "s");
+  T(S, "Gas sensor alarm", "Generic gas sensor with an alarm buzzer.", ["g:sensor_gas", "bz:buzzer"],
+    ["uno.5V g.VCC", "g.SIG uno.A0", "uno.GND1 g.GND", "uno.D6 bz.+", "bz.- uno.GND2"],
+    code("void setup() { pinMode(6, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  if (v > 500) tone(6, 1000); else noTone(6);", "  Serial.print(\"gas=\"); Serial.println(v); delay(300);", "}"), "serial:gas=", "g");
+  T(S, "MQ-2 smoke detector", "Smoke / LPG sensor analog output.", ["m:mq2"],
+    ["uno.5V m.VCC", "uno.GND1 m.GND", "m.A0 uno.A0"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { int v = analogRead(A0); Serial.print(\"MQ2=\"); Serial.print(v); Serial.println(v > 450 ? \"  SMOKE!\" : \"  ok\"); delay(400); }"), "serial:MQ2=");
+  T(S, "MQ-3 alcohol sensor", "Breath alcohol level on A0.", ["m:mq3"],
+    ["uno.5V m.VCC", "uno.GND1 m.GND", "m.A0 uno.A0"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { int v = analogRead(A0); Serial.print(\"MQ3=\"); Serial.println(v); delay(400); }"), "serial:MQ3=");
+  T(S, "MQ-135 air quality", "Air quality index from the MQ-135.", ["m:mq135"],
+    ["uno.5V m.VCC", "uno.GND1 m.GND", "m.A0 uno.A0"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { int v = analogRead(A0); Serial.print(\"air=\"); Serial.println(v); delay(400); }"), "serial:air=");
+  T(S, "Flame sensor fire alarm", "Flame detector triggering a buzzer.", ["f:flame", "bz:buzzer"],
+    ["uno.5V f.VCC", "f.A0 uno.A0", "uno.GND1 f.GND", "uno.D6 bz.+", "bz.- uno.GND2"],
+    code("void setup() { pinMode(6, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  if (v < 300) { tone(6, 1500); Serial.println(\"FIRE!\"); } else { noTone(6); Serial.println(\"safe\"); }", "  delay(300);", "}"), "serial:safe", "f");
+  T(S, "Soil moisture watering", "Soil sensor drives a pump when dry.", ["so:sensor_soil:{\"value\":600}", "rb:resistor:{\"ohms\":1000}", "q:transistor", "pump:pump"],
+    ["uno.5V so.VCC", "so.SIG uno.A0", "uno.GND1 so.GND", "uno.D8 rb.1", "rb.2 q.B", "q.E uno.GND2", "uno.5V pump.+", "pump.- q.C"],
+    code("void setup() { pinMode(8, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  digitalWrite(8, v > 500);", "  Serial.println(v > 500 ? \"dry -> watering\" : \"moist\"); delay(400);", "}"), "serial:dry", "so");
+  T(S, "Rain sensor wiper", "Rain plate triggers a servo wiper.", ["r:rain:{\"value\":900}", "sv:servo"],
+    ["uno.5V r.VCC", "r.A0 uno.A0", "uno.GND1 r.GND", "uno.D9 sv.SIG", "uno.5V sv.VCC", "uno.GND2 sv.GND"],
+    code("#include <Servo.h>", "Servo wiper;", "void setup() { wiper.attach(9); Serial.begin(9600); }", "void loop() {", "  if (analogRead(A0) > 500) { wiper.write(150); delay(400); wiper.write(30); Serial.println(\"wiping\"); }", "  delay(400);", "}"), "serial:wiping", "sv");
+  T(S, "Water level monitor", "Water level strip with a warning LED.", ["w:water_level:{\"value\":650}", "r:resistor", "led:led"],
+    ["uno.5V w.VCC", "w.SIG uno.A0", "uno.GND1 w.GND", "uno.D13 r.1", "r.2 led.A", "led.C uno.GND2"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() {", "  int v = analogRead(A0);", "  digitalWrite(13, v > 500);", "  Serial.print(\"level=\"); Serial.println(v); delay(300);", "}"), "serial:level=", "w");
+  T(S, "ACS712 current meter", "Hall current sensor read on A0.", ["a:current_acs"],
+    ["uno.5V a.VCC", "a.OUT uno.A0", "uno.GND1 a.GND"],
+    code("void setup() { Serial.begin(9600); }", "void loop() {", "  int raw = analogRead(A0);", "  float amps = (raw - 512) * 5.0 / 1023.0 / 0.185;", "  Serial.print(amps); Serial.println(\" A\"); delay(500);", "}"), "serial: A");
+  T(S, "BMP280 pressure + temperature", "Barometer over I2C (Adafruit_BMP280).", ["b:bmp280"],
+    ["uno.5V b.VCC", "uno.GND1 b.GND", "uno.SDA b.SDA", "uno.SCL b.SCL"],
+    code("#include <Wire.h>", "#include <Adafruit_BMP280.h>", "Adafruit_BMP280 bmp;", "void setup() { Serial.begin(9600); bmp.begin(0x76); }", "void loop() {", "  Serial.print(\"T=\"); Serial.print(bmp.readTemperature());", "  Serial.print(\"C  P=\"); Serial.print(bmp.readPressure() / 100.0); Serial.println(\" hPa\");", "  delay(600);", "}"), "serial:T=");
+  T(S, "MPU6050 motion", "6-axis IMU read over I2C.", ["m:mpu6050"],
+    ["uno.5V m.VCC", "uno.GND1 m.GND", "uno.SDA m.SDA", "uno.SCL m.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0); Wire.endTransmission(); }", "void loop() {", "  Wire.beginTransmission(0x68); Wire.write(0x3B); Wire.endTransmission(false);", "  Wire.requestFrom(0x68, 6);", "  int ax = (Wire.read() << 8) | Wire.read();", "  int ay = (Wire.read() << 8) | Wire.read();", "  int az = (Wire.read() << 8) | Wire.read();", "  Serial.print(\"ax=\"); Serial.print(ax); Serial.print(\" ay=\"); Serial.print(ay); Serial.print(\" az=\"); Serial.println(az);", "  delay(400);", "}"), "serial:ax=");
+  T(S, "MPU9250 9-axis", "Accelerometer + gyro + magnetometer module.", ["m:mpu9250"],
+    ["uno.5V m.VCC", "uno.GND1 m.GND", "uno.SDA m.SDA", "uno.SCL m.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); }", "void loop() {", "  Wire.beginTransmission(0x68); byte e = Wire.endTransmission();", "  Serial.print(\"MPU9250 status=\"); Serial.println(e); delay(500);", "}"), "serial:MPU9250");
+  T(S, "TCS34725 color sensor", "RGB colour sensor over I2C.", ["c:tcs34725"],
+    ["uno.5V c.VCC", "uno.GND1 c.GND", "uno.SDA c.SDA", "uno.SCL c.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); }", "void loop() {", "  Wire.beginTransmission(0x29); byte e = Wire.endTransmission();", "  Serial.print(\"TCS34725 status=\"); Serial.println(e); delay(500);", "}"), "serial:TCS34725");
+  T(S, "DS3231 real-time clock", "RTC module over I2C.", ["r:rtc_ds3231"],
+    ["uno.5V r.VCC", "uno.GND1 r.GND", "uno.SDA r.SDA", "uno.SCL r.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); }", "void loop() {", "  Wire.beginTransmission(0x68); byte e = Wire.endTransmission();", "  Serial.print(\"DS3231 status=\"); Serial.println(e); delay(1000);", "}"), "serial:DS3231");
+  T(S, "GPS NEO-6M NMEA", "GPS module streaming over serial pins.", ["g:gps_neo"],
+    ["uno.5V g.VCC", "uno.GND1 g.GND", "g.TX uno.D4", "g.RX uno.D3"],
+    code("#include <SoftwareSerial.h>", "SoftwareSerial gps(4, 3);", "void setup() { Serial.begin(9600); gps.begin(9600); Serial.println(\"GPS listening\"); }", "void loop() { while (gps.available()) Serial.write(gps.read()); delay(50); }"), "serial:GPS listening");
+  /* ===================== DISPLAYS ===================== */
+  var D = "Displays";
+  T(D, "LCD 16x2 parallel", "LiquidCrystal in 4-bit mode with a seconds counter.", ["l:lcd1602"],
+    ["uno.5V l.VCC", "uno.GND1 l.GND", "uno.D12 l.RS", "uno.D11 l.E", "uno.D5 l.D4", "uno.D4 l.D5", "uno.D3 l.D6", "uno.D2 l.D7"],
+    code("#include <LiquidCrystal.h>", "LiquidCrystal lcd(12, 11, 5, 4, 3, 2);", "void setup() { lcd.begin(16, 2); lcd.print(\"Hello Wokwi\"); }", "void loop() { lcd.setCursor(0, 1); lcd.print(\"up \"); lcd.print(millis() / 1000); lcd.print(\" s   \"); delay(250); }"), "prop:line1.indexOf('Hello')>=0");
+  T(D, "LCD 16x2 over I2C", "LiquidCrystal_I2C backpack at 0x27.", ["l:lcd_i2c"],
+    ["uno.5V l.VCC", "uno.GND1 l.GND", "uno.SDA l.SDA", "uno.SCL l.SCL"],
+    code("#include <Wire.h>", "#include <LiquidCrystal_I2C.h>", "LiquidCrystal_I2C lcd(0x27, 16, 2);", "void setup() { lcd.init(); lcd.backlight(); lcd.print(\"I2C LCD ready\"); }", "void loop() { lcd.setCursor(0, 1); lcd.print(millis() / 1000); lcd.print(\" s\"); delay(300); }"), "prop:line1.indexOf('I2C')>=0");
+  T(D, "LCD 20x4 over I2C", "Four-line character display.", ["l:lcd2004"],
+    ["uno.5V l.VCC", "uno.GND1 l.GND", "uno.SDA l.SDA", "uno.SCL l.SCL"],
+    code("#include <Wire.h>", "#include <LiquidCrystal_I2C.h>", "LiquidCrystal_I2C lcd(0x27, 20, 4);", "void setup() {", "  lcd.init(); lcd.backlight();", "  lcd.setCursor(0, 0); lcd.print(\"Line 1: Eagle\");", "  lcd.setCursor(0, 1); lcd.print(\"Line 2: 20x4 LCD\");", "  lcd.setCursor(0, 2); lcd.print(\"Line 3: I2C 0x27\");", "  lcd.setCursor(0, 3); lcd.print(\"Line 4: works!\");", "}", "void loop() { delay(500); }"), "prop:line1.indexOf('Eagle')>=0");
+  T(D, "OLED SSD1306 (I2C)", "128x64 OLED text with Adafruit_SSD1306.", ["o:oled"],
+    ["uno.5V o.VCC", "uno.GND1 o.GND", "uno.SDA o.SDA", "uno.SCL o.SCL"],
+    code("#include <Wire.h>", "#include <Adafruit_SSD1306.h>", "Adafruit_SSD1306 display(128, 64, &Wire, -1);", "void setup() {", "  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);", "  display.clearDisplay(); display.setTextSize(1); display.setTextColor(WHITE);", "  display.setCursor(0, 0); display.println(\"OLED live\"); display.println(\"SSD1306 128x64\");", "  display.display();", "}", "void loop() { delay(500); }"), "no-error");
+  T(D, "OLED SSD1306 (SPI)", "SPI wiring variant of the OLED.", ["o:oled_spi"],
+    ["uno.GND1 o.GND", "uno.5V o.VCC", "uno.D13 o.SCL", "uno.D11 o.SDA", "uno.D8 o.RES", "uno.D9 o.DC", "uno.D10 o.CS"],
+    code("#include <SPI.h>", "#include <Adafruit_SSD1306.h>", "Adafruit_SSD1306 display(128, 64, &SPI, 9, 8, 10);", "void setup() {", "  display.begin(SSD1306_SWITCHCAPVCC);", "  display.clearDisplay(); display.setTextColor(WHITE);", "  display.setCursor(0, 0); display.println(\"SPI OLED\");", "  display.display();", "}", "void loop() { delay(500); }"), "no-error");
+  T(D, "TFT ILI9341 text", "2.4 inch colour TFT status screen.", ["t:tft_display"],
+    ["uno.5V t.VCC", "uno.GND1 t.GND", "uno.D10 t.CS", "uno.D8 t.RST", "uno.D9 t.DC", "uno.D11 t.SDA", "uno.D13 t.SCL"],
+    code("#include <SPI.h>", "void setup() {", "  pinMode(10, OUTPUT); pinMode(9, OUTPUT); pinMode(8, OUTPUT);", "  SPI.begin(); Serial.begin(9600); Serial.println(\"TFT init\");", "}", "void loop() { digitalWrite(10, LOW); SPI.transfer(0x2A); digitalWrite(10, HIGH); delay(300); }"), "serial:TFT init");
+  T(D, "7-segment counter", "One digit counting 0-9 on a common-cathode display.", ["s:sevenseg"],
+    ["uno.D2 s.A", "uno.D3 s.B", "uno.D4 s.C", "uno.D5 s.D", "uno.D6 s.E", "uno.D7 s.F", "uno.D8 s.G", "uno.GND1 s.COM"],
+    code("const byte seg[10] = {0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F};", "void setup() { for (int p = 2; p <= 8; p++) pinMode(p, OUTPUT); Serial.begin(9600); }", "int n = 0;", "void loop() {", "  for (int b = 0; b < 7; b++) digitalWrite(2 + b, (seg[n] >> b) & 1);", "  Serial.println(n); delay(300);", "  n = (n + 1) % 10;", "}"), "serial:2");
+  T(D, "4-digit 7-segment", "Four-digit display multiplexed with digit-select pins.", ["s:sevenseg4"],
+    ["uno.D2 s.A", "uno.D3 s.B", "uno.D4 s.C", "uno.D5 s.D", "uno.D6 s.E", "uno.D7 s.F", "uno.D8 s.G", "uno.D9 s.D1", "uno.D10 s.D2", "uno.D11 s.D3", "uno.D12 s.D4", "uno.GND1 s.COM"],
+    code("const byte seg[10] = {0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F};", "int digits[4] = {1, 2, 3, 4};", "void setup() { for (int p = 2; p <= 12; p++) pinMode(p, OUTPUT); Serial.begin(9600); Serial.println(\"1234\"); }", "int d = 0;", "void loop() {", "  for (int p = 9; p <= 12; p++) digitalWrite(p, LOW);", "  for (int b = 0; b < 7; b++) digitalWrite(2 + b, (seg[digits[d]] >> b) & 1);", "  digitalWrite(9 + d, HIGH); delay(4);", "  d = (d + 1) % 4;", "}"), "no-error");
+  T(D, "8x8 LED matrix (MAX7219)", "Scrolling pattern on a MAX7219 matrix.", ["m:matrix8"],
+    ["uno.D11 m.DIN", "uno.D10 m.CS", "uno.D13 m.CLK", "uno.5V m.VCC", "uno.GND1 m.GND"],
+    code("#include <SPI.h>", "const int CS = 10;", "void send(byte reg, byte val) { digitalWrite(CS, LOW); SPI.transfer(reg); SPI.transfer(val); digitalWrite(CS, HIGH); }", "void setup() { pinMode(CS, OUTPUT); SPI.begin(); send(0x0F, 0); send(0x0C, 1); send(0x0B, 7); send(0x0A, 8); Serial.begin(9600); Serial.println(\"matrix ready\"); }", "void loop() {", "  byte heart[8] = {0x66,0xFF,0xFF,0xFF,0x7E,0x3C,0x18,0x00};", "  for (int r = 0; r < 8; r++) send(r + 1, heart[r]);", "  delay(500);", "}"), "serial:matrix ready");
+
+  /* ===================== PASSIVE & POWER ===================== */
+  var P = "Passive & Power";
+  T(P, "Resistor colour-code divider", "Two resistors form a divider; A0 reads the midpoint.", ["r1:resistor:{\"ohms\":10000}", "r2:resistor:{\"ohms\":10000}"],
+    ["uno.5V r1.1", "r1.2 uno.A0", "r1.2 r2.1", "r2.2 uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { int v = analogRead(A0); Serial.print(\"mid=\"); Serial.print(v); Serial.print(\" (\"); Serial.print(v * 5.0 / 1023.0); Serial.println(\" V)\"); delay(500); }"), "serial:mid=");
+  T(P, "Capacitor RC charge", "Charge a capacitor through a resistor and sample it on A0.", ["r:resistor:{\"ohms\":10000}", "c:capacitor"],
+    ["uno.D8 r.1", "r.2 uno.A0", "r.2 c.+", "c.- uno.GND1"],
+    code("void setup() { pinMode(8, OUTPUT); Serial.begin(9600); }", "void loop() {", "  digitalWrite(8, HIGH);", "  for (int i = 0; i < 6; i++) { Serial.println(analogRead(A0)); delay(200); }", "  digitalWrite(8, LOW); delay(800);", "}"), "no-error");
+  T(P, "Diode polarity protection", "A diode in series blocks reverse current to an LED.", ["d:diode", "r:resistor", "led:led"],
+    ["uno.D13 d.A", "d.K r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(13, HIGH); delay(500); digitalWrite(13, LOW); delay(500); Serial.println(\"blink via diode\"); }"), "serial:blink");
+  T(P, "Zener voltage clamp", "5.1 V zener clamping an analog input.", ["r:resistor:{\"ohms\":1000}", "z:zener"],
+    ["uno.5V r.1", "r.2 uno.A0", "r.2 z.K", "z.A uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.print(\"A0=\"); Serial.println(analogRead(A0)); delay(500); }"), "serial:A0=");
+  T(P, "Inductor flyback demo", "Inductor in the load path of a switched LED.", ["l:inductor", "r:resistor", "led:led"],
+    ["uno.D13 l.1", "l.2 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(13, HIGH); delay(400); digitalWrite(13, LOW); delay(400); Serial.println(\"switch\"); }"), "serial:switch");
+  T(P, "Crystal oscillator clock", "16 MHz crystal in a clock reference circuit; prints elapsed time.", ["x:crystal"],
+    ["x.1 uno.D2", "x.2 uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.print(\"millis=\"); Serial.println(millis()); delay(500); }"), "serial:millis=");
+  T(P, "Fused LED circuit", "A fuse protecting an LED branch.", ["f:fuse", "r:resistor", "led:led"],
+    ["uno.D13 f.1", "f.2 r.1", "r.2 led.A", "led.C uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(13, !digitalRead(13)); Serial.println(\"toggle\"); delay(500); }"), "serial:toggle");
+  T(P, "NPN transistor switch", "Transistor switches an LED from a weak pin signal.", ["rb:resistor:{\"ohms\":1000}", "q:transistor", "rc:resistor", "led:led"],
+    ["uno.D9 rb.1", "rb.2 q.B", "q.E uno.GND1", "uno.5V rc.1", "rc.2 led.A", "led.C q.C"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(9, HIGH); Serial.println(\"on\"); delay(600); digitalWrite(9, LOW); Serial.println(\"off\"); delay(600); }"), "serial:on");
+  T(P, "Optocoupler isolation", "Optoisolator isolating a 5 V signal from the load side.", ["r1:resistor", "o:optoisolator", "r2:resistor", "led:led"],
+    ["uno.D9 r1.1", "r1.2 o.A", "o.C uno.GND1", "uno.5V r2.1", "r2.2 led.A", "led.C o.C2", "o.E uno.GND2"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(9, HIGH); delay(600); digitalWrite(9, LOW); delay(600); Serial.println(\"isolated blink\"); }"), "serial:isolated");
+  T(P, "Ground reference", "A dedicated ground symbol tied to the Uno ground.", ["g:gnd", "r:resistor", "led:led"],
+    ["uno.D13 r.1", "r.2 led.A", "led.C g.GND", "g.GND uno.GND1"],
+    code("void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(13, HIGH); delay(500); digitalWrite(13, LOW); delay(500); Serial.println(\"gnd ok\"); }"), "serial:gnd ok");
+  T(P, "5 V rail supply", "External 5 V source powering an LED.", ["v:power5v", "r:resistor", "led:led", "g:gnd"],
+    ["v.VCC r.1", "r.2 led.A", "led.C g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"powered from 5V rail\"); delay(600); }"), "serial:powered");
+  T(P, "3.3 V rail supply", "3.3 V source powering a sensor-style load.", ["v:power3v3", "r:resistor", "led:led", "g:gnd"],
+    ["v.VCC r.1", "r.2 led.A", "led.C g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"3V3 rail\"); delay(600); }"), "serial:3V3");
+  T(P, "12 V rail with buck converter", "12 V stepped down to 5 V with a buck converter.", ["v:power12v", "b:buck_conv", "r:resistor", "led:led", "g:gnd"],
+    ["v.VCC b.IN", "b.GND g.GND", "b.OUT r.1", "r.2 led.A", "led.C g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"12V -> 5V\"); delay(600); }"), "serial:12V");
+  T(P, "Boost converter", "3.7 V boosted for a load.", ["bat:battery_lipo", "b:boost_conv", "r:resistor", "led:led", "g:gnd"],
+    ["bat.POS b.IN", "bat.NEG b.GND", "b.GND g.GND", "b.OUT r.1", "r.2 led.A", "led.C g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"boost 3.7V -> 5V\"); delay(600); }"), "serial:boost");
+  T(P, "9 V battery supply", "9 V battery feeding a resistor and LED.", ["bat:battery9v", "r:resistor:{\"ohms\":470}", "led:led", "g:gnd"],
+    ["bat.POS r.1", "r.2 led.A", "led.C g.GND", "bat.NEG g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"9V battery circuit\"); delay(600); }"), "serial:9V");
+  T(P, "AA battery pack", "4xAA pack powering an LED.", ["bat:aa_pack", "r:resistor:{\"ohms\":330}", "led:led", "g:gnd"],
+    ["bat.+ r.1", "r.2 led.A", "led.C g.GND", "bat.- g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"AA pack\"); delay(600); }"), "serial:AA");
+  T(P, "Li-ion cell", "18650 cell powering an LED.", ["bat:liion", "r:resistor:{\"ohms\":330}", "led:led", "g:gnd"],
+    ["bat.+ r.1", "r.2 led.A", "led.C g.GND", "bat.- g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"liion cell\"); delay(600); }"), "serial:liion");
+  T(P, "LiPo cell", "3.7 V LiPo powering an LED.", ["bat:battery_lipo", "r:resistor:{\"ohms\":150}", "led:led", "g:gnd"],
+    ["bat.POS r.1", "r.2 led.A", "led.C g.GND", "bat.NEG g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"LiPo cell\"); delay(600); }"), "serial:LiPo");
+  T(P, "USB 5 V supply", "USB supply module powering an LED.", ["u:usb_supply", "r:resistor", "led:led", "g:gnd"],
+    ["u.5V r.1", "r.2 led.A", "led.C g.GND", "u.GND g.GND", "g.GND uno.GND1"],
+    code("void setup() { Serial.begin(9600); }", "void loop() { Serial.println(\"USB powered\"); delay(600); }"), "serial:USB");
+  T(P, "Transformer isolation", "Transformer primary/secondary connected to separate nets.", ["t:transformer", "r:resistor", "g:gnd"],
+    ["uno.D9 t.PRI1", "t.PRI2 uno.GND1", "t.SEC1 r.1", "r.2 g.GND", "t.SEC2 g.GND"],
+    code("void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }", "void loop() { digitalWrite(9, HIGH); delay(300); digitalWrite(9, LOW); delay(300); Serial.println(\"pulse primary\"); }"), "serial:pulse");
+
+  /* ===================== ICs & MODULES ===================== */
+  var M = "ICs & Modules";
+  T(M, "NE555 astable blinker", "A 555 timer producing a clock that blinks an LED.", ["t:ic_555", "r:resistor", "led:led"],
+    ["uno.5V t.VCC", "uno.GND1 t.GND", "uno.5V t.RST", "t.OUT r.1", "r.2 led.A", "led.C uno.GND2", "t.TRG uno.D2"],
+    code("void setup() { pinMode(2, INPUT); Serial.begin(9600); }", "void loop() { Serial.print(\"555 out edge: \"); Serial.println(digitalRead(2)); delay(250); }"), "serial:555");
+  T(M, "74HC595 shift register", "Drive 8 LEDs with three pins.", ["sr:shift595", "l0:led", "r0:resistor"],
+    ["uno.D2 sr.SER", "uno.D3 sr.RCLK", "uno.D4 sr.SRCLK", "uno.5V sr.VCC", "uno.GND1 sr.GND", "sr.Q0 r0.1", "r0.2 l0.A", "l0.C uno.GND2"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(3, OUTPUT); pinMode(4, OUTPUT); Serial.begin(9600); }", "void loop() {", "  for (int i = 0; i < 8; i++) {", "    digitalWrite(3, LOW); shiftOut(2, 4, MSBFIRST, 1 << i); digitalWrite(3, HIGH);", "    Serial.println(1 << i); delay(300);", "  }", "}"), "serial:1");
+  T(M, "CD4051 analog multiplexer", "Read eight analog channels through one pin.", ["mx:mux4051"],
+    ["uno.A0 mx.COM", "uno.D2 mx.S0", "uno.D3 mx.S1", "uno.D4 mx.S2"],
+    code("void setup() { for (int p = 2; p <= 4; p++) pinMode(p, OUTPUT); Serial.begin(9600); }", "void loop() {", "  for (int ch = 0; ch < 8; ch++) {", "    digitalWrite(2, ch & 1); digitalWrite(3, (ch >> 1) & 1); digitalWrite(4, (ch >> 2) & 1);", "    delay(5); Serial.print(\"ch\"); Serial.print(ch); Serial.print(\"=\"); Serial.println(analogRead(A0));", "  }", "  delay(600);", "}"), "serial:ch0=");
+  T(M, "AND gate truth table", "74HC08 AND gate driven by two pins.", ["g:ic_and"],
+    ["uno.D2 g.A", "uno.D3 g.B", "g.Y uno.D4"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(3, OUTPUT); pinMode(4, INPUT); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) {", "    digitalWrite(2, a); digitalWrite(3, b); delay(50);", "    Serial.print(a); Serial.print(\" AND \"); Serial.print(b); Serial.print(\" = \"); Serial.println(digitalRead(4)); delay(300);", "  }", "}"), "serial:AND");
+  T(M, "NAND gate truth table", "74HC00 NAND gate.", ["g:ic_nand"],
+    ["uno.D2 g.A", "uno.D3 g.B", "g.Y uno.D4"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(3, OUTPUT); pinMode(4, INPUT); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) {", "    digitalWrite(2, a); digitalWrite(3, b); delay(50);", "    Serial.print(a); Serial.print(\" NAND \"); Serial.print(b); Serial.print(\" = \"); Serial.println(digitalRead(4)); delay(300);", "  }", "}"), "serial:NAND");
+  T(M, "OR gate truth table", "74HC32 OR gate.", ["g:ic_or"],
+    ["uno.D2 g.A", "uno.D3 g.B", "g.Y uno.D4"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(3, OUTPUT); pinMode(4, INPUT); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) {", "    digitalWrite(2, a); digitalWrite(3, b); delay(50);", "    Serial.print(a); Serial.print(\" OR \"); Serial.print(b); Serial.print(\" = \"); Serial.println(digitalRead(4)); delay(300);", "  }", "}"), "serial:OR");
+  T(M, "XOR gate truth table", "74HC86 XOR gate.", ["g:ic_xor"],
+    ["uno.D2 g.A", "uno.D3 g.B", "g.Y uno.D4"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(3, OUTPUT); pinMode(4, INPUT); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) {", "    digitalWrite(2, a); digitalWrite(3, b); delay(50);", "    Serial.print(a); Serial.print(\" XOR \"); Serial.print(b); Serial.print(\" = \"); Serial.println(digitalRead(4)); delay(300);", "  }", "}"), "serial:XOR");
+  T(M, "NOT gate inverter", "74HC04 inverter.", ["g:ic_not"],
+    ["uno.D2 g.A", "g.Y uno.D4"],
+    code("void setup() { pinMode(2, OUTPUT); pinMode(4, INPUT); Serial.begin(9600); }", "void loop() {", "  for (int a = 0; a < 2; a++) { digitalWrite(2, a); delay(50); Serial.print(\"NOT \"); Serial.print(a); Serial.print(\" = \"); Serial.println(digitalRead(4)); delay(400); }", "}"), "serial:NOT");
+  T(M, "HC-05 Bluetooth echo", "Bluetooth serial module over SoftwareSerial.", ["b:hc05"],
+    ["uno.5V b.VCC", "uno.GND1 b.GND", "b.TXD uno.D10", "b.RXD uno.D11"],
+    code("#include <SoftwareSerial.h>", "SoftwareSerial bt(10, 11);", "void setup() { Serial.begin(9600); bt.begin(9600); Serial.println(\"BT ready\"); bt.println(\"hello\"); }", "void loop() { if (bt.available()) Serial.write(bt.read()); if (Serial.available()) bt.write(Serial.read()); delay(10); }"), "serial:BT ready");
+  T(M, "SIM800L GSM modem", "AT commands to a GSM module.", ["g:sim800l"],
+    ["uno.5V g.VCC", "uno.GND1 g.GND", "g.TXD uno.D10", "g.RXD uno.D11"],
+    code("#include <SoftwareSerial.h>", "SoftwareSerial gsm(10, 11);", "void setup() { Serial.begin(9600); gsm.begin(9600); Serial.println(\"GSM AT\"); gsm.println(\"AT\"); }", "void loop() { while (gsm.available()) Serial.write(gsm.read()); delay(10); }"), "serial:GSM AT");
+  T(M, "NRF24L01 radio", "2.4 GHz transceiver on SPI.", ["n:nrf24"],
+    ["uno.D9 n.CE", "uno.D10 n.CSN", "uno.D13 n.SCK", "uno.D11 n.MOSI", "uno.D12 n.MISO", "uno.5V n.VCC", "uno.GND1 n.GND"],
+    code("#include <SPI.h>", "void setup() { pinMode(10, OUTPUT); pinMode(9, OUTPUT); SPI.begin(); Serial.begin(9600); Serial.println(\"nRF24 SPI up\"); }", "void loop() { digitalWrite(10, LOW); byte r = SPI.transfer(0xFF); digitalWrite(10, HIGH); delay(500); }"), "serial:nRF24");
+  T(M, "RC522 RFID reader", "MFRC522 reader on SPI.", ["r:rc522"],
+    ["uno.D10 r.SDA", "uno.D13 r.SCK", "uno.D11 r.MOSI", "uno.D12 r.MISO", "uno.5V r.VCC", "uno.GND1 r.GND"],
+    code("#include <SPI.h>", "void setup() { pinMode(10, OUTPUT); SPI.begin(); Serial.begin(9600); Serial.println(\"RFID ready\"); }", "void loop() { delay(500); }"), "serial:RFID");
+  T(M, "SD card logger", "microSD module on SPI.", ["s:sd_module"],
+    ["uno.D10 s.CS", "uno.D13 s.SCK", "uno.D11 s.MOSI", "uno.D12 s.MISO", "uno.5V s.VCC", "uno.GND1 s.GND"],
+    code("#include <SPI.h>", "void setup() { pinMode(10, OUTPUT); SPI.begin(); Serial.begin(9600); Serial.println(\"SD init\"); }", "void loop() { delay(500); }"), "serial:SD");
+  T(M, "Ethernet module", "ENC28J60 style Ethernet on SPI.", ["e:eth_mod"],
+    ["uno.D10 e.SS", "uno.D13 e.SCK", "uno.D11 e.MOSI", "uno.D12 e.MISO", "uno.5V e.VCC", "uno.GND1 e.GND"],
+    code("#include <SPI.h>", "void setup() { pinMode(10, OUTPUT); SPI.begin(); Serial.begin(9600); Serial.println(\"ETH init\"); }", "void loop() { delay(500); }"), "serial:ETH");
+  T(M, "CAN bus module", "MCP2515 style CAN transceiver.", ["c:can_mod"],
+    ["uno.5V c.VCC", "uno.GND1 c.GND", "uno.D3 c.CTX", "uno.D2 c.CRX"],
+    code("void setup() { Serial.begin(9600); pinMode(3, OUTPUT); Serial.println(\"CAN ready\"); }", "void loop() { digitalWrite(3, !digitalRead(3)); delay(500); }"), "serial:CAN");
+  T(M, "RS485 transceiver", "RS485 half-duplex link.", ["r:rs485_mod"],
+    ["uno.5V r.VCC", "uno.GND1 r.GND", "uno.D3 r.DI", "uno.D2 r.RO"],
+    code("void setup() { Serial.begin(9600); pinMode(3, OUTPUT); Serial.println(\"RS485 ready\"); }", "void loop() { digitalWrite(3, !digitalRead(3)); delay(500); }"), "serial:RS485");
+  T(M, "Cloud IoT module", "ESP-style IoT bridge on I2C.", ["c:cloud_iot"],
+    ["uno.5V c.VCC", "uno.GND1 c.GND", "uno.SDA c.SDA", "uno.SCL c.SCL"],
+    code("#include <Wire.h>", "void setup() { Wire.begin(); Serial.begin(9600); Serial.println(\"IoT bridge up\"); }", "void loop() { Wire.beginTransmission(0x30); Wire.write(1); Wire.endTransmission(); delay(800); }"), "serial:IoT");
+  function reg() {
+    if (!root.E113 || !root.E113.add) return false;
+    LIST.forEach(function (x) { root.E113.add({ cat: "Parts: " + x.cat, name: x.name, desc: x.desc, parts: x.parts, code: x.code, circuit: x.circuit, expect: x.expect, subject: x.subject }); });
+    return true;
+  }
+  if (!reg()) { var n = 0, iv = setInterval(function () { if (reg() || ++n > 40) clearInterval(iv); }, 250); }
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<script id="e116-live-fx2">
+/* E116 - Live visuals for the remaining dynamic parts (pump flow, reed/hall field, matrix frames, power rails,
+   logic-gate/555/shift-register outputs, motor driver channels, IMU tilt, comms activity, keypad/IR/SD flashes ...).
+   Same idea as E115, same props / pin state; skips types E115 already animates. */
+(function (root) {
+  "use strict";
+  if (root.E116) return;
+  var D = root.document;
+  var css = D.createElement("style");
+  css.textContent = "@keyframes fx116flow{to{stroke-dashoffset:-12}}@keyframes fx116blink{0%,50%{opacity:1}51%,100%{opacity:.12}}@keyframes fx116glow{0%,100%{opacity:.35}50%{opacity:.9}}@keyframes fx116tick{0%,100%{transform:translateX(-1px)}50%{transform:translateX(1px)}}" +
+    ".fx116 .a{animation:fx116blink var(--d,1s) steps(1) infinite}.fx116 .g{animation:fx116glow 1.2s ease-in-out infinite}.fx116 .f{stroke-dasharray:4 4;animation:fx116flow .5s linear infinite}.fx116 text{font:bold 6.5px Consolas,Menlo,monospace}";
+  D.head.appendChild(css);
+  function P(c, k, d) { var v = c.props && c.props[k]; return v == null ? d : v; }
+  function run() { return !!root.running; }
+  function num(v, d) { v = +v; return isFinite(v) ? v : d; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function f1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+  function drv(c, p) { try { return !!root.isPinDrivenHigh(c, p); } catch (e) { return false; } }
+  function chip(x, y, w, t, col) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="9" rx="2" fill="#0b1220" stroke="#334155" stroke-width=".6" opacity=".92"/><text x="' + (x + w / 2) + '" y="' + (y + 6.9) + '" text-anchor="middle" fill="' + (col || "#7dd3fc") + '">' + t + "</text>";
+  }
+  function led(x, y, col, onv, blink) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="2.6" fill="' + (onv ? col : "#1f2937") + '"' + (onv && blink ? ' class="a" style="--d:' + blink + 's"' : "") + "/>" + (onv ? '<circle cx="' + x + '" cy="' + y + '" r="5.5" fill="' + col + '" opacity=".3" class="g"/>' : "");
+  }
+  var FX = {}, LAST = {}; function def(t, f) { t.split(",").forEach(function (k) { FX[k] = f; }); }
+  var key = { v: 0 };
+  def("pump", function (c, W, H) {
+    var a = !!P(c, "on", false) || num(P(c, "_e38Level", 0), 0) > 0; if (!a) return chip(W / 2 - 14, H - 10, 28, "off", "#64748b");
+    return '<path d="M4 ' + H * .55 + ' H' + (W - 4) + '" stroke="#38bdf8" stroke-width="3" fill="none" class="f" opacity=".85"/><path d="M' + (W - 10) + ' ' + (H * .55 - 4) + ' l6 4 l-6 4z" fill="#38bdf8"/>' + chip(W / 2 - 14, H - 10, 28, "pumping", "#7dd3fc");
+  });
+  def("hall", function (c, W, H) {
+    var f = num(P(c, "field", 0), 0), k = clamp(Math.abs(f) / 100, 0, 1), s = "";
+    for (var i = 0; i < 3; i++) s += '<path d="M' + (6 + i * 4) + ' ' + (H / 2 - 8 - i * 2) + ' q-' + (6 + i * 2) + ' ' + (8 + i * 2) + ' 0 ' + (16 + i * 4) + '" fill="none" stroke="' + (f >= 0 ? "#f87171" : "#60a5fa") + '" stroke-width="1.1" opacity="' + (k * (.9 - i * .2)).toFixed(2) + '"/>';
+    return s + chip(W / 2 - 15, H - 10, 30, Math.round(f) + " mT", f >= 0 ? "#fca5a5" : "#93c5fd");
+  });
+  def("reed", function (c, W, H) {
+    var cl = !!P(c, "closed", false), m = !!P(c, "magnet", false);
+    return '<path d="M8 ' + H / 2 + ' H' + (W / 2 - 4) + '" stroke="#e2e8f0" stroke-width="1.6"/><path d="M' + (W - 8) + ' ' + H / 2 + ' H' + (W / 2 + 4) + '" stroke="#e2e8f0" stroke-width="1.6"/><path d="M' + (W / 2 - 4) + ' ' + H / 2 + ' L' + (cl ? W / 2 + 4 : W / 2 + 3) + ' ' + (cl ? H / 2 : H / 2 - 6) + '" stroke="' + (cl ? "#22c55e" : "#e2e8f0") + '" stroke-width="1.8"/>' + (m ? '<rect x="' + (W / 2 - 7) + '" y="1" width="14" height="5" fill="#ef4444"/><rect x="' + (W / 2 - 7) + '" y="6" width="14" height="4" fill="#3b82f6"/>' : "") + chip(W / 2 - 14, H - 9, 28, cl ? "CLOSED" : "open", cl ? "#86efac" : "#94a3b8");
+  });
+  def("photo_diode", function (c, W, H) {
+    var lx = num(P(c, "lux", 0), 0), k = clamp(lx / 1000, 0, 1), s = "";
+    for (var i = 0; i < 3; i++) s += '<line x1="' + (6 + i * 7) + '" y1="-4" x2="' + (10 + i * 7) + '" y2="2" stroke="#fde047" stroke-width="1.1" opacity="' + (.15 + k * .8) + '"/>';
+    return s;
+  });
+  def("thermistor", function (c, W, H) { var t = num(P(c, "celsius", 25), 25); return chip(W / 2 - 14, -10, 28, f1(t) + "C", "hsl(" + Math.round(220 - 220 * clamp((t + 10) / 90, 0, 1)) + ",85%,60%)"); });
+  def("voltage_div", function (c, W, H) { return chip(W / 2 - 14, H - 10, 28, f1(num(P(c, "volts", 0), 0)) + " V", "#fcd34d"); });
+  def("trimpot", function (c, W, H) { var k = clamp(num(P(c, "value", 512), 512) / 1023, 0, 1); return '<g transform="translate(' + W / 2 + ' ' + H * .45 + ') rotate(' + (-135 + 270 * k) + ')"><line x1="0" y1="0" x2="0" y2="-9" stroke="#f8fafc" stroke-width="1.6" stroke-linecap="round"/></g>' + chip(W / 2 - 12, H - 9, 24, String(Math.round(k * 100)) + "%", "#7dd3fc"); });
+  def("mpu6050,mpu9250", function (c, W, H) {
+    var ax = clamp(num(P(c, "ax", 0), 0) / 2, -1, 1), ay = clamp(num(P(c, "ay", 0), 0) / 2, -1, 1), az = num(P(c, "az", 1), 1);
+    return '<g transform="translate(' + (W - 14) + ' 14)"><circle r="10" fill="#0b1220" stroke="#334155" stroke-width=".7" opacity=".9"/><circle cx="' + ax * 7 + '" cy="' + -ay * 7 + '" r="2.6" fill="#38bdf8"/></g>' + chip(2, H - 10, W - 4, "Z " + f1(az) + "g", "#7dd3fc");
+  });
+  def("matrix8", function (c, W, H) {
+    var fr = P(c, "frame", []), s = "", op = c.props.shutdown ? 0 : clamp(0.35 + num(c.props.intensity, 8) / 15 * 0.65, 0.35, 1), cw = (W - 12) / 8, ch = (H - 24) / 8;
+    for (var r = 0; r < 8; r++) { var row = fr[r] != null ? fr[r] : 0, bits = typeof row === "number" ? row : parseInt(row, 2) || 0; for (var q = 0; q < 8; q++) if ((bits >> (7 - q)) & 1) s += '<circle cx="' + (6 + q * cw + cw / 2) + '" cy="' + (6 + r * ch + ch / 2) + '" r="' + Math.min(cw, ch) * .38 + '" fill="#ef4444" opacity="' + op + '"/>'; }
+    if (c.props.test) for (var u = 0; u < 8; u++) for (var v = 0; v < 8; v++) s += '<circle cx="' + (6 + v * cw + cw / 2) + '" cy="' + (6 + u * ch + ch / 2) + '" r="' + Math.min(cw, ch) * .38 + '" fill="#ef4444"/>';
+    return s;
+  });
+  def("l298n", function (c, W, H) {
+    var a = drv(c, "IN1"), b = drv(c, "IN2"), d = drv(c, "IN3"), e = drv(c, "IN4");
+    return led(8, 8, "#22c55e", a || b, 0) + led(W - 8, 8, "#22c55e", d || e, 0) + chip(2, H - 10, 26, a ? ">>" : b ? "<<" : "--", "#7dd3fc") + chip(W - 28, H - 10, 26, d ? ">>" : e ? "<<" : "--", "#7dd3fc");
+  });
+  def("power5v,power12v,power3v3,battery9v,aa_pack,liion,battery_lipo,usb_supply", function (c, W, H) {
+    var v = num(P(c, "volts", { power5v: 5, power12v: 12, power3v3: 3.3, battery9v: 9, aa_pack: 4.8, liion: 3.7, battery_lipo: 3.7, usb_supply: 5 }[c.type] || 0), 0);
+    return led(7, 7, "#22c55e", run(), 0) + chip(W / 2 - 14, H - 10, 28, f1(v) + " V", "#fcd34d");
+  });
+  def("buck_conv,boost_conv", function (c, W, H) { return led(7, 7, "#f59e0b", run(), 0) + chip(W / 2 - 16, H - 10, 32, "Vo " + f1(num(P(c, "vout", c.type === "boost_conv" ? 9 : 5), 5)), "#fcd34d"); });
+  def("ic_and,ic_or,ic_nand,ic_xor,ic_not", function (c, W, H) { var o = !!P(c, "_out", 0); return led(W - 7, 7, "#22c55e", o, 0) + chip(W / 2 - 10, H - 10, 20, o ? "1" : "0", o ? "#86efac" : "#94a3b8"); });
+  def("ic_555", function (c, W, H) { var hz = num(P(c, "hz", 2), 2), o = !!P(c, "_out", 0); return led(W - 7, 7, "#ef4444", run() && o, 0) + chip(W / 2 - 14, H - 10, 28, f1(hz) + "Hz", "#fca5a5"); });
+  def("shift595,mux4051", function (c, W, H) { return led(7, 7, "#22c55e", run(), 0) + (c.type === "mux4051" ? chip(W / 2 - 14, H - 10, 28, "ch " + num(P(c, "sel", 0), 0), "#7dd3fc") : ""); });
+  def("fuse", function (c, W, H) { var b = !!P(c, "blown", false); return b ? '<line x1="' + W / 2 + '" y1="2" x2="' + W / 2 + '" y2="' + (H - 2) + '" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="2 3"/>' + chip(W / 2 - 13, -10, 26, "BLOWN", "#fca5a5") : ""; });
+  def("cloud_iot,can_mod,eth_mod,sim800l,rs485_mod", function (c, W, H) { var a = run(); return led(8, 7, "#22c55e", a, 1.1) + led(16, 7, "#f59e0b", a && !!P(c, "act", true), 0.45); });
+  def("sd_module", function (c, W, H) { return led(W - 8, 7, "#22c55e", run(), 0.9); });
+  def("ir_receiver,ir_remote", function (c, W, H) { var f = run() && (P(c, "on", false) || P(c, "pressed", false) || P(c, "firing", false)); return led(8, 7, "#ef4444", f, 0.2); });
+  def("keypad", function (c, W, H) {
+    var k = P(c, "lastKey", -1), now = Date.now(); if (k && k !== -1) LAST[c.id] = { k: k, t: now };
+    var l = LAST[c.id]; if (!l || now - l.t > 900) return "";
+    var ch = typeof l.k === "number" ? String.fromCharCode(l.k) : l.k;
+    return chip(W / 2 - 12, H / 2 - 5, 24, "key " + ch, "#fde047");
+  });
+  def("optoisolator", function (c, W, H) { var a = drv(c, "A") || drv(c, "AN") || drv(c, "1"); return a ? '<circle cx="' + W / 2 + '" cy="' + H / 2 + '" r="6" fill="#ef4444" class="g"/>' : ""; });
+  def("crystal", function (c, W, H) { return run() ? '<g class="o" style="animation:fx116tick .08s linear infinite"><text x="' + W / 2 + '" y="-3" text-anchor="middle" fill="#a5b4fc">' + f1(num(P(c, "mhz", 16), 16)) + "MHz</text></g>" : ""; });
+
+  function sig(c) {
+    return c.type + "|" + (c.baseW || c.w) + "|" + (c.baseH || c.h) + "|" + run() + "|" + JSON.stringify(c.props) +
+      (c.type === "l298n" ? "|" + ["IN1", "IN2", "IN3", "IN4"].map(function (p) { return +drv(c, p); }).join("") : c.type === "optoisolator" ? "|" + (+drv(c, "A")) + (+drv(c, "AN")) + (+drv(c, "1")) : c.type === "keypad" ? "|" + Math.floor(Date.now() / 300) : "");
+  }
+  function tick() {
+    var list = (typeof components !== "undefined" && components) || [];
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i], fn = c && FX[c.type]; if (!fn || (root.E115 && root.E115.FX[c.type])) continue;
+      var el = D.getElementById(c.id), inner = el && el.querySelector(".comp-inner"); if (!inner) continue;
+      var W = c.baseW || c.w, H = c.baseH || c.h, s = sig(c), svg = inner.querySelector(":scope > .fx116");
+      if (svg && svg.dataset.s === s) continue;
+      var body = ""; try { body = fn(c, W, H); } catch (e) { console.warn("E116", c.type, e); }
+      if (!svg) {
+        svg = D.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("class", "fx115 fx116");
+        if (getComputedStyle(inner).position === "static") inner.style.position = "relative";
+        inner.appendChild(svg);
+      }
+      svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      svg.dataset.s = s; svg.innerHTML = body;
+    }
+  }
+  setInterval(tick, 150);
+  root.E116 = { FX: FX, tick: tick, types: function () { return Object.keys(FX); } };
+})(window);
+</script>
 </body>
 </html>
 
